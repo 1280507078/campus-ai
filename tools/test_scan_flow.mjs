@@ -15,8 +15,13 @@ const BASE = process.env.CAMPUS_BASE || 'http://127.0.0.1:8000';
    如果升过版，会去找一个更新的 build 号（比如 chromium_headless_shell-1243），
    机器上没有，直接报 “Executable doesn't exist”——看着像测试挂了，其实是环境对不上。
    所以和其它测试脚本统一：显式指向已下载的那份浏览器。 */
-const CHROME = process.env.CHROME_PATH
-  || '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome';
+/* ★ 2026-10-22 CI 兼容：原来这里写死了
+   '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
+   但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
+   playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
+   报错还会长得像业务代码坏了。现在：只认 CHROME_PATH（本机 run_all_tests.py 会传），
+   没传就让 playwright 自己找它刚装好的那一份。 */
+const CHROME = process.env.CHROME_PATH || undefined;
 
 const results = [];
 function check(name, cond, detail = '') {

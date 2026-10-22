@@ -41,7 +41,13 @@
  */
 import pw from 'playwright';
 
-const CHROME = process.env.CHROME_PATH || '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome';
+/* ★ 2026-10-22 CI 兼容：原来这里写死了
+   '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
+   但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
+   playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
+   报错还会长得像业务代码坏了。现在：只认 CHROME_PATH（本机 run_all_tests.py 会传），
+   没传就让 playwright 自己找它刚装好的那一份。 */
+const CHROME = process.env.CHROME_PATH || undefined;
 const P = process.env.CAMPUS_WEB_PORT || '5500';
 const BASE = `http://127.0.0.1:${P}`;
 /* 后端地址也要能换：默认 8000，但解包后用别的端口验证时（CAMPUS_API_PORT=8200）

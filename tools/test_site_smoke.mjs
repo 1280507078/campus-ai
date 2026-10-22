@@ -14,8 +14,13 @@ const BASE = API + '/app';
    机器上没有，直接报 “Executable doesn't exist”——看着像测试挂了，其实是环境对不上。
    所以这里和其它测试脚本统一：显式指向已下载的那份浏览器，
    找不到就退回让 playwright 自己找（用户本机 npx playwright install 过也能跑）。 */
-const CHROME = process.env.CHROME_PATH
-  || '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome';
+/* ★ 2026-10-22 CI 兼容：原来这里写死了
+   '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
+   但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
+   playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
+   报错还会长得像业务代码坏了。现在：只认 CHROME_PATH（本机 run_all_tests.py 会传），
+   没传就让 playwright 自己找它刚装好的那一份。 */
+const CHROME = process.env.CHROME_PATH || undefined;
 const PAGES = ['index.html','plan.html','planner.html','reminder.html','account.html',
                'emotion-chat.html','emotion-quiz.html','emotion-result.html',
                'login.html','scan-confirm.html','feedback.html'];
