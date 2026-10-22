@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="校园 AI 助手：学业规划、情绪陪伴、天气地图导航，一站式服务大学生活。" />
+  <title>校园 AI 助手 · 主页</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <!-- 首屏轮播：① 品牌紫渐变 → ② 校门实景 → ③ 图书馆实景。
+         实景图由 tools/make_hero.py 从原片裁宽压好，放在 img/hero-*.jpg。
+         标题等文字浮在图层之上（.hero-body），所以换到哪张图都不会被挡。
+         切换逻辑见页面底部脚本里的 heroCarousel()。 -->
+    <section class="hero" id="hero">
+      <div class="hero-slides" aria-hidden="true">
+        <div class="hero-slide hero-slide--brand is-active"></div>
+        <div class="hero-slide hero-slide--gate"></div>
+        <div class="hero-slide hero-slide--library"></div>
+      </div>
+      <div class="hero-body">
+        <h1><span class="hero-ico" data-icon="cap" data-icon-size="34"></span>欢迎来到校园 AI 助手</h1>
+        <p>一个为大学生打造的智能助手：规划学业、陪伴情绪、导航校园。选择一个功能开始吧。</p>
+        <p id="hero-user"></p>
+      </div>
+      <div class="hero-dots" role="tablist" aria-label="首屏图片切换">
+        <button type="button" class="hero-dot is-active" role="tab" aria-selected="true" aria-label="第 1 张：欢迎页"></button>
+        <button type="button" class="hero-dot" role="tab" aria-selected="false" aria-label="第 2 张：校门"></button>
+        <button type="button" class="hero-dot" role="tab" aria-selected="false" aria-label="第 3 张：图书馆"></button>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="card feature planner" tabindex="0" onclick="location.href='planner.html'">
+        <!-- 悬停时淡入的渐变主题图（样式见 style.css 的「悬停渐变主题图」） -->
+        <div class="feature-bg" aria-hidden="true"></div>
+        <div class="ico" data-icon="planner" data-icon-size="26"></div>
+        <h3>学业规划助手</h3>
+        <p>导入课表，AI 生成学习计划，课程提醒；点课程直达教学楼导航。</p>
+        <div class="go">进入 <span>→</span></div>
+      </div>
+
+      <div class="card feature emotion" tabindex="0" onclick="location.href='emotion-chat.html'">
+        <div class="feature-bg" aria-hidden="true"></div>
+        <div class="ico" data-icon="emotion" data-icon-size="26"></div>
+        <h3>情绪陪伴</h3>
+        <p>AI 倾听你的心声、温柔安慰，并提供情绪测评问卷。</p>
+        <div class="go">进入 <span>→</span></div>
+      </div>
+
+      <div class="card feature map" tabindex="0" onclick="location.href='nav.html'">
+        <div class="feature-bg" aria-hidden="true"></div>
+        <div class="ico" data-icon="map" data-icon-size="26"></div>
+        <h3>天气地图导航</h3>
+        <p>今日温度与降雨提醒，校园地图；教学楼、宿舍、食堂、图书馆都能一键导航。</p>
+        <div class="go">进入 <span>→</span></div>
+      </div>
+    </section>
+
+    <!-- 数据概览：登录后展示真实统计 -->
+    <section class="stats" id="stats" hidden>
+      <div class="stat">
+        <div class="s-ico" data-icon="calendar" data-icon-size="20"></div>
+        <div>
+          <div class="s-num" id="stat-courses">—</div>
+          <div class="s-label">本周课程</div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="s-ico" data-icon="building" data-icon-size="20"></div>
+        <div>
+          <!-- 两个数字分开显示：前面是教学楼（课表里会出现的），
+               后面是地图上全部可导航点位（含宿舍/食堂/图书馆等）。
+               合成一个数会让人以为教学楼变多了，所以拆开。 -->
+          <div class="s-num" id="stat-buildings">—</div>
+          <div class="s-label">教学楼 <span class="s-sub" id="stat-places">—</span></div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="s-ico" data-icon="target" data-icon-size="20"></div>
+        <div>
+          <div class="s-num" id="stat-today">—</div>
+          <div class="s-label">今日课程</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/campus.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script>
+    renderTopbar("home");
+    hydrateIcons();
+
+    /* 首屏轮播：自动播放 + 圆点切换。
+       细节都按"别烦人"来设计：
+         · 鼠标移上去 / 键盘聚焦 / 切到后台标签页 -> 暂停，用户在看的时候不跳
+         · 系统开了「减少动态效果」-> 不自动播，只保留手动点圆点
+         · 只有一张图时直接不用初始化 */
+    (function heroCarousel() {
+      const hero = document.getElementById("hero");
+      if (!hero) return;
+      const slides = Array.prototype.slice.call(hero.querySelectorAll(".hero-slide"));
+      const dots = Array.prototype.slice.call(hero.querySelectorAll(".hero-dot"));
+      if (slides.length < 2) return;
+
+      const INTERVAL = 5000;
+      const reduce = window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let idx = 0;
+      let timer = null;
+
+      function show(i) {
+        idx = (i + slides.length) % slides.length;
+        slides.forEach((s, k) => s.classList.toggle("is-active", k === idx));
+        dots.forEach((d, k) => {
+          const on = k === idx;
+          d.classList.toggle("is-active", on);
+          d.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
+      function stop() { if (timer) { clearInterval(timer); timer = null; } }
+      function start() {
+        if (reduce) return;          // 用户要求减少动效：不自动轮播
+        stop();
+        timer = setInterval(() => show(idx + 1), INTERVAL);
+      }
+
+      dots.forEach((d, k) => d.addEventListener("click", () => { show(k); start(); }));
+      hero.addEventListener("mouseenter", stop);
+      hero.addEventListener("mouseleave", start);
+      hero.addEventListener("focusin", stop);
+      hero.addEventListener("focusout", start);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stop(); else start();
+      });
+
+      show(0);
+      start();
+    })();
+
+    // 主页显示当前用户昵称
+    (function showUser() {
+      const u = getUser();
+      const el = document.getElementById("hero-user");
+      if (u) {
+        el.innerHTML = `当前登录：<b>${escapeHtml(u.nickname || u.username)}</b>，祝你今天学习顺利`;
+      } else {
+        el.innerHTML = `你还没有登录，<a href="login.html">现在登录</a> 后可保存课表与情绪记录。`;
+      }
+    })();
+
+    // 卡片支持键盘打开，兼顾可访问性
+    document.querySelectorAll(".feature").forEach((card) => {
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); card.click(); }
+      });
+    });
+
+    // 登录后展示真实统计数据
+    (async function showStats() {
+      if (!getUser()) return;
+      const box = document.getElementById("stats");
+      try {
+        /* ⚠️ 这里踩过两个坑，都写下来：
+           1. 课程存的是**真实日期** date（"2026-09-21"），没有「星期几」字段。
+              但一条 date=周二 的课在 weeks 里说明的那几周**每周都要上**，
+              所以「今天有没有课」不能写 `c.date === 今天` ——
+              那只看「录它的那一天」，今天必然 0、别的周反而会串到今天来。
+              统一走 common.js 的 coursesOnDate()（星期 + 周次，与课表页同一口径）。
+           2. 不传区间时接口会返回**全部**历史课程，拿它统计会越用越大。
+         */
+        const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const now = new Date();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((now.getDay() || 7) - 1));   // 本周一
+
+        /* 拉**整学期**的课，而不是只拉本周：
+           「每周重复」的课在库里只有一条（比如 date=9/8 周二），
+           只按本周日期区间查是查不到它的 —— 查到了也没有周次信息可用。 */
+        const termStart = new Date(SEMESTER_START + "T00:00:00");
+        const termEnd = new Date(termStart);
+        termEnd.setDate(termStart.getDate() + (SEM_WEEKS_BEFORE + SEM_WEEKS_AFTER + 1) * 7 - 1);
+        const tt = await api(`/planner/timetable?start=${fmt(termStart)}&end=${fmt(termEnd)}`);
+        const courses = tt.courses || [];
+        const todayIsoStr = fmt(now);
+
+        // 本周 7 天逐天按「星期 + 周次」数 —— 与提醒页 / 课表页看到的是同一批课
+        let weekCount = 0;
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(monday);
+          d.setDate(monday.getDate() + i);
+          weekCount += coursesOnDate(courses, fmt(d)).length;
+        }
+
+        document.getElementById("stat-courses").textContent = weekCount;
+        /* 两个数分开：
+             stat-buildings = 教学楼数（BUILDINGS，课表里会出现的，共 10）
+             stat-places    = 地图上**实际展示**的点位数（CAMPUS_PLACES 去掉关掉的类型）
+           早期这两者是一个数，加了生活类点位后必须拆开，
+           否则「教学楼 45」会让人以为学校有 45 栋教学楼。
+           ⚠️ 这里必须和 nav.html 用同一套过滤口径（PLACE_TYPES 里 `off: true` 的
+           院系场馆/停车场/校区/附属学校不上图），否则主页写着 45、
+           地图页只数得出 24，用户会以为地图漏点了。 */
+        const placeCount = (typeof CAMPUS_PLACES !== "undefined" && typeof PLACE_TYPES !== "undefined")
+          ? CAMPUS_PLACES.filter((p) => !((PLACE_TYPES[p.type] || {}).off)).length
+          : 0;
+        document.getElementById("stat-buildings").textContent =
+          (typeof BUILDINGS !== "undefined" ? BUILDINGS.length : 0);
+        document.getElementById("stat-places").textContent =
+          placeCount ? `· 点位 ${placeCount}` : "";
+        document.getElementById("stat-today").textContent =
+          coursesOnDate(courses, todayIsoStr).length;
+        box.hidden = false;
+      } catch {
+        // 统计拿不到就静默隐藏，不打扰主页浏览
+        box.hidden = true;
+      }
+    })();
+  </script>
+</body>
+</html>

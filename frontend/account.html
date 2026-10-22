@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>账号设置 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="user" data-icon-size="22"></span>账号设置</h2>
+        <p class="muted">在这里修改昵称、密码，或注销账号。</p>
+      </div>
+      <a class="btn ghost" href="index.html">返回主页</a>
+    </div>
+
+    <!-- 1. 基本信息 -->
+    <div class="card acc-card">
+      <h3 class="acc-title">基本信息</h3>
+      <div class="row acc-row">
+        <div class="field acc-col">
+          <label>用户名（登录用，不可修改）</label>
+          <div class="plan-box acc-readonly" id="acc-username">—</div>
+        </div>
+        <div class="field acc-col">
+          <label>昵称（显示名，可修改）</label>
+          <input id="acc-nickname" maxlength="32" placeholder="2-32 个字符" />
+        </div>
+      </div>
+      <p class="muted acc-note">
+        昵称要和其他人的用户名、昵称都不重复，否则保存会失败。
+      </p>
+      <button class="btn" id="btn-save-nick">保存昵称</button>
+    </div>
+
+    <!-- 2. 修改密码 -->
+    <div class="card acc-card">
+      <h3 class="acc-title">修改密码</h3>
+      <div class="field">
+        <label>原密码</label>
+        <input id="acc-old-pwd" type="password" autocomplete="current-password"
+          placeholder="请输入当前密码" />
+      </div>
+      <div class="row acc-row">
+        <div class="field acc-col">
+          <label>新密码</label>
+          <input id="acc-new-pwd" type="password" autocomplete="new-password"
+            placeholder="至少 6 位" />
+        </div>
+        <div class="field acc-col">
+          <label>确认新密码</label>
+          <input id="acc-new-pwd2" type="password" autocomplete="new-password"
+            placeholder="请再输入一遍" />
+        </div>
+      </div>
+      <p class="pw-hint" id="acc-pwd-hint"></p>
+      <button class="btn" id="btn-save-pwd">修改密码</button>
+    </div>
+
+    <!-- 3. 意见反馈：给普通用户；管理员是「收」反馈的那一方，整张不显示（account.js 控制） -->
+    <div class="card acc-card" id="card-feedback">
+      <h3 class="acc-title">意见反馈</h3>
+      <p class="muted acc-note-top">
+        用着不顺手的地方、想要的功能，都可以提。<b>管理员会回复</b>，回复和你的历史反馈
+        都能在反馈页里看到。
+      </p>
+      <a class="btn ghost sm" href="feedback.html">
+        <span class="h-ico" data-icon="chat" data-icon-size="16"></span> 我要反馈
+      </a>
+    </div>
+
+    <!-- 4. 视角切换：只有管理员账号看得到（默认 hidden，由 account.js 按 is_admin 打开）。
+         ★ 这张卡不是固定的「进入后台」，而是**跟着当前视角反过来**：
+           在管理视角 -> 进入用户视图；在用户视角 -> 进入管理员视图。
+         ⚠️ 这只是显示开关，权限仍在后端 /api/admin/* 的 get_admin_user。 -->
+    <div class="card acc-card" id="card-view" hidden>
+      <h3 class="acc-title" id="card-view-title">切换视图</h3>
+      <p class="muted acc-note-top" id="card-view-note">
+        管理员可以随时看用户那边是什么样子，也能一键回来。
+      </p>
+      <a class="btn ghost sm" href="admin.html" id="card-view-link">
+        <span class="h-ico" data-icon="target" data-icon-size="16"></span>
+        <span id="card-view-label">进入管理员视图</span>
+      </a>
+    </div>
+
+    <!-- 5. 注销账号 -->
+    <div class="card acc-card danger-zone">
+      <h3 class="acc-title">注销账号</h3>
+      <p class="muted acc-note-top">
+        注销会<b>永久删除</b>你的账号，以及账号下的全部课表、情绪记录和测评结果，无法恢复。
+        如果只是想换个账号登录，用顶栏的「退出」即可，不需要注销。
+      </p>
+      <button class="btn danger" id="btn-delete">注销账号</button>
+    </div>
+  </div>
+
+  <!-- 注销确认弹窗 -->
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <span class="close" id="modal-close">×</span>
+      <h3 id="modal-title">注销账号</h3>
+      <div id="modal-body"><!-- 动态内容 --></div>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/account.js?v=20261022a"></script>
+</body>
+</html>

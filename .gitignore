@@ -1,0 +1,62 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+*.db
+*.sqlite3
+
+# ---- 环境变量 / 密钥 ----
+.env
+.env.local
+*.key
+# 自签名证书目录：历史遗留（曾经有一版会生成它，服务手机端精确定位的 https 通道）。
+# 那条链路已按需求整体删除，这里只是防御性排除 —— 万一本地还留着上次生成的
+# certs（含私钥），也不该跟着代码走。
+backend/certs/
+
+# 数据「输出」目录（删数据前导出的 JSON）：含真实用户数据，不进 git、不进交付包。
+backend/data_export/
+
+# ---- Node / 前端构建 ----
+node_modules/
+dist/
+.vite/
+*.local
+
+# ---- 编辑器 / 系统 ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- 日志 ----
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ---- 测试 / 缓存 ----
+.pytest_cache/
+.mypy_cache/
+coverage/
+
+# 本地数据库文件（SQLite，运行时自动生成）
+backend/*.db
+
+# 打包/解包标记（解压时自动写入的时间戳，只用于判断"包是不是新的"）
+.package_marker
+backend/.package_marker
+
+# 交付压缩包本身（避免「包里有包」，上一轮就是这样把 502KB 的旧包打进新包）
+campus-ai.zip
+*.zip
+
+# 过程截图 / 调试用图（只用于开发时肉眼比对，不是交付物）
+screenshots/
+
+# 本地测试依赖的软链（指向 /tmp/node_modules，不该进仓库）
+node_modules

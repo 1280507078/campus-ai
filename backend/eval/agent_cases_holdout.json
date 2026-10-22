@@ -1,0 +1,187 @@
+{
+  "_readme": [
+    "留出集（holdout）：写完之后**不参与调参**，只用来检验开发集上的 100% 是不是过拟合。",
+    "规则：这里的用例一旦用来改正则，就必须从留出集移出、记进开发集，",
+    "      否则「留出集准确率」会虚高，等于自己骗自己。",
+    "字段与 agent_cases.json 一致。"
+  ],
+  "cases": [
+    {
+      "id": "H01",
+      "q": "我想办休学，先找谁",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "休学"
+      ],
+      "note": "不同说法：办…先找谁"
+    },
+    {
+      "id": "H02",
+      "q": "转专业要什么条件",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "转专业"
+      ],
+      "note": "条件式问法"
+    },
+    {
+      "id": "H03",
+      "q": "缓考怎么申请呢",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "缓考"
+      ],
+      "note": "带语气词"
+    },
+    {
+      "id": "H04",
+      "q": "辅修可以大二报名吗",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "辅修"
+      ],
+      "note": "是非问，不是「怎么办」"
+    },
+    {
+      "id": "H05",
+      "q": "国庆放几天",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "10月1",
+        "10-01",
+        "国庆"
+      ],
+      "note": "口语「十一/国庆」"
+    },
+    {
+      "id": "H06",
+      "q": "元旦放假吗",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "元旦",
+        "1月1",
+        "01-01"
+      ],
+      "note": "是非问 + 节假日"
+    },
+    {
+      "id": "H07",
+      "q": "第5周是几号",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "10-05",
+        "10月5"
+      ],
+      "note": "周次换算"
+    },
+    {
+      "id": "H08",
+      "q": "大四什么时候毕业",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "转专业",
+        "辅修"
+      ],
+      "note": "语料无毕业时间，应拒答"
+    },
+    {
+      "id": "H09",
+      "q": "学位证丢了怎么补",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "学位"
+      ],
+      "note": "证明补办"
+    },
+    {
+      "id": "H10",
+      "q": "教室怎么借",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "教室"
+      ],
+      "note": "短句"
+    },
+    {
+      "id": "H12",
+      "q": "宿舍空调坏了找谁修",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "教务处审批",
+        "一站式服务平台"
+      ],
+      "note": "后勤，语料没有"
+    },
+    {
+      "id": "H13",
+      "q": "怎么才能提高绩点",
+      "route": "explain",
+      "note": "求方法，不许进文档路"
+    },
+    {
+      "id": "H14",
+      "q": "帮我排个期末复习计划",
+      "route": "plan",
+      "note": "标准排表"
+    },
+    {
+      "id": "H15",
+      "q": "明天上午有课吗",
+      "route": "local_ask",
+      "note": "问课 + 时段限定"
+    },
+    {
+      "id": "H16",
+      "q": "周六10-12点做实验",
+      "route": "schedule_add",
+      "note": "钟点区间 + 一件事"
+    },
+    {
+      "id": "H17",
+      "q": "下周三四晚上七点半到九点练瑜伽",
+      "route": "schedule_add",
+      "note": "一串星期 + 中文钟点"
+    },
+    {
+      "id": "H18",
+      "q": "福州今天下雨吗",
+      "route": "quick",
+      "note": "天气：应只查 get_weather"
+    },
+    {
+      "id": "H19",
+      "q": "田径场怎么走",
+      "route": "quick",
+      "note": "场馆位置：应只查 get_building_info"
+    },
+    {
+      "id": "H20",
+      "q": "医保在哪报销",
+      "route": "docs",
+      "note": "★ 借位置词问办事：不能当问路，要走文档"
+    },
+    {
+      "id": "H21",
+      "q": "选课什么时候开始",
+      "route": "docs",
+      "note": "时间类文档题"
+    },
+    {
+      "id": "H22",
+      "q": "帮我把下周的复习安排一下",
+      "route": "plan",
+      "note": "真排表，不能误判成 quick/docs"
+    }
+  ]
+}

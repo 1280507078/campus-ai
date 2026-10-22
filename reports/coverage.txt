@@ -1,0 +1,43 @@
+# 后端单元/契约测试覆盖率
+
+生成时间：2026-10-22 00:15  |  工具：coverage 7.16.2
+跑法：见 .github/workflows/ci.yml 的 backend-test 作业
+覆盖的测试脚本：tools/test_rag_docs.py · test_study_agent.py · test_scan_login_contract.py · test_data_export.py
+
+## 怎么读这份数字
+
+这些测试不是「每行都过一遍」的单元测试，而是**挑最容易悄悄坏掉的地方钉死**的
+契约测试（数据导出的先后顺序、工具定义、RAG 拒答机制、鉴权头契约）。所以
+总覆盖率不高、但关键模块很高，是设计意图，不是欠账：
+
+- 35% 的分母里有 routers/planner.py（1029 行）、glm.py、vision.py —— 它们的
+  正确性由浏览器端 e2e（tools/run_all_tests.py 的 26 项，含真起服务 + Playwright）
+  来保证，用不上单测；这里统计不到。
+- 真正靠单测守住的三块数字很高：study_agent 61% / rag_docs 67% / data_export 91%。
+- 本版 study_agent 的分母涨了（742 → 825 行，新增第六类路与学校文档问答），
+  覆盖率从 65% 降到 61% —— 新代码是**跟着线上行为**验证的（在线 15/15、
+  路由离线 68/68），不是靠单测堆出来的，这个下降是预期的。
+
+## 明细
+Name                                  Stmts   Miss  Cover
+---------------------------------------------------------
+backend\config.py                        34      2    94%
+backend\database.py                     147     67    54%
+backend\errors.py                        47     47     0%
+backend\main.py                         137    137     0%
+backend\models\orm.py                    72      0   100%
+backend\models\schemas.py               183     28    85%
+backend\routers\auth.py                 152    109    28%
+backend\routers\planner.py             1029    838    19%
+backend\seed.py                          55     22    60%
+backend\services\data_export.py          95      9    91%
+backend\services\glm.py                 122    110    10%
+backend\services\llm_json.py            109    102     6%
+backend\services\qdrant.py              282    227    20%
+backend\services\rag_docs.py            137     45    67%
+backend\services\study_agent.py         825    324    61%
+backend\services\timetable_excel.py     356    317    11%
+backend\services\usage.py                44     32    27%
+backend\services\vision.py              205    192     6%
+---------------------------------------------------------
+TOTAL                                  4031   2608    35%

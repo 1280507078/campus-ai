@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测评结果 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="check" data-icon-size="22"></span>你的测评结果</h2>
+        <p class="muted" id="result-time">—</p>
+      </div>
+      <div class="row tight">
+        <a class="btn ghost" href="emotion-quiz.html">
+          <span class="h-ico" data-icon="target" data-icon-size="16"></span>重新测评
+        </a>
+        <a class="btn" href="emotion-chat.html">
+          <span class="h-ico" data-icon="chat" data-icon-size="16"></span>去倾诉一下
+        </a>
+      </div>
+    </div>
+
+    <!-- 无数据兜底 -->
+    <div class="card" id="empty-card" hidden>
+      <div class="empty">
+        <div class="e-ico" data-icon="target" data-icon-size="32"></div>
+        <p>还没有测评记录。</p>
+        <p style="margin-top:12px;">
+          <a class="btn" href="emotion-quiz.html">开始一次测评</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- 结果主体 -->
+    <div id="result-main" hidden>
+      <!-- 总体结论 -->
+      <div class="card result-hero" id="result-hero" style="margin-bottom:20px;"></div>
+
+      <!-- 两个维度 -->
+      <div class="result-grid" style="margin-bottom:20px;">
+        <div class="card dim-card" id="dim-dep"></div>
+        <div class="card dim-card" id="dim-anx"></div>
+      </div>
+
+      <!-- 建议做的三件小事 -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="display:flex; align-items:center; margin-top:0;">
+          <span class="h-ico" data-icon="sparkle" data-icon-size="20"></span>接下来可以做的三件小事
+        </h3>
+        <div id="result-actions"></div>
+      </div>
+
+      <!-- 需要专业帮助时的提示 -->
+      <div id="result-help"></div>
+
+      <p class="muted" style="margin-top:16px;">
+        本测评基于简化版 PHQ-9 / GAD-7 自评量表，仅供自我参考，不作为医学诊断。
+        如果困扰持续存在，建议联系学校心理健康中心进行专业评估。
+      </p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/quiz-data.js?v=20261022a"></script>
+  <script src="js/emotion-result.js?v=20261022a"></script>
+</body>
+</html>

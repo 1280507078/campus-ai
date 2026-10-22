@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-brand"><span class="logo-mark" id="auth-logo"></span> 校园 AI 助手</div>
+      <p class="auth-sub" id="auth-sub">登录后即可保存课表、情绪记录与常用路线</p>
+
+      <!-- 一级切换：账号登录 / 扫码登录 -->
+      <div class="auth-tabs" id="mode-tabs">
+        <div id="tab-slider" class="auth-slider"></div>
+        <button id="tab-pwd" class="active" type="button" onclick="switchMode('pwd')">账号登录</button>
+        <button id="tab-scan" type="button" onclick="switchMode('scan')">扫码登录</button>
+      </div>
+
+      <!-- ========== 账号登录（内部再分 登录 / 注册） ========== -->
+      <div id="pane-pwd">
+        <div class="auth-subtabs">
+          <button id="subtab-login" class="active" type="button" onclick="switchTab('login')">登录</button>
+          <button id="subtab-register" type="button" onclick="switchTab('register')">注册</button>
+        </div>
+
+        <!-- 登录 -->
+        <form id="form-login" onsubmit="return doLogin(event)">
+          <div class="field">
+            <label>用户名</label>
+            <input id="login-username" required autocomplete="username" placeholder="请输入用户名" />
+          </div>
+          <div class="field">
+            <label>密码</label>
+            <input id="login-password" type="password" required autocomplete="current-password" placeholder="请输入密码" />
+          </div>
+          <button class="btn block" type="submit">登录</button>
+        </form>
+
+        <!-- 注册 -->
+        <form id="form-register" style="display:none" onsubmit="return doRegister(event)">
+          <div class="field">
+            <label>用户名</label>
+            <input id="reg-username" required autocomplete="username" placeholder="设置用户名（至少 2 位）" />
+          </div>
+          <div class="field">
+            <label>密码</label>
+            <input id="reg-password" type="password" required autocomplete="new-password" placeholder="设置密码（至少 6 位）" />
+          </div>
+          <div class="field">
+            <label>确认密码</label>
+            <input id="reg-password2" type="password" required autocomplete="new-password" placeholder="请再输入一遍密码" />
+            <p id="reg-match-hint" class="pw-hint"></p>
+          </div>
+          <button class="btn block" type="submit">注册并登录</button>
+        </form>
+      </div>
+
+      <!-- ========== 扫码登录 ========== -->
+      <div id="pane-scan" style="display:none">
+        <div class="scan-box" id="scan-box">
+          <!-- 二维码（由 qrcode.js 生成 SVG 后塞进来） -->
+          <div class="scan-qr" id="scan-qr">
+            <div class="scan-qr-loading"><span class="spin"></span></div>
+          </div>
+          <!-- 状态遮罩：已扫描 / 已过期 时盖在二维码上 -->
+          <div class="scan-mask" id="scan-mask" style="display:none">
+            <div class="scan-mask-ico" id="scan-mask-ico"></div>
+            <p id="scan-mask-text"></p>
+            <button class="btn sm" id="scan-refresh" type="button" onclick="newTicket()">刷新二维码</button>
+          </div>
+        </div>
+
+        <p class="scan-hint" id="scan-hint">
+          请用手机浏览器扫码打开
+        </p>
+        <p class="scan-timer"><span id="scan-countdown">--</span> 秒后失效</p>
+
+        <!-- 扫码可用的 App：底部放这些 App 的图标。
+             ★ 只有「浏览器」一个（用户 2026-10-14 要求：「下面小图标也只要浏览器的」）。
+             文案口径与本页的提示语、副标题三处保持一致，见 login.js 的 SCAN_APPS。 -->
+        <div class="scan-apps" id="scan-apps-box">
+          <div class="scan-apps-label" id="scan-apps-label">用手机浏览器扫一扫</div>
+          <div class="scan-apps-list" id="scan-apps"></div>
+        </div>
+
+        <!-- 演示说明：这类项目答辩一定会被问"手机怎么扫"，写清楚省得现场解释。
+             ⚠️ 这里只放**静态兜底**，页面一加载 login.js 就会用 scanNoteHtml() 覆盖它，
+             而那边会在本机/局域网形态下补一句"手机要和电脑连同一个网络"。所以静态
+             文案只留两种情况都成立的部分，**不要**在这里写死"要不要同 Wi-Fi"。
+             ★ 动作那句全站统一为「用手机上的浏览器扫上面这个码」：界面上只回答
+             "用什么打开"，不解释谁不行、也不解释为什么（用户 2026-10-14 明确要求）。 -->
+        <p class="scan-note" id="scan-note">
+          ⓘ 请用手机上的<b>浏览器</b>扫上面这个码，
+          手机上会打开登录页，在那里<b>注册或登录</b>即可进入移动版。
+        </p>
+      </div>
+
+      <p class="auth-footer">本系统需登录后使用<span class="build-tag">构建 2026-10-22-a</span></p>
+      <!-- 后端版本：由 /api/ping 自报，登录后自动填充。
+           为什么要显示这个：改完 bug 让用户「重新解压再用」时，用户其实无从判断
+           自己到底有没有换成新代码 —— 新旧版本从界面上看一模一样。
+           把后端自报的构建标记摆在登录页，用户一眼就能确认，不用再靠猜。 -->
+      <p class="backend-build" id="backend-build" hidden></p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/qrcode.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/login.js?v=20261022a"></script>
+</body>
+</html>

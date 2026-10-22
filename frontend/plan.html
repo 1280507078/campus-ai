@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI伴学 · 学业规划 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="brain" data-icon-size="22"></span>AI伴学</h2>
+        <p class="muted">像聊天一样说出你的目标。说清楚之后，我会先去查你的时间表和空档，再排出具体作息。</p>
+      </div>
+    </div>
+
+    <div class="subnav-row">
+      <a class="subnav-pill" href="planner.html">时间表</a>
+      <a class="subnav-pill" href="reminder.html">日程提醒</a>
+      <a class="subnav-pill active" href="plan.html">AI伴学</a>
+    </div>
+
+    <!-- ============================================================
+         整页只有**一个对话框**。
+         ------------------------------------------------------------
+         用户 2026-10-15 明确要求：「这里使用 AI agent，对话框方式，其他样式去掉」。
+         所以下面这些东西**全部撤掉了**（别再加回来）：
+           · 「生成设置」标题与那张表单卡（学习目标输入框 / 计划天数下拉框 /
+             年级 / 专业 / 「生成计划」按钮）
+           · 单独的结果框 `.plan-box#plan`
+           · 单独挂在表单下面的 `.agent-trace#agent-trace`
+         它们要表达的东西现在都由"说话"来交代：
+           学习目标 -> 直接说；计划天数 -> 说「排 3 天」「排两周」，由
+           planner-plan.js 的 detectDays() 从话里认；Agent 的调用记录 -> 挂在
+           它自己那条回答里面（谁答的就贴在谁下面，而不是飘在别处）。
+         ============================================================ -->
+    <div class="card">
+      <div class="spread">
+        <h3 style="margin:0; display:flex; align-items:center;">
+          <span class="h-ico" data-icon="chat" data-icon-size="20"></span>和学业规划 Agent 聊聊
+        </h3>
+        <button class="btn ghost" onclick="clearPlanChat()">清空对话</button>
+      </div>
+
+      <div class="chat-box plan-chat-box" id="plan-chat" style="margin-top:14px;"></div>
+
+      <!-- 输入框用 <textarea rows="1"> 而不是 <input>（用户 2026-10-18：
+           「输入框字显示不全，能不能滚动」）。<input> 天生单行，
+           写「期末数据结构冲 90 分，顺便把六级过了，再帮我留出跑步的时间」
+           这种长目标时，后面的字全被截在框外，而且没法看全。
+           textarea 会随内容自己长高（最多 3 行，见 autoGrowPlanInput），
+           再长就在框里上下滚动 —— 字不会被吞掉。
+           键位：Enter 发送，Shift+Enter 换行。 -->
+      <div class="plan-composer">
+        <textarea id="plan-msg" rows="1"
+                  placeholder="说说你的目标，比如冲 90 分"
+                  aria-label="想跟学业规划 Agent 说的话"
+                  oninput="autoGrowPlanInput(this)"
+                  onkeydown="onPlanInputKey(event)"></textarea>
+        <button class="btn" id="btn-plan-send" onclick="sendPlan()">
+          <span class="h-ico" data-icon="wand" data-icon-size="16"></span>发送
+        </button>
+      </div>
+
+      <!-- 这一行由 planner-plan.js 的 updatePlanTip() 填，会说清「AI 这次能看到几门课」，
+           以及「想改天数直接说」—— 因为天数输入框已经被撤掉了，得让用户知道还能怎么改。 -->
+      <p class="muted" id="plan-tip" style="margin-top:8px;"></p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/campus.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/planner-core.js?v=20261022a"></script>
+  <script src="js/planner-plan.js?v=20261022a"></script>
+</body>
+</html>

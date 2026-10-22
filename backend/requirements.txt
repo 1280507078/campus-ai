@@ -1,0 +1,70 @@
+# Campus AI Assistant - backend dependencies
+# Install:  python -m pip install -r requirements.txt
+# Faster mirror (China):  -i https://pypi.tuna.tsinghua.edu.cn/simple
+#
+# NOTE: This file is deliberately ASCII-only. pip reads it with the
+# system default encoding (cp936 on Chinese Windows). Non-ASCII text
+# here causes: UnicodeDecodeError: 'gbk' codec can't decode byte...
+#
+# The launcher (start-windows.bat) installs these automatically when
+# any of them is missing, so end users do NOT need to run pip.
+
+# ---- Web framework (required) ----
+fastapi
+uvicorn[standard]
+
+# ---- Database (required) ----
+sqlalchemy
+# SQLite works out of the box, no extra driver needed.
+# For MySQL, uncomment the line below:
+# pymysql
+
+# ---- Auth (required) ----
+PyJWT
+python-multipart
+
+# ---- Config (required) ----
+pydantic-settings
+
+# ---- External APIs (Amap weather / GLM chat) ----
+httpx
+
+# ---- Timetable Excel import (.xls / .xlsx) ----
+# services/timetable_excel.py reads timetable spreadsheets exported by the
+# school system. These three are what the feature actually needs:
+#
+#   xlrd     -> legacy .xls  (OLE2 / BIFF, what the school exports)
+#   openpyxl -> modern .xlsx
+#   pandas   -> OPTIONAL convenience only. When present it is used to open
+#               the workbook; when absent the code reads the file directly
+#               with xlrd / openpyxl and produces identical results.
+#
+# WHY pandas is optional (a real incident, do not "tidy" this away):
+#   pandas was once missing from this file while the code imported it
+#   unconditionally, and the launcher's readiness probe did not check it
+#   either -- so machines lacking pandas were judged "all dependencies
+#   present", the installer was skipped, and the user hit
+#   "ModuleNotFoundError: No module named 'pandas'" on every import
+#   attempt. Reinstalling never helped. The fix was to stop depending on
+#   pandas at all rather than merely listing it here.
+#   tools/test_xls_import.mjs section 8 locks this in: it runs the parser
+#   with pandas blocked and asserts byte-identical output.
+xlrd
+openpyxl
+# optional: pandas
+
+# ---- Vector store (emotion long-term memory / RAG) ----
+# OPTIONAL (see the "optional:" marker below).
+# services/qdrant.py imports it lazily, so the app still starts without
+# it -- memory retrieval just degrades to "no memory". It is listed here
+# so the installer sets it up and the feature works, but it is NOT part
+# of the launcher's readiness probe: a missing vector store only degrades
+# one feature and must never send users into a reinstall loop.
+# optional: qdrant-client
+qdrant-client
+
+# ---- NOT listed on purpose ----
+# passlib[bcrypt] : the demo hashes passwords with a plain placeholder
+#                   (see routers/auth.py hash_pwd), so bcrypt is unused.
+#                   Listing it would add a compile step that often fails
+#                   on Windows. Re-add it if you switch to real hashing.

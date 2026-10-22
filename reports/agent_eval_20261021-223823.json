@@ -1,0 +1,287 @@
+{
+  "generated_at": "2026-10-21 22:36:26",
+  "cases_file": "C:\\Users\\z1280\\WorkBuddy\\2026-10-11-22-26-47\\campus-ai-h\\backend\\eval\\agent_cases.json",
+  "route": {
+    "accuracy": 1.0,
+    "passed": 67,
+    "total": 67,
+    "by_category": {
+      "D": {
+        "passed": 20,
+        "total": 20
+      },
+      "E": {
+        "passed": 11,
+        "total": 11
+      },
+      "L": {
+        "passed": 9,
+        "total": 9
+      },
+      "P": {
+        "passed": 8,
+        "total": 8
+      },
+      "R": {
+        "passed": 8,
+        "total": 8
+      },
+      "S": {
+        "passed": 4,
+        "total": 4
+      },
+      "X": {
+        "passed": 7,
+        "total": 7
+      }
+    },
+    "failures": []
+  },
+  "holdout": {
+    "accuracy": 1.0,
+    "passed": 17,
+    "total": 17,
+    "rows": [
+      {
+        "id": "H01",
+        "q": "我想办休学，先找谁",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H02",
+        "q": "转专业要什么条件",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H03",
+        "q": "缓考怎么申请呢",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H04",
+        "q": "辅修可以大二报名吗",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H05",
+        "q": "国庆放几天",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H06",
+        "q": "元旦放假吗",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H07",
+        "q": "第5周是几号",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H08",
+        "q": "大四什么时候毕业",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H09",
+        "q": "学位证丢了怎么补",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H10",
+        "q": "教室怎么借",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H11",
+        "q": "成绩单在哪打印",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H12",
+        "q": "宿舍空调坏了找谁修",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H13",
+        "q": "怎么才能提高绩点",
+        "expect": "explain",
+        "actual": "explain",
+        "ok": true
+      },
+      {
+        "id": "H14",
+        "q": "帮我排个期末复习计划",
+        "expect": "plan",
+        "actual": "plan",
+        "ok": true
+      },
+      {
+        "id": "H15",
+        "q": "明天上午有课吗",
+        "expect": "local_ask",
+        "actual": "local_ask",
+        "ok": true
+      },
+      {
+        "id": "H16",
+        "q": "周六10-12点做实验",
+        "expect": "schedule_add",
+        "actual": "schedule_add",
+        "ok": true
+      },
+      {
+        "id": "H17",
+        "q": "下周三四晚上七点半到九点练瑜伽",
+        "expect": "schedule_add",
+        "actual": "schedule_add",
+        "ok": true
+      }
+    ],
+    "failures": []
+  },
+  "live": {
+    "rows": [
+      {
+        "id": "P01",
+        "q": "帮我排一份这周的复习计划",
+        "expect_route": "plan",
+        "ok": true,
+        "latency_ms": 19854.0,
+        "tools": [
+          "get_timetable",
+          "find_free_slots"
+        ],
+        "usage": {
+          "calls": 3,
+          "prompt_tokens": 9124,
+          "completion_tokens": 197,
+          "total_tokens": 9321,
+          "cost_cny": 0.0,
+          "models": [
+            "glm-4-flash"
+          ]
+        },
+        "chars": 221,
+        "head": "2026-10-21（周三）：\n- 08:00-22:00 自由学习\n\n2026-10-22（周四）：\n- 08:55-22:00 自由学习\n- 08:10-08:55 高等数学复习\n\n2026-10-23（周五）：\n- 14:45-22:",
+        "tools_expect": [
+          "find_free_slots"
+        ],
+        "tools_ok": false,
+        "tools_extra": [
+          "get_timetable"
+        ]
+      },
+      {
+        "id": "P02",
+        "q": "下周每天晚上帮我安排两小时学英语",
+        "expect_route": "plan",
+        "ok": true,
+        "latency_ms": 28536.6,
+        "tools": [
+          "get_timetable",
+          "find_free_slots"
+        ],
+        "usage": {
+          "calls": 3,
+          "prompt_tokens": 9520,
+          "completion_tokens": 445,
+          "total_tokens": 9965,
+          "cost_cny": 0.0,
+          "models": [
+            "glm-4-flash"
+          ]
+        },
+        "chars": 579,
+        "head": "2026-10-26（周一）：\n- 19:00-21:00 学习英语（完成 30 道阅读理解题）\n- 21:00-22:00 学习英语（完成 20 道完形填空题）\n\n2026-10-27（周二）：\n- 19:00-21:00 学习英语（完成",
+        "tools_expect": [
+          "find_free_slots"
+        ],
+        "tools_ok": false,
+        "tools_extra": [
+          "get_timetable"
+        ]
+      },
+      {
+        "id": "P03",
+        "q": "这周太满了，帮我减一点",
+        "expect_route": "plan",
+        "ok": true,
+        "latency_ms": 23523.7,
+        "tools": [
+          "get_timetable",
+          "find_free_slots"
+        ],
+        "usage": {
+          "calls": 3,
+          "prompt_tokens": 9127,
+          "completion_tokens": 268,
+          "total_tokens": 9395,
+          "cost_cny": 0.0,
+          "models": [
+            "glm-4-flash"
+          ]
+        },
+        "chars": 327,
+        "head": "2026-10-21（周三）：\n- 08:00-08:30 高等数学复习\n- 08:30-09:00 英语阅读\n- 09:00-09:30 自习\n\n2026-10-22（周四）：\n- 08:55-09:40 高等数学复习\n- 09:40-1"
+      },
+      {
+        "id": "P04",
+        "q": "离期末还有三周，怎么规划",
+        "expect_route": "plan",
+        "ok": true,
+        "latency_ms": 45690.1,
+        "tools": [
+          "get_timetable",
+          "find_free_slots"
+        ],
+        "usage": {
+          "calls": 3,
+          "prompt_tokens": 9457,
+          "completion_tokens": 718,
+          "total_tokens": 10175,
+          "cost_cny": 0.0,
+          "models": [
+            "glm-4-flash"
+          ]
+        },
+        "chars": 1059,
+        "head": "2026-10-21（周三）：\n- 08:00-10:00：复习大学英语\n- 10:00-10:45：大学英语课程\n- 10:45-12:00：预习计算机网络\n- 12:00-14:00：午餐与休息\n- 14:00-14:45：计算机网络课"
+      }
+    ],
+    "latency_p50_ms": 28536.6,
+    "latency_p95_ms": 45690.1,
+    "tokens_median": 9680.0,
+    "tokens_max": 10175,
+    "cost_median_cny": 0.0,
+    "cost_total_cny": 0.0,
+    "tools_accuracy": 0.0,
+    "extra_call_rate": 1.0,
+    "answered": 4,
+    "total": 4
+  }
+}

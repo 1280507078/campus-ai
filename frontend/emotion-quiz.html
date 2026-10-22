@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>情绪测评问卷 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="target" data-icon-size="22"></span>情绪测评问卷</h2>
+        <p class="muted">简化版 PHQ-9 / GAD-7，共 8 题，约 1 分钟。请根据最近两周的实际情况作答。</p>
+      </div>
+      <div class="row tight">
+        <a class="btn ghost" href="emotion-chat.html">
+          <span class="h-ico" data-icon="chat" data-icon-size="16"></span>去倾诉一下
+        </a>
+      </div>
+    </div>
+
+    <!-- 作答进度 -->
+    <div class="quiz-progress card" style="margin-bottom:20px;">
+      <div class="spread" style="margin-bottom:10px;">
+        <span class="muted" style="display:flex; align-items:center;">
+          <span class="h-ico" data-icon="check" data-icon-size="16"></span>
+          作答进度
+        </span>
+        <span class="tag"><b id="quiz-count">0</b> / 8</span>
+      </div>
+      <div class="bar"><i id="quiz-bar" style="width:0%"></i></div>
+    </div>
+
+    <div class="card">
+      <div id="quiz"></div>
+      <div class="row" style="margin-top:18px; gap:10px;">
+        <button class="btn block" id="btn-submit" onclick="submitQuiz()" disabled>提交测评并查看结果</button>
+      </div>
+      <p class="muted" style="margin-top:10px; text-align:center;">
+        本测评仅供自我参考，不作为医学诊断。
+      </p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/quiz-data.js?v=20261022a"></script>
+  <script src="js/emotion-quiz.js?v=20261022a"></script>
+</body>
+</html>

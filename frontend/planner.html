@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>时间表 · 学业规划 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="planner" data-icon-size="22"></span>我的时间表</h2>
+        <p class="muted">导入或手动填写每周时间表，点课程可直达教学楼导航。排课占用会自动同步到「AI伴学」。</p>
+      </div>
+      <div class="row">
+        <button class="btn ghost" onclick="importTimetable(event)" title="支持时间表截图 / Excel 时间表（.xls .xlsx）/ JSON / CSV">
+          <span class="h-ico" data-icon="upload" data-icon-size="16"></span>导入时间表
+        </button>
+        <button class="btn" onclick="saveTimetable()">保存时间表</button>
+        <input type="file" id="file-import" accept="image/*,.xls,.xlsx,.xlsm,.json,.csv,.txt" style="display:none" onchange="handleImport(event)" />
+      </div>
+    </div>
+
+    <!-- 学习规划的三个视图：顶栏只有一个「学习规划」入口（直达本页课表），
+         日程提醒 / AI伴学 就从这里切过去。三个 href 都保留，功能一个没少。 -->
+    <div class="subnav-row">
+      <a class="subnav-pill active" href="planner.html">时间表</a>
+      <a class="subnav-pill" href="reminder.html">日程提醒</a>
+      <a class="subnav-pill" href="plan.html">AI伴学</a>
+    </div>
+
+    <div class="card" style="margin-bottom:22px;">
+      <div class="spread week-bar">
+        <div class="week-picker">
+          <!-- 学期周次横向滚动选择器（JS 生成胶囊，点哪个切哪个） -->
+          <div class="week-scroll" id="week-scroll" role="tablist" aria-label="选择周次">
+            <!-- JS 填充 -->
+          </div>
+        </div>
+        <!-- 2026-10-18 按用户要求删掉「沿用上周」按钮：
+             课表本来就是按周次重复渲染的（第 6 周会把第 2 周那些课自动排进来），
+             再提供一个「把上周复制一份到本周」的按钮，只会凭空造出重复记录。 -->
+      </div>
+
+      <!-- 手机端 8 列（节次 + 7 天）根本放不下，表格必须横向滚动。
+           没有这句提示时，用户看到的是「右边那一列被切成一半、字竖着排」，
+           第一反应就是「界面乱了 / 页面坏了」—— 见 2026-10-18 的反馈截图。
+           所以明说一句「可以左右滑」，并告诉用户节次列会停住（这是冻结列，
+           不是错位）。桌面端空间够，这句话由 CSS 藏起来。 -->
+      <p class="tt-swipe-tip"><span aria-hidden="true">↔</span> 表格比屏幕宽，<b>左右滑动</b>看其他天，左边「节次」那列会一直停着</p>
+
+      <div class="tt-wrap" style="margin-top:16px;">
+        <table class="timetable" id="tt">
+          <colgroup>
+            <col class="col-slot" />
+            <col class="col-day" /><col class="col-day" /><col class="col-day" />
+            <col class="col-day" /><col class="col-day" /><col class="col-day" />
+            <col class="col-day" />
+          </colgroup>
+          <thead id="tt-head"><!-- JS 生成（含当天日期） --></thead>
+          <tbody id="tt-body"><!-- JS 生成 --></tbody>
+        </table>
+        <!-- ⚠️ 这段说明**必须留在 .tt-wrap 里面**（2026-10-18 修「底部字会滑动」）。
+             手机端 .tt-wrap 是 position:sticky + 不透明背景（表头冻结要用它），
+             它钉住之后，**后面的兄弟元素会从它身下滑过去被盖住** ——
+             放在容器外面的说明文字就是这样：滚到底时只剩半行、看着像"字在滑动穿透"。
+             放进容器内=跟着表格一起滚，永远不会被压。 -->
+        <p class="tt-hint muted">
+          点击格子中的「＋」添加课程或活动；点击已有卡片可查看详情并导航。
+          节次列会同时标出南区 / 北区作息，某行有北区课程时自动高亮该区时间。
+          「导入时间表」可以直接传 <b>时间表截图</b>，AI 认出来的内容会填进对应格子，
+          没认全的格子会<b>标黄</b>并弹框提醒你补一下。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 课程编辑/详情弹窗 -->
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <span class="close" onclick="closeModal()">×</span>
+      <h3 id="modal-title">课程详情</h3>
+      <div id="modal-body"><!-- 动态内容 --></div>
+    </div>
+  </div>
+
+  <!-- 截图导入：AI 识别进度 -->
+  <div class="modal-mask" id="scan-mask">
+    <div class="modal modal-narrow">
+      <h3><span class="h-ico" data-icon="wand" data-icon-size="20"></span>正在识别时间表截图…</h3>
+      <p class="muted" style="margin:6px 0 16px;">视觉模型正在逐格读图，通常需要 10-30 秒，请别关页面。</p>
+      <div class="scan-bar"><div class="scan-bar-fill"></div></div>
+      <p class="muted" id="scan-step" style="margin-top:12px; min-height:20px;">正在上传图片…</p>
+    </div>
+  </div>
+
+  <!-- 识别结果核对（标黄=需要你补全） -->
+  <div class="modal-mask" id="review-mask">
+    <div class="modal modal-wide">
+      <span class="close" onclick="closeReview()">×</span>
+      <h3 id="review-title">识别结果核对</h3>
+      <div id="review-body"><!-- 动态内容 --></div>
+    </div>
+  </div>
+
+  <!-- 教学楼候选（表单里用 <input list> 引用，可下拉选也可自由输入） -->
+  <datalist id="building-list"><!-- JS 填充 --></datalist>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/campus.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <!-- 注意顺序：core 必须在页脚本之前，页脚本依赖 core 里的 onEl / bootPlanner -->
+  <script src="js/planner-core.js?v=20261022a"></script>
+  <script src="js/planner-timetable.js?v=20261022a"></script>
+</body>
+</html>

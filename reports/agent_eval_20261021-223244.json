@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-10-21 22:32:44",
+  "cases_file": "C:\\Users\\z1280\\WorkBuddy\\2026-10-11-22-26-47\\campus-ai-h\\backend\\eval\\agent_cases.json",
+  "route": {
+    "accuracy": 0.8182,
+    "passed": 54,
+    "total": 66,
+    "by_category": {
+      "D": {
+        "passed": 18,
+        "total": 20
+      },
+      "E": {
+        "passed": 9,
+        "total": 10
+      },
+      "L": {
+        "passed": 8,
+        "total": 9
+      },
+      "P": {
+        "passed": 7,
+        "total": 8
+      },
+      "R": {
+        "passed": 1,
+        "total": 8
+      },
+      "S": {
+        "passed": 4,
+        "total": 4
+      },
+      "X": {
+        "passed": 7,
+        "total": 7
+      }
+    },
+    "failures": [
+      {
+        "id": "D18",
+        "q": "第二学期什么时候开始",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "D20",
+        "q": "中秋节是哪天",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R02",
+        "q": "图书馆几点开门",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R03",
+        "q": "三食堂几点关门",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R04",
+        "q": "怎么申请奖学金",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R05",
+        "q": "宿舍报修怎么弄",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R06",
+        "q": "补办学生证要多久",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R07",
+        "q": "医保怎么报销",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "R08",
+        "q": "国际交流项目怎么报名",
+        "expect": "docs",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "E05",
+        "q": "总是拖延，静不下心",
+        "expect": "explain",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "L03",
+        "q": "这周哪几天有课",
+        "expect": "local_ask",
+        "actual": "plan",
+        "ok": false
+      },
+      {
+        "id": "P07",
+        "q": "周末想补一下这周的课，帮我理一下时间",
+        "expect": "plan",
+        "actual": "local_ask",
+        "ok": false
+      }
+    ]
+  }
+}

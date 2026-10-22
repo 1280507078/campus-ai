@@ -1,0 +1,3023 @@
+/* ============================================================
+   校园 AI 助手 · 全站样式
+   结构：设计令牌 → 基础 → 顶栏 → 按钮 → 卡片 → 表单 → 主页
+        → 登录页 → 课表 → 弹窗 → 对话 → 地图 → 提示 → 响应式
+   ============================================================ */
+
+/* ---------- 设计令牌 ---------- */
+:root {
+  /* 顶栏高度：导航页算「右栏最多能有多高」时要减掉它（.side-pane / .map-pane），
+     课表页的表头 `sticky top` 也用它 —— 顶栏自己也是 `sticky top: 0`，
+     表头必须落在它**下沿**，否则会被顶栏盖住（看着像"完全没固定"）。
+
+     ⚠️⚠️ 这个值**不是常数**，必须跟着顶栏的真实高度走。
+     踩过的坑（用户反馈「显示 星期还要低一点，顶部导航栏挡住了」）：
+     这里原来写死 64px，而 64px 只对**不换行**的宽屏成立
+     （实测 1440×900 和 820×900 的顶栏都是 63.09px，四舍五入 64，正好）。
+     但窄屏顶栏会 `flex-wrap: wrap` 换行（见下方 `@media (max-width: 640px)`），
+     换行之后高度就**翻倍甚至三倍**了。实测值：
+         视口 1440 / 820   -> 63.09px   1 行   （logo + 导航同排）
+         视口 431~640      -> 89.44px   2 行   （logo 一行，导航整体折到下一行）
+         视口 <=430        -> 126.88px  3 行   （导航自己又折了一行）
+     于是手机端表头 `sticky top: 64px` 就顶到顶栏**内部**去了，
+     正好压住「周一 9/21」那行 —— 用户看到的就是"被导航栏挡住"。
+
+     修法：下面按断点覆盖它，三个值都是**实测出来的**，不是拍的：
+        >=641px  -> 68px    （1 行，实测 63.09，取 68 给 5px 余量）
+        431~640  -> 92px    （2 行，实测 89.44，取 92 给 2.5px 余量）
+        <=430    -> 130px   （3 行，实测 126.88，取 130 给 3px 余量）
+     ⚠️ 这里刻意**留余量而不是正好贴着**：万一以后某台机器字体渲染略高、
+        或者顶栏多了一个字，多出来的几 px 也不至于让表头又钻到顶栏底下。
+        留白也不会难看 —— 顶栏本身是半透明白底，表头就在它下沿一点。
+     ⚠️ 改动顶栏的内边距 / 字号 / 导航项数量之后，**这三个数要重新量**。
+        量法见 tools/test_timetable_freeze.mjs（它会把实测值和这个变量对账，
+        对不上就报失败，防止以后无声跑偏）。 */
+  --topbar-h: 68px;
+
+  /* 主色 */
+  --brand: #6366f1;
+  --brand-2: #8b5cf6;
+  --brand-3: #ec4899;
+  --brand-soft: #eef2ff;
+  /* ★ 「品牌色当正文用」需要更深的一档（2026-10-21 无障碍审计）：
+     #6366f1 在 --brand-soft(#eef2ff) 上只有 3.99:1、在白底 4.47:1，
+     都低于 WCAG AA 小字号正文要求的 4.5:1 —— axe 在课表页抓出 4 处。
+     但 --brand 不能直接改深：它同时当底色、边框、渐变用（彩底上的白字不动），
+     改深会把整套视觉压暗。所以拆出 --brand-text，**只给文字用**。
+     实测：本值在最差底色上 5.56:1。 */
+  --brand-text: #4f46e5;
+
+  /* 功能色 */
+  --planner: #3b82f6;
+  --emotion: #ec4899;
+  --map: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  /* 同上：--danger 当底色/边框用，当红字用时换深一档（原 #ef4444 在 #fff7f7 上 3.57:1） */
+  --danger-text: #c62828;
+  --ok: #22c55e;
+
+  /* 中性色 */
+  --bg: #eef1f8;
+  --card: #ffffff;
+  --ink: #1a1f2e;
+  --ink-soft: #5b6478;
+  --ink-faint: #646e85;          /* 无障碍：原 #8b94a8 在白底上仅 3.04:1，低于 WCAG AA 正文 4.5:1；这个值最差 4.52:1 */
+  --line: #e7eaf3;
+
+  /* 圆角 */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --radius: 16px; /* 兼容旧引用 */
+
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(31, 36, 51, .05);
+  --shadow: 0 10px 30px rgba(31, 36, 51, .08);
+  --shadow-lg: 0 24px 60px rgba(31, 36, 51, .16);
+  --shadow-brand: 0 10px 26px rgba(99, 102, 241, .32);
+
+  /* 聚焦环 */
+  --ring: 0 0 0 4px rgba(99, 102, 241, .16);
+
+  /* 动效 */
+  --ease: cubic-bezier(.22, .8, .3, 1);
+
+  /* ---------- 主题令牌（浅色=白天为基准；护眼 / 黑夜在下方覆盖）----------
+     为什么要有这一层：这些颜色原来**写死在各个选择器里**（`background:#fff` 这类），
+     于是想做「白天 / 护眼 / 黑夜」就得改上百处、还极容易漏。现在反过来 ——
+     选择器只引用令牌，主题只改令牌，加一套主题就是加一个覆盖块。
+
+     ⚠️ 命名纪律：`--on-brand` 是「彩色底上的文字」，任何主题都是白（品牌色底不变深）。
+        而 `--card` / `--bg` 这类是**表面**，会随主题翻转。别混用。 */
+
+  /* 表面层级：页面底 → 主表面 → 内嵌浅面 → 槽位底 */
+  --card-2: #fbfcfe;              /* 代码块、行 hover、次级面板 */
+  --card-3: #f0f2fa;              /* 节次列、周次条这类"槽" */
+  --glass: rgba(255, 255, 255, .78);         /* 顶栏毛玻璃 */
+  --glass-strong: rgba(255, 255, 255, .93);  /* 弹层 / 下拉毛玻璃 */
+  --glass-line: rgba(255, 255, 255, .9);     /* 毛玻璃面板的描边 */
+  --topbar-line: rgba(231, 234, 243, .9);    /* 顶栏下沿那条 1px */
+  --scrim: rgba(20, 24, 40, .45);            /* 弹窗遮罩 */
+  --scroll: #cdd3e4;                          /* 滚动条滑块 */
+  --scroll-hover: #b3bbd4;
+  --skel-1: #eef1f8;  --skel-2: #f6f8fd;      /* 骨架屏微光 */
+
+  /* 彩色底上的文字/图标：任何主题都不翻转 */
+  --on-brand: #fff;
+
+  /* 品牌淡色 */
+  --brand-soft-2: #f5f3ff;
+  --brand-soft-3: #e5e9ff;
+  --brand-soft-4: #f0e9ff;
+  --brand-line: #dcd8ff;
+  --brand-line-2: #c3c7ff;
+  --brand-line-3: #cfd3ff;
+  --brand-chip-bg: #e0e7ff;
+  --brand-chip-ink: #4338ca;
+
+  /* 状态淡色面板：bg（底）/ line（描边）/ ink（文字）三件套成组换，别只换底 */
+  --ok-bg: #f0fdf4;    --ok-line: #bbf7d0;     --ok-ink: #166534;
+  --ok-bg-2: #ecfdf5;  --ok-line-2: #a7f3d0;   --ok-ink-2: #047857;
+  --ok-soft: #d1fae5;  --ok-line-3: #6ee7b7;
+  --ok-chip-bg: #dcfce7; --ok-chip-ink: #15803d;
+
+  --warn-bg: #fffbeb;  --warn-line: #fde68a;   --warn-ink: #b45309;
+  --warn-bg-2: #fffdf5; --warn-bg-3: #fff7ed;  --warn-line-2: #fed7aa;
+  --warn-ink-2: #d97706;
+  --warn-chip-bg: #fef3c7; --warn-chip-ink: #92400e;
+
+  --danger-bg: #fef2f2; --danger-line: #fecaca; --danger-ink: #b91c1c;
+  --danger-bg-2: #fff7f7;
+  --danger-chip-bg: #fee2e2;
+
+  --info-bg: #ecfeff;   --info-line: #a5f3fc;   --info-ink: #0e7490;
+  --info-bg-2: #eff6ff; --info-line-2: #bfdbfe; --info-ink-2: #1d4ed8;
+  --info-bg-3: #f0fdfa; --info-bg-4: #e0f2fe;   --info-chip-bg: #cffafe;
+
+  /* 中性 chip */
+  --chip-neutral-bg: #f1f5f9; --chip-neutral-ink: #475569;
+
+  /* 首页功能卡的图标底（浅色渐变） */
+  --tint-planner: #dbeafe;   --tint-planner-2: #eff6ff;
+  --tint-emotion: #fce7f3;   --tint-emotion-2: #fdf2f8;
+}
+
+/* ============================================================
+   主题：白天 / 护眼 / 黑夜
+   ------------------------------------------------------------
+   切换方式：<html data-theme="eye|dark">（不写 = 白天，走上面的 :root）。
+   属性由每页 <head> 里的一小段内联脚本在**首次绘制之前**写上，
+   所以刷新不会闪一下白。
+
+   ⚠️ 两套主题**只覆盖令牌**，不覆盖选择器 —— 这是刻意的。
+      如果哪天发现某个元素在黑夜下还是浅色，正确修法是
+      「把它写死的颜色换成令牌」，而不是「在主题块里再补一条选择器」，
+      否则主题块会越滚越大、最后没人敢动。
+   ============================================================ */
+
+/* ---------- 护眼：暖调、低蓝光、降低亮度对比，久看不累 ---------- */
+html[data-theme="eye"] {
+  --bg: #e7ecdf;
+  --card: #f5f8ef;
+  --card-2: #eef2e7;
+  --card-3: #e4e9db;
+  --ink: #2c3327;
+  --ink-soft: #5a6450;
+  --ink-faint: #656c5a;          /* 无障碍：原 #88917b 在米绿底上 3.06:1 -> 现最差 4.54:1 */
+  --line: #d5ddc7;
+
+  --glass: rgba(245, 248, 239, .80);
+  --glass-strong: rgba(245, 248, 239, .94);
+  --glass-line: rgba(255, 255, 255, .85);
+  --topbar-line: rgba(213, 221, 199, .9);
+  --scrim: rgba(30, 38, 26, .42);
+  --scroll: #c2cbb2;  --scroll-hover: #aab595;
+  --skel-1: #e7ecdf;  --skel-2: #f0f4ea;
+
+  /* 品牌淡色整体往暖里收一点，免得蓝紫调在米绿纸上发"跳" */
+  --brand-soft: #e8eaf1;   --brand-soft-2: #eeeaf1;
+  --brand-soft-3: #e3e6ef; --brand-soft-4: #ece7f0;
+  --brand-line: #d3d6e4;   --brand-line-2: #bcbfd4;  --brand-line-3: #c8ccdd;
+  --brand-chip-bg: #dde1f2; --brand-chip-ink: #3f4694;
+
+  /* 状态淡色也要跟着暖化：只换底色不换这三个，浅绿/浅蓝的提示条
+     会像贴错在米绿纸上 —— 三件套必须成组换。 */
+  --ok-bg: #e4eeda;    --ok-line: #c6dcb4;    --ok-ink: #35683f;
+  --ok-bg-2: #e8f0e0;  --ok-line-2: #cfe0bf;  --ok-ink-2: #2f6b3c;
+  --ok-soft: #dce9cd;  --ok-line-3: #b9d5a4;
+  --ok-chip-bg: #d8e8cb; --ok-chip-ink: #2f6b3c;
+
+  --warn-bg: #f4ecdb;  --warn-line: #e2d0a9;  --warn-ink: #8a5a12;
+  --warn-bg-2: #f6f0e2; --warn-bg-3: #f4ecdb; --warn-line-2: #dfc79a;
+  --warn-ink-2: #7d5210;
+  --warn-chip-bg: #ecdfbe; --warn-chip-ink: #7d5210;
+
+  --danger-bg: #f2e5e1; --danger-line: #ddc2bb; --danger-ink: #9a3b33;
+  --danger-bg-2: #f4e9e6;
+  --danger-chip-bg: #e8d3ce;
+
+  --info-bg: #e1ebea;   --info-line: #bfd6d4;   --info-ink: #166a6f;
+  --info-bg-2: #e3eaf0; --info-line-2: #c4d6e0; --info-ink-2: #1c5a7a;
+  --info-bg-3: #e2ecea; --info-bg-4: #e0ebec;   --info-chip-bg: #cfe2e0;
+
+  --chip-neutral-bg: #dfe4d5; --chip-neutral-ink: #55604b;
+
+  /* 功能卡的图标底也往暖里收 */
+  --tint-planner: #dce6ee;  --tint-planner-2: #e8eff4;
+  --tint-emotion: #f0dfe6;  --tint-emotion-2: #f5e8ee;
+
+  --shadow-sm: 0 2px 8px rgba(44, 51, 39, .06);
+  --shadow: 0 10px 30px rgba(44, 51, 39, .09);
+  --shadow-lg: 0 24px 60px rgba(44, 51, 39, .16);
+  --ring: 0 0 0 4px rgba(99, 102, 241, .15);
+}
+
+/* ---------- 黑夜：深墨蓝底 + 提亮文字，对比度按 WCAG 正文 >= 4.5:1 取 ---------- */
+html[data-theme="dark"] {
+  --bg: #10141f;
+  --card: #1a2032;
+  --card-2: #161b29;
+  --card-3: #141826;
+  --ink: #e8ebf5;
+  --ink-soft: #a7b0c8;
+  --ink-faint: #7d87a2;          /* 无障碍：原 #7b85a0 在卡片底上 4.40:1 -> 现最差 4.52:1 */
+  --line: #2a3145;
+
+  --glass: rgba(22, 27, 41, .78);
+  --glass-strong: rgba(22, 27, 41, .95);
+  --glass-line: rgba(255, 255, 255, .08);
+  --topbar-line: rgba(255, 255, 255, .07);
+  --scrim: rgba(0, 0, 0, .62);
+  --scroll: #39415a;  --scroll-hover: #4a5470;
+  --skel-1: #1a2032;  --skel-2: #232a3f;
+
+  --brand-soft: #232a4d;   --brand-soft-2: #2a2550;
+  /* 深底上反过来：品牌色当文字要**提亮**（#6366f1 在 #141826 上只有 3.96:1） */
+  --brand-text: #a5b4fc;
+  --danger-text: #ff8a80;
+  --brand-soft-3: #2d2f5c; --brand-soft-4: #33295c;
+  --brand-line: #3a3f6b;   --brand-line-2: #4a4f80;  --brand-line-3: #3d4372;
+  --brand-chip-bg: #2c3260; --brand-chip-ink: #b9c0ff;
+
+  --ok-bg: #12261c;    --ok-line: #1f4a33;    --ok-ink: #7ee2a8;
+  --ok-bg-2: #10281f;  --ok-line-2: #1c4430;  --ok-ink-2: #6fd39b;
+  --ok-soft: #163425;  --ok-line-3: #2a5c40;
+  --ok-chip-bg: #1a3a28; --ok-chip-ink: #86e0ae;
+
+  --warn-bg: #2a2113;  --warn-line: #4d3a17;  --warn-ink: #f5c86b;
+  --warn-bg-2: #2b2214; --warn-bg-3: #2a2113; --warn-line-2: #5a4320;
+  --warn-ink-2: #e8b05a;
+  --warn-chip-bg: #332612; --warn-chip-ink: #f0c274;
+
+  --danger-bg: #2c1618; --danger-line: #4d2529; --danger-ink: #f79b9b;
+  --danger-bg-2: #2a1517;
+  --danger-chip-bg: #38201f;
+
+  --info-bg: #0f2729;   --info-line: #1d4a4f;   --info-ink: #6fd8e6;
+  --info-bg-2: #131f36; --info-line-2: #274070; --info-ink-2: #8fb4ff;
+  --info-bg-3: #0e2827; --info-bg-4: #10242f;   --info-chip-bg: #123036;
+
+  --chip-neutral-bg: #232a3f; --chip-neutral-ink: #a7b0c8;
+
+  --tint-planner: #1c2a4a;  --tint-planner-2: #1a2440;
+  --tint-emotion: #3a1f31;  --tint-emotion-2: #331b2b;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .35);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, .55);
+  --shadow-brand: 0 10px 26px rgba(99, 102, 241, .38);
+  --ring: 0 0 0 4px rgba(129, 140, 248, .28);
+}
+
+/* 让表单控件（日期选择器、下拉、滚动条）跟随主题，
+   否则黑夜模式下点开 <input type="date"> 会弹出一个刺眼的白面板 */
+html { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+
+/* ---------- 基础 ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  /* 防手机系统字体放大（Android「字体大小」/浏览器文字大小）
+     把布局撑出横向滚动条 —— 一旦整页能横滑，用户滑到中间就会看到
+     「左边标题被切一半、右边标签跑出卡片」的样子（2026-10-18 用户截图）。
+     ⚠️ 只给 html，**不给 body**：body 一旦自己成了滚动容器，
+     时间表的 position:sticky 表头会改相对 body 计算，冻结就废了
+     （tools/test_timetable_freeze.mjs 守着这件事）。 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* 兜底：残留的 1~2px 溢出不该让整页横着滑 */
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+               "Segoe UI", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif,
+               "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla";
+  background:
+    radial-gradient(1000px 520px at 12% -8%, rgba(99, 102, 241, .16), transparent 62%),
+    radial-gradient(880px 480px at 92% 0%, rgba(236, 72, 153, .14), transparent 60%),
+    radial-gradient(760px 520px at 50% 110%, rgba(16, 185, 129, .10), transparent 62%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4 { line-height: 1.35; }
+h2 { font-size: 24px; }
+h3 { font-size: 17px; }
+
+::selection { background: rgba(99, 102, 241, .18); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #cdd3e4; border-radius: 999px;
+  border: 3px solid transparent; background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #b3bbd4; background-clip: content-box; }
+
+/* ============================================================
+   顶部导航
+   ============================================================ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 28px;
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  box-shadow: 0 1px 0 var(--topbar-line);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar .logo {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 800; font-size: 17px; letter-spacing: .2px;
+}
+.topbar .logo .dot,
+.topbar .logo .logo-mark {
+  width: 28px; height: 28px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2) 55%, var(--brand-3));
+  box-shadow: 0 6px 16px rgba(99, 102, 241, .38);
+}
+/* Y 艺术字 logo：方块本体由 SVG 绘制，这里只负责尺寸对齐 */
+.topbar .logo .logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; box-shadow: none; border-radius: 0;
+}
+.topbar .logo .logo-mark .logo-svg {
+  display: block; border-radius: 9px;
+  filter: drop-shadow(0 6px 16px rgba(99, 102, 241, .38));
+}
+.topbar nav { display: flex; gap: 5px; align-items: center; }
+.topbar nav a {
+  color: var(--ink-soft); font-size: 14px; font-weight: 500;
+  padding: 7px 13px; border-radius: 999px;
+  transition: background .18s var(--ease), color .18s var(--ease), transform .18s var(--ease);
+}
+.topbar nav a:hover { color: var(--brand); background: rgba(99, 102, 241, .09); }
+.topbar nav a.active {
+  color: #fff; font-weight: 600;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 6px 16px rgba(99, 102, 241, .3);
+}
+.topbar .user {
+  font-size: 13.5px; color: var(--brand-chip-ink); font-weight: 600;
+  padding: 6px 13px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft-2));
+  border: 1px solid var(--brand-line);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease),
+              background .18s var(--ease);
+}
+/* 用户名是进入「账号设置」的入口，给明确的悬停反馈 */
+a.topbar-user, .topbar a.user {
+  cursor: pointer;
+  text-decoration: none;
+}
+.topbar a.user:hover {
+  border-color: var(--brand);
+  background: linear-gradient(135deg, var(--brand-soft-3), var(--brand-soft-4));
+  box-shadow: 0 4px 14px rgba(99, 102, 241, .22);
+}
+
+/* ---------- 顶栏：主题开关 ----------
+   ⚠️ 刻意做成和 .topbar nav a **完全同高**（同样 padding:7px 13px、font-size:14px、
+      继承同一行高），因为 --topbar-h 是**实测出来的**、被 tools/test_timetable_freeze.mjs
+      对账：顶栏一变高，课表表头的 sticky 落点就错、会钻进顶栏底下。
+      加完这个控件必须重跑那个测试；真有变化就按实测值改 --topbar-h。 */
+.theme-switch { position: relative; display: inline-flex; }
+
+.theme-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-size: 14px; font-weight: 500; line-height: inherit;
+  color: var(--ink-soft); background: transparent; border: none; cursor: pointer;
+  padding: 7px 13px; border-radius: 999px;
+  transition: background .18s var(--ease), color .18s var(--ease);
+}
+.theme-btn:hover { color: var(--brand); background: rgba(99, 102, 241, .09); }
+.theme-ico { display: inline-flex; align-items: center; }
+.theme-label { white-space: nowrap; }
+
+.theme-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+  min-width: 138px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--glass-strong);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+}
+.theme-menu[hidden] { display: none; }
+.theme-menu button {
+  display: flex; align-items: center; gap: 9px;
+  font: inherit; font-size: 14px; text-align: left;
+  color: var(--ink-soft); background: transparent;
+  border: none; cursor: pointer;
+  padding: 8px 10px; border-radius: var(--r-sm);
+  transition: background .16s var(--ease), color .16s var(--ease);
+}
+.theme-menu button:hover { color: var(--brand); background: rgba(99, 102, 241, .09); }
+.theme-menu button.active { color: var(--brand); font-weight: 600; background: var(--brand-soft); }
+
+/* 中等宽度（<=900px）先去掉文字标签，只留图标 —— 这一档顶栏还是单行，
+   多一个带字的胶囊就把导航挤下去了。菜单里仍然有完整文字。 */
+@media (max-width: 900px) {
+  .theme-btn .theme-label { display: none; }
+  .theme-btn { padding: 7px 11px; }
+}
+
+/* 窄屏（<=640px）：把主题开关**从导航行里挪出来**，绝对定位到第一行
+   （logo 那一行）的右侧空位。
+   ------------------------------------------------------------------
+   为什么非要这样：<=640 时顶栏是 flex-wrap 两行 —— 第一行 logo、第二行导航。
+   导航那一行已经排了「主页 / 学习规划 / 情绪陪伴 / 地图导航 / 我的 / 退出」，
+   实测**只差几 px 就折行**。再往导航行里塞一个控件，360px 附近会从两行变三行，
+   `--topbar-h` 立刻作废、课表表头又会钻进顶栏底下。
+   绝对定位后它**不参与导航行的宽度分配**，导航的换行行为与改动前完全一致。 */
+@media (max-width: 640px) {
+  .theme-switch { position: absolute; top: 10px; right: 14px; }
+  .theme-btn { padding: 6px 8px; }
+  .theme-menu { top: calc(100% + 6px); }
+}
+
+/* ---------- 顶栏导航项 ----------
+   ⚠️ 这里曾经有一整套「二级子菜单」样式（.nav-group / .nav-sub / .nav-caret），
+   给「学业规划 → 课表 / 日程提醒 / AI伴学」做纯 CSS 悬停下拉。
+   后来改成了**一级平铺**（见 common.js 的 renderTopbar 注释：
+   多想一层只多一次点击，手机上更别扭），那套样式就成了死代码，已删除。
+   现在顶栏的所有项都是扁平的 .topbar nav a，共用上面那套胶囊样式。 */
+
+.container { max-width: 1080px; margin: 0 auto; padding: 28px; }
+.topbar + .container { padding-top: 30px; }
+
+/* 页面标题区 */
+.page-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.page-head h2 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+.page-head .muted { margin: 0; }
+
+/* ============================================================
+   按钮
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; cursor: pointer; font-size: 14px; font-weight: 600;
+  font-family: inherit;
+  padding: 10px 18px; border-radius: var(--r-sm); color: #fff;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 8px 20px rgba(99, 102, 241, .26);
+  transition: transform .12s var(--ease), box-shadow .22s var(--ease), filter .22s var(--ease);
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(99, 102, 241, .34); filter: saturate(1.06); }
+.btn:active { transform: translateY(0) scale(.985); }
+.btn:focus-visible { outline: none; box-shadow: var(--ring), 0 8px 20px rgba(99, 102, 241, .26); }
+.btn.ghost {
+  background: var(--card); color: var(--brand);
+  border: 1px solid var(--line); box-shadow: none;
+}
+.btn.ghost:hover {
+  border-color: #cfd3ff; background: #fafbff;
+  box-shadow: 0 10px 24px rgba(31, 36, 51, .07);
+}
+.btn.danger {
+  background: linear-gradient(135deg, #f87171, var(--danger));
+  box-shadow: 0 8px 20px rgba(239, 68, 68, .28);
+}
+/* 「已开启」状态（如日程提醒页的通知开关）。
+   用绿调把它和普通 ghost 按钮区分开 —— 用户一眼能看出现在**是开着的**，
+   再点一下就是关闭，不至于像原来那样「点来点去都是开启」摸不着头脑。 */
+.btn.ghost.btn-on {
+  background: #ecfdf5; color: #047857; border-color: #a7f3d0;
+}
+.btn.ghost.btn-on:hover {
+  background: #d1fae5; border-color: #6ee7b7;
+}
+.btn.block { width: 100%; padding: 12px 18px; }
+.btn.sm { padding: 7px 13px; font-size: 13px; }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ============================================================
+   卡片
+   ============================================================ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+.card > h3:first-child { margin-top: 0; }
+
+/* ============================================================
+   表单
+   ============================================================ */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--ink-soft); margin-bottom: 7px; letter-spacing: .2px;
+}
+.field input, .field select, .field textarea {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: var(--r-sm); font-size: 14px; font-family: inherit;
+  background: var(--card-2); color: var(--ink);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+}
+.field input::placeholder, .field textarea::placeholder { color: #a8b0c4; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--brand); background: var(--card); box-shadow: var(--ring);
+}
+.field input.input-bad { border-color: var(--danger); background: var(--danger-bg-2); }
+.field input.input-bad:focus { box-shadow: 0 0 0 4px rgba(239, 68, 68, .14); }
+
+/* 只读时间框（开始 / 结束）：值由「你点的节次 + 教学楼校区」决定，不让手改。
+   做成「填好的信息」而不是「可以输入的框」：底色压深一档、文字加重、去掉聚焦环，
+   免得用户点进去发现打不了字还以为页面坏了。 */
+.field input.is-locked {
+  background: var(--bg); color: var(--ink-soft);
+  font-weight: 600; letter-spacing: .3px; cursor: default;
+}
+.field input.is-locked:focus {
+  border-color: var(--line); background: var(--bg); box-shadow: none;
+}
+
+/* 密码一致性提示 */
+.pw-hint { min-height: 17px; margin: 7px 2px 0; font-size: 12.5px; color: var(--ink-soft); }
+.pw-hint.bad { color: var(--danger); font-weight: 600; }
+.pw-hint.ok { color: var(--ok); font-weight: 600; }
+
+/* ============================================================
+   账号设置页
+   ============================================================ */
+.acc-title {
+  font-size: 15.5px; font-weight: 700; color: var(--ink);
+  margin: 0 0 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+/* 危险操作区：红边提示，和普通卡片区分开 */
+.card.danger-zone { border: 1px solid rgba(239, 68, 68, .3); background: var(--danger-bg-2); }
+.card.danger-zone .acc-title { color: var(--danger-text); border-bottom-color: rgba(239, 68, 68, .2); }
+.btn.danger {
+  color: #fff;
+  background: linear-gradient(135deg, var(--danger), #f87171);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, .28);
+}
+.btn.danger:hover { filter: brightness(1.05); }
+
+/* 三张卡片之间的间距。
+   原先是每张卡上挂 `style="margin-bottom:20px;"` 复制三遍，
+   收成一条类：以后改间距只动一处，也不会漏掉最后一张。
+   ⚠️ 只用 margin-bottom（不用 :not(:last-child)）—— 最后一张卡片下面
+   本来就该留一段和页面底部呼应的空隙，删掉反而显得挤。 */
+.acc-card { margin-bottom: 20px; }
+
+/* 「用户名 / 昵称」这种并排两栏：窄屏自动堆成一栏。
+   原先是内联的 flex:1 + min-width:220px，收成类之后断点调节点集中在这里。
+
+   ⚠️ `align-items: flex-start` 是必须的，别省。
+   `.row` 基础类给的是 `center`，而这两栏的内容高度**天生不一样**：
+   「用户名」是只读盒子，「昵称」是 label + 输入框。
+   用 center 会让两栏各自垂直居中 —— 实测 1440px 下两个 label 的顶边
+   差了 **17px**（240 vs 257），并排的两个标题一高一低，看着像没对齐。
+
+   ⚠️⚠️ 选择器写成 `.card.acc-card .row`（三个类）而不是 `.acc-row`：
+   `.row` 基础规则在文件**更靠后**的位置（约 1467 行），权重和 `.acc-row`
+   打平 —— 同权重下**后出现的赢**，`align-items: center` 会把这里的
+   flex-start 反杀。实测：光写 `.acc-row` 时 computed 拿到的仍是 `center`。
+   这是本文件反复踩的坑，所以这里直接加一节权重压过去。 */
+.card.acc-card .row { gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.acc-col { flex: 1; min-width: 220px; }
+
+/* 用户名是只读展示，做成和输入框一样的盒子。
+   ⚠️ `.plan-box` 基础类是 `min-height:80px; padding:16px`（那是给 AI伴学
+   的正文框用的），直接用在这里会变成 80px 高、比右边的输入框(46px)高出一截，
+   两栏顶边因此错位。这里压回和 `.field input` 一致的高度和内边距。 */
+.card.acc-card .acc-readonly {
+  min-height: 0; height: 46px; padding: 0 14px;
+  display: flex; align-items: center;
+  border-radius: var(--r-sm); font-size: 14px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* 用户名是只读展示，做成和输入框一样的盒子里对齐高度 */
+.acc-readonly { min-height: 42px; display: flex; align-items: center; }
+
+/* 卡片内的说明文字：小一号、跟前后的控件拉开 */
+.acc-note { margin: 2px 0 12px; }
+.acc-note-top { margin-top: 0; }
+
+/* 账号页在手机上把两栏收成一栏。
+   ⚠️ 220px 的 min-width 在 320~390px 的窄机上会让两栏各自换行、
+   中间还空一截（并排的两个框宽度不一样，看着像没对齐）。
+   这里直接放弃并排，一行一个，反而更整齐也更好点。 */
+@media (max-width: 640px) {
+  .acc-col { flex: 1 1 100%; min-width: 0; }
+  .acc-row { gap: 0; }
+  .acc-card { margin-bottom: 16px; }
+}
+
+/* ============================================================
+   主页
+   ============================================================ */
+/* 首屏轮播容器。
+   底色仍是品牌紫渐变 —— 万一实景图没加载出来（断网/图被删），
+   看到的还是原来那个紫色首页，不会变成一个白框。 */
+.hero {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 52%, #ec4899 100%);
+  color: #fff; border-radius: var(--r-xl); padding: 48px 42px; margin-bottom: 26px;
+  box-shadow: 0 26px 60px rgba(99, 102, 241, .32);
+  /* 给轮播图留出高度：太扁的话 cover 只能从实景图里抠出一条，
+     石牌 / 门头这些关键地标会被裁掉。260px 大约对应 3.9:1。 */
+  min-height: 260px;
+}
+
+/* ---- 轮播图层 ---- */
+.hero-slides { position: absolute; inset: 0; z-index: 0; }
+.hero-slide {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity 1s var(--ease);
+  background-size: cover; background-repeat: no-repeat;
+}
+.hero-slide.is-active { opacity: 1; }
+.hero-slide--brand {
+  background-image: linear-gradient(135deg, #6366f1 0%, #8b5cf6 52%, #ec4899 100%);
+}
+/* 实景图：原片已裁成 3:1，取景居中即可完整保留地标 */
+.hero-slide--gate {
+  background-image: url("../img/hero-gate.jpg");
+  background-position: center 46%;
+}
+.hero-slide--library {
+  background-image: url("../img/hero-library.jpg");
+  /* 30% 而不是居中：让「图书馆」牌匾落在首屏竖向的中间，
+     不然正好被标题那一行压住。 */
+  background-position: center 30%;
+}
+
+/* 实景图上的压暗遮罩：实景照片明暗很跳，白字直接压上去会花，
+   所以在图片和文字之间垫一层左深右浅的暗色渐变，保证标题始终清晰。 */
+.hero-slide--gate::after,
+.hero-slide--library::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg,
+      rgba(10, 16, 32, .76) 0%,
+      rgba(10, 16, 32, .48) 46%,
+      rgba(10, 16, 32, .16) 100%),
+    linear-gradient(180deg, rgba(10, 16, 32, .16) 0%, rgba(10, 16, 32, .34) 100%);
+}
+
+/* 高光光斑（原来那层白色径向光），压在图片之上、文字之下 */
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(420px 220px at 88% -10%, rgba(255, 255, 255, .30), transparent 70%),
+    radial-gradient(360px 200px at 6% 120%, rgba(255, 255, 255, .16), transparent 70%);
+}
+.hero-body { position: relative; z-index: 2; }
+.hero h1 {
+  margin: 0 0 10px; font-size: 31px; letter-spacing: .2px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+/* 压在实景图上时给字一点阴影，避免亮部背景吃掉笔画 */
+.hero h1, .hero p { text-shadow: 0 2px 14px rgba(8, 12, 24, .42); }
+.hero .hero-ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: var(--r-md); flex: none;
+  background: rgba(255, 255, 255, .2);
+  border: 1px solid rgba(255, 255, 255, .3);
+  backdrop-filter: blur(6px);
+}
+.hero .hero-ico svg { display: block; }
+.hero p { margin: 0; opacity: .94; max-width: 620px; }
+.hero #hero-user { margin-top: 14px; font-size: 15px; opacity: .95; }
+.hero a { text-decoration: underline; }
+
+/* 轮播圆点：当前那颗拉长成小胶囊，点击可直达对应图片 */
+.hero-dots {
+  position: absolute; right: 22px; bottom: 18px; z-index: 3;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-dot {
+  width: 9px; height: 9px; padding: 0; border: 0; border-radius: 999px;
+  background: rgba(255, 255, 255, .45); cursor: pointer;
+  transition: width .3s var(--ease), background .3s var(--ease);
+}
+.hero-dot:hover { background: rgba(255, 255, 255, .75); }
+.hero-dot.is-active { width: 26px; background: #fff; }
+.hero-dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* 功能网格 */
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.feature {
+  cursor: pointer; position: relative; overflow: hidden;
+  border-top: 4px solid var(--brand);
+  transition: transform .18s var(--ease), box-shadow .26s var(--ease);
+}
+.feature::before {
+  content: ""; position: absolute; top: -40px; right: -40px;
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, .14), transparent 70%);
+  transition: transform .32s var(--ease);
+}
+.feature:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.feature:hover::before { transform: scale(1.35); }
+.feature:focus-visible { outline: none; box-shadow: var(--ring), var(--shadow-lg); }
+.feature .ico {
+  position: relative; z-index: 1; font-size: 26px; margin-bottom: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 54px; height: 54px; border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft-2));
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+  line-height: 1;
+}
+.feature h3 { position: relative; z-index: 1; margin: 10px 0 6px; font-size: 18px; }
+.feature p { position: relative; z-index: 1; margin: 0; color: var(--ink-soft); font-size: 14px; min-height: 42px; }
+.feature .go {
+  position: relative; z-index: 1; margin-top: 14px; font-weight: 600; font-size: 14px;
+  color: var(--brand); display: inline-flex; align-items: center; gap: 4px;
+  transition: gap .2s var(--ease);
+}
+.feature:hover .go { gap: 9px; }
+
+.feature.planner { border-top-color: var(--planner); }
+.feature.planner .go { color: var(--planner); }
+.feature.planner .ico { background: linear-gradient(135deg, var(--tint-planner), var(--tint-planner-2)); }
+.feature.planner::before { background: radial-gradient(circle, rgba(59, 130, 246, .18), transparent 70%); }
+
+.feature.emotion { border-top-color: var(--emotion); }
+.feature.emotion .go { color: var(--emotion); }
+.feature.emotion .ico { background: linear-gradient(135deg, var(--tint-emotion), var(--tint-emotion-2)); }
+.feature.emotion::before { background: radial-gradient(circle, rgba(236, 72, 153, .18), transparent 70%); }
+
+.feature.map { border-top-color: var(--map); }
+.feature.map .go { color: var(--map); }
+.feature.map .ico { background: linear-gradient(135deg, #d1fae5, #ecfdf5); }
+.feature.map::before { background: radial-gradient(circle, rgba(16, 185, 129, .18), transparent 70%); }
+
+/* ---------- 悬停渐变主题图 ----------
+   鼠标移到卡片上时，淡入一张与该功能相关的渐变插画（学业=课本/铅笔/定位针、
+   情绪=手掌托心、地图=晴天小雨的折叠校园地图）。
+
+   ## 三层结构，缺一层就会出问题
+     0 层  .feature-bg        —— 图片本体（HTML 里的空 div，背景图由下面按卡片指定）
+     0 层  .feature::after    —— 渐变遮罩（白 → 透明），保证深色文字压在图上仍读得清
+     1 层  .ico / h3 / p / .go —— 卡片原有内容，抬高一层压在遮罩之上
+
+   ## 为什么遮罩要写成「上下 + 左右」两层渐变
+   文案是**左对齐铺满整行**的，单层左右渐变压不住底部那行「进入 →」；
+   单层上下渐变又会把右上角图片本身糊掉。两层叠起来：底部最白（保文字），
+   右上角最透（露图片），正好对上卡片右边那圈原有的光晕位置。
+
+   ## 图片文件
+   frontend/img/feature-{planner,emotion,map}.png —— 由 AI 生成后
+   裁掉了右下角水印、降到 615×410 再重新压缩（tools/crop_png.py、
+   tools/shrink_png.py，都是纯标准库实现）。换图只改下面三行的文件名即可。 */
+.feature .feature-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity .42s var(--ease), transform .62s var(--ease);
+  pointer-events: none;          /* 别挡住卡片的点击/键盘事件 */
+}
+.feature::after {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  opacity: 0;
+  transition: opacity .42s var(--ease);
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .06) 0%,
+      rgba(255, 255, 255, .38) 58%,
+      rgba(255, 255, 255, .72) 100%),
+    linear-gradient(100deg,
+      rgba(255, 255, 255, .78) 0%,
+      rgba(255, 255, 255, .30) 60%,
+      rgba(255, 255, 255, 0) 100%);
+}
+.feature:hover .feature-bg,
+.feature:focus-visible .feature-bg { opacity: 1; transform: scale(1); }
+.feature:hover::after,
+.feature:focus-visible::after { opacity: 1; }
+
+.feature.planner .feature-bg { background-image: url("../img/feature-planner.png"); }
+.feature.emotion .feature-bg { background-image: url("../img/feature-emotion.png"); }
+.feature.map .feature-bg { background-image: url("../img/feature-map.png"); }
+
+/* 系统开了「减弱动态效果」就别做缩放/淡入位移，直接显示 */
+@media (prefers-reduced-motion: reduce) {
+  .feature .feature-bg { transition: none; transform: none; }
+  .feature::after { transition: none; }
+}
+
+/* 数据概览条 */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+.stats[hidden] { display: none; }
+.stat {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-md); padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .18s var(--ease), box-shadow .22s var(--ease);
+}
+.stat:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.stat .s-ico {
+  width: 42px; height: 42px; border-radius: 12px; flex: none;
+  display: flex; align-items: center; justify-content: center; font-size: 19px;
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft-2));
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+  line-height: 1;
+}
+.stat .s-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
+.stat .s-label { font-size: 12.5px; color: var(--ink-soft); }
+/* 统计标签里的次要数字（如「教学楼 10 · 点位 45」里的后半段） */
+.stat .s-sub { color: var(--ink-soft); opacity: .7; }
+
+/* ============================================================
+   登录 / 注册
+   ============================================================ */
+.auth-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 36px 18px;
+}
+.auth-card {
+  width: 100%; max-width: 430px; position: relative; overflow: hidden;
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid var(--glass-line);
+  border-radius: 22px; padding: 34px 32px 26px;
+  box-shadow: 0 30px 70px rgba(31, 36, 51, .16);
+  animation: rise .42s var(--ease) both;
+}
+.auth-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 5px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2) 55%, var(--brand-3));
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+.auth-brand {
+  display: flex; align-items: center; justify-content: center; gap: 11px;
+  font-weight: 800; font-size: 21px; letter-spacing: .3px; margin-bottom: 6px;
+}
+.auth-brand .dot,
+.auth-brand .logo-mark {
+  width: 34px; height: 34px; border-radius: 11px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2) 55%, var(--brand-3));
+  box-shadow: 0 10px 24px rgba(99, 102, 241, .4);
+}
+.auth-brand .logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; box-shadow: none; border-radius: 0;
+}
+.auth-brand .logo-mark .logo-svg {
+  display: block; border-radius: 11px;
+  filter: drop-shadow(0 10px 24px rgba(99, 102, 241, .4));
+}
+.auth-sub { text-align: center; color: var(--ink-soft); font-size: 13px; margin: 0 0 22px; }
+.auth-tabs {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  padding: 4px; margin-bottom: 22px; border-radius: var(--r-md);
+  background: var(--card-3); border: 1px solid var(--line);
+}
+.auth-tabs button {
+  position: relative; z-index: 1; padding: 10px; border: none; background: transparent;
+  border-radius: 11px; cursor: pointer; font-weight: 600; font-size: 14px; font-family: inherit;
+  color: var(--ink-soft); transition: color .2s var(--ease);
+}
+.auth-tabs button.active { color: #fff; }
+.auth-slider {
+  position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: calc(50% - 4px);
+  border-radius: 11px; background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 8px 20px rgba(99, 102, 241, .32);
+  transition: transform .28s var(--ease);
+}
+.auth-slider.right { transform: translateX(calc(100% + 4px)); }
+.auth-footer { text-align: center; margin: 20px 0 0; font-size: 13px; color: var(--ink-soft); }
+.auth-footer a { color: var(--ink-soft); font-size: 13px; transition: color .18s var(--ease); }
+.auth-footer a:hover { color: var(--brand); }
+/* 构建标识：方便确认"我跑的到底是哪一版"，排查"改了没生效"这类问题 */
+.build-tag {
+  display: inline-block; margin-left: 7px; padding: 1px 7px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  color: var(--brand); background: var(--brand-soft);
+  border-radius: 99px; vertical-align: 1px;
+}
+
+/* 后端自报的构建标记（由 /api/ping 提供）
+   和上面的前端「构建」标记分开显示：两者不一致就说明前后端版本对不上，
+   这正是「改了后端却没生效」最容易出现的状态。 */
+.backend-build {
+  text-align: center; margin: 6px 0 0;
+  font-size: 11.5px; color: var(--ink-soft); letter-spacing: .01em;
+}
+/* 旧版后端：用暖色明确提示，因为它意味着用户该换包了 */
+.backend-build.is-old {
+  display: inline-block; width: 100%;
+  color: #b45309; font-weight: 600;
+}
+
+/* ---------- 账号登录内部的「登录 / 注册」二级切换 ----------
+   一级（账号/扫码）用滑块；这里空间更小，用下划线式的轻量切换，
+   视觉上不会和上面那排抢注意力。 */
+.auth-subtabs {
+  display: flex; gap: 22px; justify-content: center;
+  margin: 0 0 16px; border-bottom: 1px solid var(--line);
+}
+.auth-subtabs button {
+  position: relative; padding: 0 2px 10px; border: none; background: none;
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  color: var(--ink-soft); transition: color .18s var(--ease);
+}
+.auth-subtabs button.active { color: var(--brand); }
+.auth-subtabs button.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px;
+  border-radius: 2px; background: linear-gradient(90deg, var(--brand), var(--brand-2));
+}
+
+/* ---------- 扫码登录 ---------- */
+.scan-box {
+  position: relative; width: 224px; height: 224px; margin: 0 auto;
+  border-radius: var(--r-lg); background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(31, 36, 51, .07);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.scan-qr { display: flex; align-items: center; justify-content: center; }
+.scan-qr svg { display: block; border-radius: 8px; }
+.scan-qr-loading { display: flex; align-items: center; justify-content: center; }
+.scan-err {
+  font-size: 13px; color: var(--danger); text-align: center;
+  padding: 0 18px; line-height: 1.6; margin: 0;
+}
+
+/* 转圈：不引第三方库，一个纯 CSS 的圈就够 */
+.spin {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2.5px solid var(--brand-soft); border-top-color: var(--brand);
+  animation: scan-spin .7s linear infinite;
+}
+@keyframes scan-spin { to { transform: rotate(360deg); } }
+
+/* 已过期/已扫描时的遮罩：盖在二维码上，居中显示图标 + 文案 + 刷新按钮 */
+.scan-mask {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; text-align: center; padding: 14px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.scan-mask-ico { color: var(--ink-faint); line-height: 0; }
+.scan-mask p { margin: 0; font-size: 13.5px; color: var(--ink-soft); font-weight: 600; }
+
+.scan-hint {
+  text-align: center; font-size: 13px; color: var(--ink-soft);
+  margin: 14px 0 4px; line-height: 1.6;
+}
+.scan-hint b.scan-ok { color: var(--ok); }
+.scan-timer {
+  text-align: center; font-size: 12px; color: var(--ink-faint);
+  margin: 0 0 14px;
+}
+
+/* ---------- 底部「支持扫码的 App」 ---------- */
+.scan-apps { border-top: 1px dashed var(--line); padding-top: 13px; }
+.scan-apps-label {
+  text-align: center; font-size: 12px; color: var(--ink-faint);
+  margin-bottom: 10px;
+}
+.scan-apps-list {
+  display: flex; flex-wrap: nowrap; justify-content: center;
+  gap: 8px;
+}
+.scan-app {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  width: 50px; flex: 0 0 auto;
+}
+.scan-app-ico {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 15px; font-weight: 700;
+  box-shadow: 0 3px 9px rgba(31, 36, 51, .16);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.scan-app:hover .scan-app-ico {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(31, 36, 51, .22);
+}
+.scan-app-name {
+  font-size: 11px; color: var(--ink-faint); white-space: nowrap;
+}
+
+.scan-note {
+  margin: 14px 0 0; padding: 9px 11px;
+  font-size: 11.5px; line-height: 1.65; color: var(--ink-faint);
+  background: #f7f8fc; border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   手机端「确认登录」页
+   ============================================================ */
+.confirm-page {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 26px 18px;
+}
+.confirm-card {
+  width: 100%; max-width: 360px; position: relative; overflow: hidden;
+  background: var(--glass-strong);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid var(--glass-line);
+  border-radius: 22px; padding: 30px 24px 26px;
+  box-shadow: 0 30px 70px rgba(31, 36, 51, .16);
+  animation: rise .42s var(--ease) both;
+}
+.confirm-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 5px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2) 55%, var(--brand-3));
+}
+.confirm-ico {
+  width: 68px; height: 68px; margin: 4px auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; line-height: 0;
+}
+.confirm-ico.ok    { background: #e8f9ef; color: var(--ok); }
+.confirm-ico.warn  { background: #fef4e6; color: var(--warn); }
+.confirm-ico.error { background: #fdeceb; color: var(--danger); }
+
+.confirm-title {
+  text-align: center; font-size: 19px; font-weight: 800;
+  margin: 0 0 7px; color: var(--ink);
+}
+.confirm-text {
+  text-align: center; font-size: 13.5px; line-height: 1.65;
+  color: var(--ink-soft); margin: 0 0 18px;
+}
+.confirm-user {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 13px; margin-bottom: 18px;
+  background: var(--brand-soft); border-radius: var(--r-md);
+}
+.confirm-user-ico { color: var(--brand); line-height: 0; flex: 0 0 auto; }
+.confirm-user-name { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.confirm-user-tip { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+.confirm-foot {
+  margin: 16px 0 0; font-size: 11.5px; color: var(--ink-faint);
+  text-align: center;
+}
+.btn.ghost {
+  margin-top: 9px; background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); box-shadow: none;
+}
+.btn.ghost:hover { color: var(--brand); border-color: var(--brand); }
+.btn.sm { padding: 7px 14px; font-size: 13px; }
+
+/* ============================================================
+   课表
+   ============================================================ */
+.timetable { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.timetable th, .timetable td {
+  border: 1px solid var(--line); padding: 0;
+  text-align: center; vertical-align: top;
+  height: 64px; width: auto;               /* 列宽由 colgroup 决定 */
+  overflow: hidden;
+}
+/* 节次列要放下「南/北」两套时间，比之前宽一些；7 个星期列仍等宽平分 */
+.timetable col.col-slot { width: 116px; }
+.timetable col.col-day { width: auto; }
+.timetable th {
+  background: linear-gradient(180deg, #f7f8fd, #eef1fa);
+  font-size: 13px; font-weight: 600; color: var(--ink-soft); height: 42px;
+  /* 表头纵向冻结 —— 「往下拉也能看到周几这行」。
+     ⚠️ 这里只写 `position: sticky`，**不给 top**：
+     PC 和手机两条分支的偏移量完全不同（PC 要减顶栏高度锚到视口，
+     手机锚在 .tt-wrap 容器内顶部、top 为 0），
+     由上面媒体查询里的两条规则分别给。详见 .tt-wrap 那段长注释。 */
+  position: sticky; z-index: 4;
+  white-space: nowrap;
+}
+/* ------------------------------------------------------------------
+   冻结「节次」列：横向滚动时始终可见
+   ------------------------------------------------------------------
+   用户诉求：「左右拉同理能看到节次」—— 8 列在手机上要横滑，一滑走就不知道
+   这一行是第几节了。
+
+   做法：把第一列 `position: sticky; left: 0` 钉在滚动容器的左边。
+   ⚠️ 两个必须一起给，否则会出问题：
+     1. **不透明背景**（这里是 #f0f2fa）。sticky 只是「不跟着滚」，
+        它仍然是普通流里的元素，背景透明的话横向滚动时后面的单元格
+        会从它下面透出来，看着像花屏。
+     2. **z-index 抬高**。普通单元格默认同层，sticky 元素优先级不够时
+        会被后面的内容压住。给它一个比普通单元格高、但又低于表头的层。
+   ------------------------------------------------------------------ */
+.timetable td.slot-col,
+.timetable th:first-child {
+  position: sticky; left: 0;
+  z-index: 3;                 /* 高于普通单元格，横向滚时盖住后面的内容 */
+}
+/* 左上角那个格子（表头的「节次＼星期」）最特殊：
+   它既要纵向固定（表头）又要横向固定（节次列），是**两者交汇点**，
+   层必须比两者都高，否则横竖滚到角落时会被竖表头或节次列压住。
+   表头 th 是 4、节次列是 3，这里给 5。 */
+.timetable thead th:first-child { z-index: 5; border-radius: var(--r-sm) 0 0 0; }
+.timetable thead th:last-child { border-radius: 0 var(--r-sm) 0 0; }
+.timetable tbody tr:hover td { background: rgba(238, 242, 255, .5); }
+.cell { padding: 4px; }
+/* 空单元格里的「＋」要严格居中：让单元格本身成为居中的 flex 容器 */
+.timetable tbody td:not(.slot-col) { vertical-align: middle !important; }
+.timetable tbody td:not(.slot-col) .cell {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 56px; padding: 4px;
+}
+/* 有课程卡片时回到从上往下排列，避免卡片被拉伸变形 */
+.timetable tbody td:not(.slot-col) .cell:has(.course-chip) {
+  display: block; min-height: 0;
+}
+.course-chip {
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft-2));
+  border: 1px solid #dcdcff; border-radius: 9px;
+  padding: 5px 6px; font-size: 12px; cursor: pointer; margin: 2px 0;
+  transition: border-color .16s var(--ease), transform .16s var(--ease), box-shadow .16s var(--ease);
+}
+.course-chip:hover {
+  border-color: var(--planner); transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(59, 130, 246, .18);
+}
+.course-chip b { color: var(--planner); }
+
+/* ---- 连堂课：上下两张卡片拼成一整张 ----
+   学校课表基本都是一门课连排两节，识别出来是两条独立记录。
+   这里用 CSS 把相邻两张的接缝抹掉，看起来就是一张长卡，但数据没合并，
+   想单独改/删其中一节，点对应格子的卡片即可。
+
+   做法：上节去下圆角、下节去上圆角，中间的 margin 压到 0，
+   再在上节底部画一条虚线表示「这里还有一节」。 */
+.course-chip.span-first {
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  border-bottom-style: dashed; border-bottom-color: #c3c7ff;
+  margin-bottom: 0;
+}
+.course-chip.span-cont,
+.course-chip.span-last { margin-top: 0; }
+.course-chip.span-cont {
+  border-radius: 0; border-top-style: dashed; border-top-color: #c3c7ff;
+  border-bottom-style: dashed; border-bottom-color: #c3c7ff;
+}
+.course-chip.span-last {
+  border-top-left-radius: 0; border-top-right-radius: 0;
+  border-top-style: dashed; border-top-color: #c3c7ff;
+}
+/* 拼接态里，中间的节不必重复显示课程名，压暗一点让首节更醒目 */
+.course-chip.span-cont b { opacity: .8; }
+
+/* 「连堂」角标：只在第一节显示一次 */
+.chip-span {
+  display: inline-block; margin-left: 4px; padding: 0 5px;
+  border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: #e0e7ff; color: #4338ca; vertical-align: 1px;
+}
+
+/* 「线上」角标：这类课没有实体教室，点了也导航不过去，
+   标出来省得用户以为「学校没收录这栋楼」。 */
+.chip-online {
+  display: inline-block; margin-right: 4px; padding: 0 5px;
+  border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: #dcfce7; color: #15803d; vertical-align: 1px;
+}
+
+/* 「周次」角标：只有「不是每周都上」的课才显示（如「2-3,6-8周」）。
+   用灰色系，跟「连堂（蓝）/线上（绿）」区分开 —— 它是信息，不是状态提示。
+   ⚠️ 注意别写成 flex 子项，卡片里是 inline 排版，用 inline-block + vertical-align。 */
+.chip-weeks {
+  display: inline-block; margin-left: 4px; padding: 0 5px;
+  border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: var(--chip-neutral-bg); color: var(--chip-neutral-ink); vertical-align: 1px;
+  white-space: nowrap;
+}
+.cell .add {
+  color: var(--ink-faint); font-size: 18px; cursor: pointer;
+  opacity: .45; transition: opacity .16s var(--ease), color .16s var(--ease);
+}
+.cell .add:hover { opacity: 1; color: var(--planner); }
+
+/* ---- 课表：三周视图 / 周切换 / 活动 / 南北区作息 ---- */
+
+/* 课表滚动容器
+   ==================================================================
+   用户诉求（第 6 轮追加）：
+     · 「网页版星期这行就算我往下拉也能看到，滑到最底下也能知道是周几的课」
+     · 「移动端是星期和时间无论拉到最低还是最右都能看到」
+
+   一句话：**表头行纵向冻结 + 节次列横向冻结**，PC 和手机都要。
+
+   ## 先记住 CSS 里那条会咬人的规范
+   当一个轴是 `auto`/`scroll`、另一个轴是 `visible` 时，
+   **`visible` 会被强制计算成 `auto`**。
+   所以 `overflow-x: auto` 会让这个盒子**同时**变成纵向滚动容器 ——
+   哪怕你写的是 `overflow-y: visible`，computed style 拿到的也是 `auto`（实测过）。
+
+   而 `position: sticky` 是相对**最近的滚动祖先**定位的。所以：
+     · wrapper 一旦成为纵向滚动容器，表头的 `sticky top`
+       就锚在 **wrapper 顶部**，而不是视口顶部。
+     · wrapper 自己随页面滚走时，表头跟着一起走 → 看起来「完全没固定」。
+   实测（视口 1440×900，页面往下滚 400px）：
+       滚之前 表头 top = 309px
+       滚之后 表头 top = -49px   ← 滚出屏幕了
+
+   ## 两条分支：PC 用 clip，手机用 auto
+   PC 端表格宽度自适应（8 个星期列平分），**不需要横向滚动**，
+   所以可以用 `overflow-x: clip`：
+     · `clip` 是**裁切**而不是**滚动**，它**不会建立滚动容器**，
+       也就**不会**把另一个轴强制变成 auto。
+     · 于是 sticky 的定位祖先回到页面本身，表头 `top` 就能锚在
+       **视口**（减掉顶栏）上 —— 页面滑到最底下，表头依然在。实测 309px → 0px ✅
+
+   手机端表格要横向滚（`min-width` 撑出 720px），`clip` 会把横向也裁掉、
+   导致左右滑不动，所以手机端保留 `overflow: auto` + `max-height`
+   （wrapper 自己纵向滚，表头锚在 wrapper 内顶部，同样能固定）。
+   实测分界：视口 ≤780px 左右表格就会撞到 min-width（641px 时 wrapper 563 < 表格 720），
+   所以 PC 分支取 `min-width: 800px`，留足安全余量。
+   ================================================================== */
+
+/* —— PC / 大屏：表头锚定视口，纵向交给页面滚 —— */
+@media (min-width: 800px) {
+  .tt-wrap {
+    overflow-x: clip;      /* 裁切而非滚动：不建立滚动容器，不污染另一轴 */
+    overflow-y: visible;   /* 这一轴因此能保持 visible，sticky 才会锚到视口 */
+  }
+  /* 表头偏移量 = 顶栏高度。顶栏也是 sticky top:0，表头必须落在它下沿，
+     否则会被顶栏盖住（看着像没固定）。 */
+  .timetable th {
+    top: var(--topbar-h, 68px);
+  }
+}
+
+/* —— 手机 / 窄屏：wrapper 自己纵向滚（横向也要滚，不能用 clip） —— */
+@media (max-width: 799.98px) {
+  .tt-wrap {
+    overflow: auto;
+    /* 高度：屏幕减去顶栏、再减掉容器**上方**那些控件（页头标题、
+       导入/保存按钮、课表/日程/AI伴学 三个 tab、周次胶囊、沿用上周）
+       和下方留白。手机顶栏会换行变高，所以必须用 var(--topbar-h) 而不是
+       write 死 89px —— 断点见上文「顶栏高度的实测校准值」。
+       实测这些控件在 390×780 上占掉约 400px，在 640 高的小屏上更挤，
+       但 min-height 会兜住，不至于只剩一条缝。 */
+    /* ★★ 必须有 vh 兜底行（用户手机实测：星期行不跟着滚）。
+       老内核（Chrome < 108 / 部分国产浏览器）不认 dvh —— 整条 max-height
+       被丢弃，wrap 没了高度上限就撑到内容全高，sticky 在父容器里
+       没有行程可粘，表头跟着页面一起滚走。先写 vh 再写 dvh，
+       老内核吃第一条，新内核第二条覆盖（vh 在移动端含地址栏，
+       wrap 会稍矮一点，可接受）。 */
+    max-height: calc(100vh - var(--topbar-h, 92px) - 90px);
+    max-height: calc(100dvh - var(--topbar-h, 92px) - 90px);
+    min-height: 300px;                  /* 矮屏兜底 */
+    -webkit-overflow-scrolling: touch;  /* iOS 惯性滚动 */
+    overscroll-behavior: contain;       /* 滚到头别把整页带着弹跳 */
+  }
+
+  /* ------------------------------------------------------------------
+     手机端表头 / 节次列的冻结
+     ------------------------------------------------------------------
+     ⚠️⚠️ 这段是被用户截图摁着改了三次才对的，把过程记下来，
+     因为它违反直觉、而且"看起来没问题"的版本其实全是坏的。
+
+     ## 先看 sticky 的真实规则
+     `position: sticky` 的 `top` 是相对**最近的滚动祖先的 padding box 顶边**
+     算的，不是相对视口。所以一个元素能"钉"在哪儿，取决于
+     **它的滚动祖先从哪里开始**。
+
+     ## 坏版本 1：`top: 0`
+     想着"wrapper 自己滚，表头钉在容器内顶部就行"。实测（390×780）：
+     容器顶部在文档第 462px 处，页面滚下来之后容器顶进入视口，
+     表头钉住的位置 = 容器顶 + 0 ≈ 110px，而顶栏底下沿 89.44px ——
+     只差 20px，偶尔正好被顶栏压住，用户截图就说"挡住了"。
+
+     ## 坏版本 2：`top: calc(var(--topbar-h) + 8px)` = 100px
+     想"多让开一点总没错"。结果**更糟**：表头钉在了 y≈197px。
+     因为 100px 是相对容器顶算的，容器顶本来就在 110px 附近，
+     相加之后表头飘到屏幕中间，**表格上半部分被它盖住** ——
+     截图看到的是「第一节、第二节」跑到表头**上面**去了，表格像被打乱。
+     这就是用户第二张截图里"星期那行卡在中间"的样子。
+
+     ## 对版本：让滚动容器的顶边**自己就贴在顶栏下沿**
+     与其调表头的偏移，不如把**容器**钉住：给 .tt-wrap 也来一条 sticky，
+     让它滑到顶栏下沿时就停在那里（`top: var(--topbar-h)`）。
+     这样"滚动祖先的顶边"永远 = 顶栏底下沿，表头再写 `top: 0`，
+     钉住的位置自然就是顶栏底下沿，而且**容器自身不会再往上跑**，
+     表头永远不会盖住表格内容。实测（390×780）：
+         容器被钉在 92px，表头钉在 92px，顶栏底 89.44px —— 表头稳稳在下方 ✅
+         往下拉到底：表头不动；往右拉到底：节次列不动（left 恒为 39px）✅
+
+     ⚠️ 为什么容器可以 sticky 而 PC 端不用？因为 PC 端滚动发生在**页面**上，
+     容器跟着页面走，表头锚视口就够；手机端滚动发生在**容器**里，
+     必须先把容器按住，容器内部才有稳定的"顶"可锚。
+     ⚠️ 容器 sticky 会脱离原来的流位置 → 必须给 `align-self: flex-start`
+     或保持它是块级（这里是块级，没问题），并给一个**背景色**，
+     否则下方的表格内容会从它底下透出来。
+     ------------------------------------------------------------------ */
+  .tt-wrap {
+    position: sticky;
+    top: var(--topbar-h, 92px);
+    z-index: 6;                 /* 高于表头(4) / 节次列(3)，容器整体压住下面的内容 */
+    background: var(--card);    /* sticky 必需：不透明背景，防穿透 */
+  }
+  .timetable th {
+    top: 0;                     /* 容器顶边已在顶栏下沿，这里写 0 即可 */
+  }
+}
+
+/* 窄屏时让课表横向滚动，而不是把 8 列挤成一团 */
+.tt-wrap .timetable { min-width: 720px; }
+
+/* 表格下方的操作说明。
+   ⚠️ 它在 .tt-wrap **内部**（跟着表格滚），不是外面 —— 原因见 planner.html 里的注释：
+   手机端容器是 sticky + 不透明背景，放在外面的兄弟元素会被它盖住
+   （表现就是"滚到底部字只剩半行、像在穿透"）。 */
+.tt-hint {
+  margin: 12px 6px 4px;
+  line-height: 1.75;
+  font-size: 13px;
+}
+
+/* 手机端的「可以横滑」提示。桌面端 8 列放得下，用不着，默认藏起来。
+   ⚠️ 这句话是给「右边被切一半」这个观感兜底的，别删：
+   没有它，用户会以为课表布局坏了（2026-10-18 的「时间表界面乱」就是这个）。 */
+.tt-swipe-tip { display: none; }
+@media (max-width: 799.98px) {
+  /* ⚠️ 必须是 block，不能用 flex：里面的文字和 <b> 是行内节点，
+     flex 会把每个行内节点当成一个**独立的 flex item** 排成多列 ——
+     实测那句话被拆成「表格比屏幕宽，/ 左右滑动 / 看其他天…」三列，更难看了。 */
+  .tt-swipe-tip {
+    display: block;
+    margin: 14px 2px 0; font-size: 12px; line-height: 1.6;
+    color: var(--ink-faint);
+  }
+  .tt-swipe-tip b { color: var(--ink-soft); font-weight: 600; }
+}
+
+.week-bar { align-items: center; flex-wrap: wrap; gap: 12px; }
+.week-bar .btn.sm { white-space: nowrap; }
+
+/* ================= 周次横向滚动选择器 =================
+   替代原来的「上一周 / 下一周 / 回到本周」三个按钮。
+   整学期约 20 个周胶囊排成一条可横滑的带子，点哪个切哪个。 */
+.week-picker {
+  flex: 1 1 320px;          /* 占满剩余宽度，但窄屏时能被挤到下一行 */
+  min-width: 0;             /* flex 子项能收缩的关键（否则内容会把父级撑破） */
+}
+.week-scroll {
+  display: flex; gap: 8px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 3px 2px 9px;      /* 底部留白给滚动条 */
+  /* 两端渐隐，提示「还能继续滑」 */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+/* 细一点的滚动条，不抢视觉 */
+.week-scroll::-webkit-scrollbar { height: 6px; }
+.week-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand) 28%, transparent);
+  border-radius: 99px;
+}
+.week-scroll::-webkit-scrollbar-track { background: transparent; }
+
+.week-chip {
+  position: relative;
+  flex: 0 0 auto;            /* 不许被压缩，这样才能形成「带子」 */
+  white-space: nowrap;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s, transform .12s;
+}
+.week-chip:hover { border-color: var(--brand); color: var(--brand-text); }
+.week-chip:active { transform: scale(.97); }
+
+/* 当前正在浏览的周 */
+.week-chip.on {
+  background: var(--brand-soft);
+  border-color: transparent;
+  color: var(--brand-text);
+  font-weight: 700;
+}
+/* 真正的「本周」：即使没被选中，也给一点区别，方便一眼找到今天 */
+.week-chip.this-week {
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  color: var(--brand-text);
+}
+/* 「今天在这一周」的小圆点 */
+.week-dot {
+  position: absolute; top: 5px; right: 9px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--brand);
+}
+
+/* 表头：星期 + 当天日期，今天单独高亮 */
+.timetable th .th-date {
+  font-size: 11.5px; font-weight: 500; color: var(--ink-faint);
+}
+.timetable th.is-today { color: var(--brand); }
+.timetable th.is-today .th-date { color: var(--brand); }
+
+/* 节次列：同时显示南区 / 北区时间，当前生效的一套**放大**加粗。
+   整列内容（节次名 + 南/北时间）统一水平居中、垂直居中于单元格。
+   注意：这里不再用 !important —— 单元格的 padding 由 .timetable th,td 统一给，
+   移动端覆盖放在文件末尾的媒体查询里，靠「后来者优先」生效即可。
+   （原来带 !important 会把末尾媒体查询的覆盖反杀，见文件末尾那段说明。） */
+.slot-col { padding: 6px 8px; background: var(--card-3);
+  font-size: 12px; color: var(--ink-soft); line-height: 1.35;
+  text-align: center; vertical-align: middle !important; }
+.slot-col b { font-size: 13px; display: block; margin-bottom: 3px; }
+.slot-times { display: flex; flex-direction: column; gap: 2px;
+  font-size: 11px; align-items: center; }
+.slot-times span { display: inline-flex; gap: 4px; align-items: baseline;
+  white-space: nowrap; justify-content: center; }
+/* 当前所在区：放大 + 加粗 + 品牌色，一眼看出这节课按哪套作息走 */
+.slot-times .on { color: var(--brand-text); font-weight: 700; font-size: 13px; }
+/* 次要点（另一套作息的时刻）：原来是 opacity:.5 —— 在 10px 上只剩 2.05:1，
+   灰到几乎看不见。改成 --ink-faint（主题里已经按 4.5:1 校过），
+   层次靠字号区分，不靠把字淡到看不清。 */
+.slot-times .muted { color: var(--ink-faint); font-size: 10px; }
+
+/* 非节次的整点行（06:00、07:00、12:00 这类）：
+   没有南/北之分，时间文字单独居中，不要被上面的规则带偏 */
+.slot-col .slot-time-plain {
+  display: block; text-align: center; font-size: 12px;
+  color: var(--ink-soft); margin: 0 auto;
+}
+
+/* 活动卡片：与课程区分颜色 + 小标签，一眼能分清 */
+.course-chip.type-activity {
+  background: linear-gradient(135deg, #ecfeff, #f0fdfa);
+  border-color: #a5f3fc;
+}
+.course-chip.type-activity:hover {
+  border-color: #06b6d4; box-shadow: 0 6px 14px rgba(6, 182, 212, .18);
+}
+.course-chip.type-activity b { color: #0e7490; }
+.chip-tag {
+  display: inline-block; font-size: 10px; line-height: 1;
+  padding: 2px 5px; border-radius: 5px; margin-bottom: 3px;
+  background: #cffafe; color: #0e7490; font-weight: 700;
+}
+
+/* 类型切换（课程 / 活动） */
+.type-switch { display: inline-flex; padding: 3px; border-radius: 10px;
+  background: #eef1fa; gap: 3px; }
+.ts-btn {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 13.5px; font-weight: 600; color: var(--ink-soft);
+  padding: 7px 20px; border-radius: 8px;
+  transition: all .16s var(--ease); font-family: inherit;
+}
+.ts-btn.on {
+  background: var(--card); color: var(--brand);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, .18);
+}
+
+
+/* ============================================================
+   弹窗
+   ============================================================ */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(20, 24, 40, .45);
+  backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: var(--card); border-radius: var(--r-lg); padding: 24px;
+  width: 100%; max-width: 460px;
+  box-shadow: var(--shadow-lg); max-height: 90vh; overflow: auto;
+  animation: rise .3s var(--ease) both;
+}
+.modal h3 { margin: 0 0 16px; }
+.modal .close {
+  float: right; cursor: pointer; color: var(--ink-soft); font-size: 22px;
+  line-height: 1; width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .16s var(--ease), color .16s var(--ease);
+}
+.modal .close:hover { color: var(--ink); background: #f1f3f9; }
+
+/* 详情列表 */
+.kv { display: grid; grid-template-columns: 76px 1fr; gap: 10px 14px; font-size: 14px; }
+.kv .k { color: var(--ink-soft); }
+.kv .v { font-weight: 500; }
+
+/* ============================================================
+   计划 / 对话
+   ============================================================ */
+.plan-box, .chat-box {
+  white-space: pre-wrap; background: var(--card-2);
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: 16px; font-size: 14px; min-height: 80px;
+}
+.chat-box { min-height: 320px; max-height: 420px; overflow: auto; }
+
+/* ---- AI伴学输入区（计划页）----
+   2026-10-18 用户反馈：「输入框字显示不全，能不能滚动，发送（按钮）空的有点大」。
+   原来是一行 <input> + 一个大按钮：<input> 天生单行，长目标只能看半句；
+   按钮又占了右边一大块。现在换成能自己长高的 textarea，按钮收紧一点。 */
+.plan-composer {
+  display: flex; align-items: flex-end; gap: 10px; margin-top: 12px;
+}
+.plan-composer #plan-msg {
+  flex: 1 1 auto; min-width: 0;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  font-size: 14px; font-family: inherit; line-height: 1.5;
+  color: var(--ink); background: var(--card);
+  resize: none; overflow-y: auto;
+  /* 真正的「3 行封顶」由 autoGrowPlanInput 按实际行高算（手机 92px / 桌面 83px）；
+     这里的 max-height 只是 JS 万一没跑起来时的兜底，别指望它精确。 */
+  max-height: 140px;
+}
+.plan-composer #plan-msg:focus {
+  outline: none; border-color: var(--brand); box-shadow: var(--ring);
+}
+/* 占位提示只许占**一行**：textarea 的 placeholder 会自动折行，
+   而输入框空着时只有一行高（46px），折出来的第二行会被裁掉半截 ——
+   截图里就是「据结构冲 90 分」被切掉一半。宁可末尾省略号，也别切一半。 */
+.plan-composer #plan-msg::placeholder {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 按钮只占自己那点宽度，别跟输入框抢 */
+.plan-composer #btn-plan-send { flex: 0 0 auto; padding: 10px 16px; }
+
+@media (max-width: 780px) {
+  .plan-composer { gap: 8px; }
+  /* ⚠️ 16px 不是随便写的：iOS / 微信内置浏览器在聚焦 font-size < 16px 的输入框时
+     会把整个页面放大，用户一打字页面就「跳」一下。 */
+  .plan-composer #plan-msg { font-size: 16px; }
+  /* 手机上「发送」只留两个字、去掉图标：
+     图标 16 + gap 6 + 内边距 36 加起来吃掉 58px，而输入框总共才 220 出头。
+     实测按钮 86 → 56，输入框同步多出 30px（约多显示 2 个字）。 */
+  .plan-composer #btn-plan-send { padding: 10px 14px; }
+  .plan-composer #btn-plan-send .h-ico { display: none; }
+}
+
+/* ---- Agent 工具调用记录（AI伴学页）----
+   做成一块淡紫便签：它属于**过程信息**，不该抢正文的注意力，
+   但要让人一眼看出「这里是 Agent 干活的地方」。
+   ★ 全站只有 AI伴学页会渲染它（见 js/planner-plan.js 的 renderTrace）。 */
+.agent-trace {
+  margin: 0 0 14px; padding: 12px 14px;
+  background: var(--brand-soft); border: 1px solid var(--brand-line);
+  border-radius: var(--r-md); font-size: 13px;
+}
+/* 保护性写法：`[hidden]` 会被某些 display 规则盖掉，这里明确压死 —— 空记录时
+   整块必须真的消失，留一个空框会被误读成"出错了"。 */
+.agent-trace[hidden] { display: none; }
+.at-head {
+  font-weight: 600; color: var(--ink);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.at-count {
+  font-weight: 400; font-size: 12px; color: var(--ink-soft);
+  background: var(--card); border: 1px solid var(--brand-line); border-radius: 999px; padding: 1px 8px;
+}
+.at-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.at-step { display: flex; align-items: baseline; gap: 8px; }
+.at-ico { color: #2f855a; font-weight: 700; flex: 0 0 auto; }
+/* 失败的一步要用红色显出来：否则「Agent 说它查过了」就是一句无法证伪的话 */
+.at-step-bad .at-ico { color: #c53030; }
+.at-name { color: var(--ink); }
+.at-sum { color: var(--ink-soft); }
+.at-sum::before { content: "·"; margin-right: 6px; color: var(--ink-faint); }
+
+/* ---- AI伴学：**对话框式**（2026-10-15 用户要求「对话框方式，其他样式去掉」）----
+   原来是「生成设置」表单 + 生成按钮 + 结果框，现在整页只剩一个对话框。
+   三处和普通聊天不一样，都是被"计划很长"逼出来的：
+
+     1. `.plan-chat-box` 显式写回 `white-space: normal`。
+        上面 `.plan-box, .chat-box` 那条规则给了 `pre-wrap`（那是为**计划正文**准备的），
+        但聊天容器里还有大量**排版用的换行和缩进**（模板字符串里的），
+        继承了 pre-wrap 就会被原样渲染成一堆空行 —— 消息之间莫名其妙多出空白。
+        正文要保留换行，所以在内层 `.plan-text` 上单独打开。
+     2. AI 的气泡要**宽**（92%）：计划是分天分条写的，挤在 78% 里会拖得很长。
+     3. AI 的气泡要 `pre-wrap`：塌成一段就没法照着执行了。
+   调用记录（`.at-inline`）和正文一起包在 `.stack` 里 —— 谁答的就贴在谁下面，
+   而不是飘在页面别处（那正是旧版最让人看不出"这是个 Agent"的地方）。 */
+.plan-chat-box { min-height: 360px; max-height: 580px; white-space: normal; }
+.msg.ai .stack { display: flex; flex-direction: column; gap: 8px; max-width: 92%; min-width: 0; }
+.msg .bubble.plan-text { white-space: pre-wrap; max-width: 100%; }
+/* 出处行（查学生手册那种回答的 `来源：《休学手续办理流程》`）。
+   单独成块 + 一条虚线隔开 + 灰一档：它是**证据**，不是结论。
+   和正文同样字号会让"该去哪个办公室"和"这段从哪抄的"看起来同等重要。 */
+.doc-src {
+  display: block; margin-top: 10px; padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  font-size: 12px; line-height: 1.6; color: var(--ink-faint);
+}
+/* 进到气泡里就不再需要下外边距 —— 间距由 .stack 的 gap 统一给 */
+.at-inline { margin: 0; }
+
+.msg { margin-bottom: 12px; display: flex; animation: rise .26s var(--ease) both; }
+.msg .bubble {
+  padding: 10px 14px; border-radius: var(--r-md);
+  max-width: 78%; font-size: 14px; line-height: 1.6;
+}
+.msg.me { justify-content: flex-end; }
+.msg.me .bubble {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff; border-bottom-right-radius: 5px;
+}
+.msg.ai .bubble { background: #eef0f7; color: var(--ink); border-bottom-left-radius: 5px; }
+
+/* ---- 「正在写」等待气泡（情绪陪伴页）----
+   用户 2026-10-14 要求：等回复时**不要省略号**、要给出大概还要多久、措辞要有温度。
+   正文那句"人话"由 emotion-chat.js 随机挑，这里只负责观感：
+   下面一行小字是还在缩短的秒数，用极轻的呼吸动画表示"它真的在写"，
+   而不是一个静止的占位块。 */
+.wait-bubble { display: flex; flex-direction: column; gap: 4px; }
+.wait-eta {
+  font-size: 12px; color: var(--ink-faint);
+  animation: waitBreath 1.8s ease-in-out infinite;
+}
+@keyframes waitBreath {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+/* 尊重「减少动态效果」偏好：动画关掉，信息（秒数）一个字不少 */
+@media (prefers-reduced-motion: reduce) {
+  .wait-eta { animation: none; }
+}
+
+/* 日程提醒项 */
+.reminder {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: var(--r-md);
+  background: var(--card-2); border: 1px solid var(--line); margin-bottom: 8px;
+  transition: border-color .18s var(--ease), background .18s var(--ease);
+}
+.reminder:hover { border-color: var(--line); background: var(--card); }
+.reminder.soon {
+  background: linear-gradient(135deg, var(--warn-bg-3), var(--warn-bg));
+  border-color: #fed7aa;
+}
+.reminder .time {
+  font-weight: 700; font-size: 13px; color: var(--planner);
+  min-width: 96px; flex: none;
+}
+.reminder.soon .time { color: #c2410c; }
+.reminder .name { font-weight: 600; }
+.reminder .meta { font-size: 12.5px; color: var(--ink-soft); }
+
+/* ============================================================
+   地图
+   ============================================================ */
+#map {
+  width: 100%; height: 460px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--card-3);
+}
+.map-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+
+/* ---- 导航页两栏：各自独立滚动，整页不再被路线越撑越长 ----
+   问题：原先右栏（导航设置 + 路线 + 点位列表）没有高度上限，
+        一旦「开始导航」出一二十条分步指引，右栏就比左栏高一大截，
+        把整个页面往下顶 —— 地图和输入框被推走，看路线得来回滚。
+   做法：宽屏（>1040px）时把两栏都锁在视口内，各给自己一个滚动条：
+        · 左栏 sticky 吸顶，滚页面时地图停在原地
+        · 右栏自己内部滚，路线再长也只撑它自己
+        这样「地图永远可见、输入框永远在手边」。
+   窄屏自动退回上下堆叠 + 整页滚动（见文末媒体查询），
+   否则手机上左右两栏各自滚会让内容被截得很碎。 */
+@media (min-width: 1041px) {
+  .map-pane {
+    position: sticky;
+    /* 顶栏是 sticky 的，留出它的高度，免得地图被盖住 */
+    top: calc(var(--topbar-h, 68px) + 16px);
+  }
+  .map-pane #map { height: min(600px, calc(100vh - var(--topbar-h, 68px) - 150px)); }
+
+  .side-pane {
+    /* 视口高 - 顶栏 - 页面上下留白，这就是右栏能给的最大高度 */
+    max-height: calc(100vh - var(--topbar-h, 68px) - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* 滚到底不要带着整个页面一起滚 */
+    /* 滚动条别太抢眼，避免贴边看着脏 */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .side-pane::-webkit-scrollbar { width: 8px; }
+  .side-pane::-webkit-scrollbar-thumb {
+    background: #cbd5e1; border-radius: 99px;
+  }
+  .side-pane::-webkit-scrollbar-track { background: transparent; }
+}
+
+.weather-tip {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #e0f2fe, #ecfeff);
+  border: 1px solid #bae6fd; border-radius: var(--r-md);
+  padding: 16px 18px; margin-bottom: 18px;
+}
+.weather-tip b { display: flex; align-items: center; gap: 6px; font-size: 15px; }
+
+/* 天气提示内的实况徽标 + 建议文字（nav.js loadWeather 动态填充）
+   ------------------------------------------------------------------
+   改版说明（用户反馈：「移动端城市和天气只有白色字体没这样的椭圆」）：
+   原来徽标是个**渐变底 + 圆角 999px 的椭圆胶囊**（--wx 天气色），上面压白字。
+   问题：天气卡片本身就是浅蓝底（#e0f2fe→#ecfeff），椭圆一旦因为
+   天气色取不到 / color-mix() 不支持而退化成浅色，白字就糊在浅底上，
+   手机小屏上基本看不见。
+
+   现在的做法：**去掉椭圆底色**，只留一行加粗文字，
+   颜色跟天气走（-—wx，晴=暖橙 / 雨=蓝 / 雪=青 / 雷=紫），落在浅色卡片上
+   对比度足够，也不会再出现「白字看不见」。
+   万一 --wx 取不到（后端没配 Key），退回一条深色，保证始终可读。 */
+#weather-text { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.weather-live {
+  display: inline-flex; align-items: center;
+  color: var(--wx, #0c4a6e);
+  font-size: 13.5px; font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+.weather-advice { font-size: 14px; color: var(--ink); line-height: 1.6; }
+.poi-list { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; }
+.poi-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.poi {
+  font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  background: var(--ok-bg); border: 1px solid var(--ok-line); color: var(--ok-ink);
+  transition: background .16s var(--ease), transform .16s var(--ease),
+              border-color .16s var(--ease), box-shadow .16s var(--ease);
+}
+.poi:hover { background: #dcfce7; transform: translateY(-1px); }
+.poi.selected {
+  background: linear-gradient(135deg, var(--emotion), #f472b6);
+  border-color: transparent; color: #fff; font-weight: 600;
+  box-shadow: 0 8px 18px rgba(236, 72, 153, .32);
+}
+
+/* 点位分组：45 个点平铺成一长条没法看，按类型分块 + 小标题。
+   左边那条彩色竖线（内联 style 注入）表示类型，跟地图标记颜色一致。 */
+.poi-group-head {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
+}
+.poi-group-head .dot {
+  width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto;
+}
+.poi-group-head b { color: var(--ink); font-weight: 700; }
+
+/* 地图类型筛选：一排小胶囊按钮，点一下只看某一类点位 */
+.type-filter {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+}
+.type-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-family: inherit; cursor: pointer;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--ink-soft);
+  transition: background .15s var(--ease), color .15s var(--ease),
+              border-color .15s var(--ease);
+}
+.type-chip:hover { border-color: var(--brand); color: var(--brand); }
+.type-chip.on {
+  background: var(--brand-soft); border-color: var(--brand);
+  color: var(--brand); font-weight: 600;
+}
+.type-chip .dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+}
+.type-chip b { font-weight: 700; opacity: .75; }
+
+/* ================= 分步路线指引面板 =================
+   高德步行路线会给出「沿日新路向北步行 68 米左转」这种分步说明，
+   以前只看得到一条线和一个距离，走起来还是不知道在哪拐弯。
+   这里把 steps 铺出来，形成可照着走的文字版导航。 */
+.route-steps { margin-top: 14px; }
+.route-steps:empty { display: none; }
+.route-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+  font-size: 14px; color: var(--ink);
+  padding-bottom: 9px; margin-bottom: 4px;
+  border-bottom: 1px dashed var(--line);
+}
+.route-head b { color: var(--brand); }
+.route-meta { margin-left: auto; font-size: 12.5px; color: var(--ink-soft); font-weight: 600; }
+.route-list { list-style: none; margin: 0; padding: 2px 0 0; }
+.route-list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+  font-size: 13.5px; line-height: 1.5;
+}
+.route-list li:last-child { border-bottom: 0; }
+.route-list i {
+  flex: 0 0 auto; width: 20px; height: 20px; margin-top: 1px;
+  display: grid; place-items: center;
+  font-style: normal; font-size: 11px; font-weight: 700;
+  color: #fff; background: var(--brand); border-radius: 50%;
+}
+.route-list span { flex: 1 1 auto; color: var(--ink); }
+.route-road {
+  display: inline-block; margin: 0 2px; padding: 1px 6px;
+  font-size: 11.5px; border-radius: 5px;
+  color: var(--brand); background: var(--brand-soft);
+}
+.route-list em {
+  float: right; font-style: normal; font-weight: 600;
+  color: var(--ink-soft); font-size: 12.5px; padding-left: 8px;
+}
+
+/* 情绪页：对话与问卷各占一半 */
+.emotion-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.emotion-layout .chat-box { min-height: 430px; max-height: 540px; }
+.opt-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ============================================================
+   通用小组件
+   ============================================================ */
+.tag {
+  display: inline-block; font-size: 12px; padding: 2px 9px;
+  border-radius: 999px; background: var(--brand-soft); color: #4338ca;
+  font-weight: 500;
+}
+
+/* 内联 SVG 图标：跟随文字颜色，不依赖 emoji 字体 */
+[data-icon] { display: inline-flex; align-items: center; justify-content: center; }
+[data-icon] svg { display: block; }
+.h-ico { display: inline-flex; align-items: center; margin-right: 7px; color: var(--brand); flex: none; }
+.h-ico svg { display: block; }
+/* ★ 实心按钮上的图标必须是白的（2026-10-18 修）。
+   上面那条把 .h-ico 写死成 var(--brand)，而 .btn 的文字色是 #fff ——
+   于是「去倾诉一下」「开始测评」这类紫底按钮上的图标是**紫的**，
+   跟背景几乎同色，用户的原话是「图标根本看不见，看着就像空着一样」。
+   用 inherit 让它跟着按钮文字色走：实心按钮 → 白；ghost 按钮（文字本来就是
+   brand）→ 还是 brand，两种都不会错。 */
+.btn .h-ico { color: inherit; }
+.page-head h2 .h-ico { color: var(--brand); }
+.empty .e-ico { font-size: 0; color: var(--ink-faint); opacity: .5; }
+.empty .e-ico svg { display: block; margin: 0 auto; }
+.weather-tip b .h-ico { color: #0369a1; }
+
+/* 功能卡图标着色 */
+.feature.planner .ico { color: var(--planner); }
+.feature.emotion .ico { color: var(--emotion); }
+.feature.map .ico { color: var(--map); }
+.stat .s-ico { color: var(--brand); }
+
+/* 空状态 */
+.empty {
+  text-align: center; padding: 30px 16px; color: var(--ink-soft);
+}
+.empty p { margin: 0; font-size: 13.5px; }
+
+/* ============================================================
+   进度条
+   ============================================================ */
+.bar {
+  height: 9px; border-radius: 999px; background: #e9edf7;
+  overflow: hidden;
+}
+.bar > i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  transition: width .35s var(--ease), background .3s var(--ease);
+}
+
+/* ============================================================
+   情绪陪伴首页：两个入口卡
+   ============================================================ */
+.entry-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+.entry-card {
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+  border-top: 4px solid var(--emotion);
+  transition: transform .16s var(--ease), box-shadow .24s var(--ease);
+}
+.entry-card::before {
+  content: ""; position: absolute; top: -46px; right: -46px;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(236,72,153,.14), transparent 70%);
+  transition: transform .3s var(--ease);
+}
+.entry-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.entry-card:hover::before { transform: scale(1.35); }
+.entry-card .e-ico {
+  width: 52px; height: 52px; border-radius: var(--r-md); margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(236, 72, 153, .1); color: var(--emotion);
+}
+/* 色块内只有图标、没有文字，必须清掉 .h-ico 的全局 margin-right:7px，
+   否则图标会被整体左移 3.5px，看起来不居中 */
+.entry-card .e-ico .h-ico { margin: 0; }
+.entry-card h3 { margin: 0 0 8px; font-size: 18px; }
+/* 描述区撑满剩余高度，让两张卡的「开始…」按钮始终在同一水平线上 */
+.entry-card p { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; flex: 1; }
+.entry-card .go {
+  margin-top: auto; font-weight: 600; color: var(--emotion);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.entry-card .go .h-ico { color: inherit; margin: 0; }
+.entry-card.target { border-top-color: var(--planner); }
+.entry-card.target::before {
+  background: radial-gradient(circle, rgba(59,130,246,.14), transparent 70%);
+}
+.entry-card.target .e-ico { background: rgba(59, 130, 246, .1); color: var(--planner); }
+.entry-card.target .go { color: var(--planner); }
+
+/* ============================================================
+   测评问卷页
+   ============================================================ */
+/* 注意：题干用的是 <label class="quiz-label">，会同时命中 .field label
+   （display:block / margin-bottom:7px）。这里用 .field .quiz-label 提高特异性，
+   确保 flex 布局和间距真正生效，题号与文字之间才不会贴在一起。 */
+.field .quiz-label {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 14px; color: var(--ink); font-weight: 500;
+  line-height: 1.55; margin-bottom: 2px;
+}
+.field .quiz-label .q-no {
+  flex: none; width: 21px; height: 21px; border-radius: 7px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  margin-top: 1px;
+}
+/* 题干与选项之间留出半格间距（约 14px），提号与文字也拉开一点 */
+.quiz-item { margin-bottom: 16px; }
+.quiz-item .quiz-label { gap: 12px; margin-bottom: 14px; }
+
+/* 选项按钮组：横向排列、自动换行，每个选项之间留出呼吸感 */
+.quiz-item .opts { display: flex; flex-wrap: wrap; gap: 10px; }
+.quiz-item .opts .poi {
+  padding: 8px 18px; font-size: 13.5px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink-soft);
+}
+.quiz-item .opts .poi:hover {
+  background: var(--brand-soft); border-color: var(--brand); color: var(--brand);
+}
+.quiz-item .opts .poi.selected {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  border-color: transparent; color: #fff; font-weight: 600;
+  box-shadow: 0 8px 18px rgba(79, 110, 247, .3);
+}
+.quiz-progress .h-ico { margin-right: 6px; }
+
+/* ============================================================
+   测评结果页
+   ============================================================ */
+.result-hero .rh-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 9px; letter-spacing: .2px;
+}
+.result-hero .rh-body {
+  margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.72;
+  max-width: 620px;
+}
+.result-hero .rh-score {
+  flex: none; text-align: center; padding-left: 22px;
+  border-left: 1px solid var(--line); min-width: 104px;
+}
+.result-hero .rh-num {
+  font-size: 38px; font-weight: 800; line-height: 1.1; letter-spacing: -1px;
+}
+/* 「/ 12」的颜色由 JS 按分值档位内联给（跟维度卡一致）；
+   这里的 ink-faint 只是没拿到 tone 时的兜底。opacity 让分母别跟分数抢眼。 */
+.result-hero .rh-max { font-size: 12.5px; color: var(--ink-faint); opacity: .78; }
+
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.dim-head { display: flex; align-items: center; gap: 10px; }
+.dim-head .h-ico { margin: 0; }
+.dim-head .dim-title { font-size: 15px; font-weight: 700; }
+.dim-head .dim-score {
+  margin-left: auto; font-size: 26px; font-weight: 800; letter-spacing: -.5px;
+}
+.dim-head .dim-score small { font-size: 12px; font-weight: 600; opacity: .65; }
+
+.action-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 0; border-bottom: 1px dashed var(--line);
+  font-size: 14px; line-height: 1.65;
+}
+.action-row:last-child { border-bottom: none; padding-bottom: 0; }
+.action-no {
+  flex: none; width: 23px; height: 23px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 700; margin-top: 1px;
+  background: var(--brand-soft); color: var(--brand);
+}
+
+/* 骨架屏 */
+.skeleton {
+  background: linear-gradient(90deg, var(--skel-1) 25%, var(--skel-2) 37%, var(--skel-1) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* 骨架屏用的占位条（比整块 .skeleton 更贴卡片形状） */
+.skel-line {
+  height: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--skel-1), var(--skel-2), var(--skel-1));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.skel-line.w60 { width: 60%; }
+.skel-line.w40 { width: 40%; margin-top: 10px; }
+/* 列表骨架是**横排**的：图标位是方块、右侧那条不需要「上间距」 */
+.skel-ico {
+  width: 36px; height: 36px; flex: none; border-radius: var(--r-md);
+  background: linear-gradient(90deg, var(--skel-1), var(--skel-2), var(--skel-1));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* 内联错误提示块 */
+.alert {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 11px 14px; border-radius: var(--r-sm);
+  font-size: 13.5px; margin-bottom: 14px;
+}
+.alert.error { background: var(--danger-bg); border: 1px solid var(--danger-line); color: var(--danger-ink); }
+.alert.warn { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink); }
+.alert.info { background: var(--info-bg-2); border: 1px solid var(--info-line-2); color: var(--info-ink-2); }
+.alert.ok { background: var(--ok-bg); border: 1px solid var(--ok-line); color: var(--ok-chip-ink); }
+
+/* 底部提示条 */
+.toast {
+  position: fixed; left: 50%; bottom: 36px;
+  transform: translateX(-50%) translateY(12px);
+  display: flex; align-items: center; gap: 9px;
+  max-width: min(90vw, 480px);
+  background: rgba(26, 31, 46, .96); color: #fff;
+  padding: 12px 20px; border-radius: var(--r-md);
+  font-size: 14px; line-height: 1.5;
+  box-shadow: 0 16px 40px rgba(20, 24, 40, .3);
+  opacity: 0; pointer-events: none; z-index: 200;
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast .toast-ico { flex: none; display: inline-flex; align-items: center; }
+.toast .toast-ico svg { display: block; }
+.toast-ok .toast-ico { color: #4ade80; }
+.toast-error .toast-ico { color: #fca5a5; }
+.toast-info .toast-ico { color: #a5b4fc; }
+.toast-error { background: rgba(153, 27, 27, .97); }
+.toast-ok { background: rgba(6, 95, 70, .97); }
+
+.muted { color: var(--ink-soft); font-size: 13px; }
+.row { display: flex; gap: 10px; align-items: center; }
+.spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.center { text-align: center; }
+hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
+.stack-8 > * + * { margin-top: 8px; }
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 860px) {
+  .features { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr; }
+  .map-layout { grid-template-columns: 1fr; }
+  .emotion-layout { grid-template-columns: 1fr; }
+  .entry-grid { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: 1fr; }
+  .result-hero .rh-score {
+    padding-left: 0; border-left: none; text-align: left;
+    display: flex; align-items: baseline; gap: 8px; min-width: 0;
+  }
+  .result-hero .rh-score .tag { margin-top: 0 !important; }
+  /* 结论行：窄屏允许换行，永远不把卡片撑破（2026-10-18） */
+  .result-hero-row { flex-wrap: wrap; }
+  .result-hero-row > .rh-score { flex: 0 0 auto; }
+  /* 维度卡片：标题可收缩、标尺两端可换行。
+     手机开了「大字体」时，26px 的分数和「0 分 / 12 分」会把卡片顶破，
+     表现出来就是右侧标签和刻度跑到卡片外面（用户截图里的样子）。 */
+  .dim-head > div { min-width: 0; }
+  .dim-head .dim-title { overflow-wrap: anywhere; }
+  .dim-card .spread { flex-wrap: wrap; }
+  .container { padding: 20px 16px; }
+  .hero { padding: 34px 24px; border-radius: 20px; min-height: 210px; }
+  .hero h1 { font-size: 25px; }
+  .hero-dots { right: 14px; bottom: 12px; }
+  .auth-card { padding: 28px 22px 22px; }
+}
+
+/* 窄屏顶栏：导航换行成一排，避免挤成三行被裁切 */
+@media (max-width: 640px) {
+  .topbar { flex-wrap: wrap; gap: 8px 10px; padding: 10px 14px; }
+  .topbar .logo { font-size: 16px; gap: 8px; }
+  .topbar .logo .dot { width: 24px; height: 24px; }
+  .topbar nav {
+    order: 3; width: 100%; flex-wrap: wrap;
+    justify-content: flex-start;
+    /* ⚠️ gap 从 4px 收到 2px、导航项 padding 从 6/11 收到 6/7，
+       都是**为放下第 6 个入口腾宽度**（实测数据见下方「账号入口」注释）。
+       两处合计回收 ~20px，是 360px 窄机不折成 3 行的关键。 */
+    gap: 2px;
+  }
+  .topbar nav a { font-size: 13px; padding: 6px 7px; white-space: nowrap; }
+  /* 账号入口 + 退出：靠右**成组**贴着放
+     ------------------------------------------------------------------
+     用户反馈：「移动端账号设置放退出旁边」。
+
+     原先只有 `#logout` 带 `margin-left: auto`，于是**只有退出**被推到最右、
+     「我的」被留在导航项后面，两者之间裂开一段随屏宽变大的空白 —— 实测：
+         390px -> 间距 11px
+         412px -> 间距 33px
+         430px -> 间距 51px
+     屏幕上看着就是两个不相干的控件，用户找不到"账号设置在哪"。
+
+     改法：把 `auto` 从 `#logout` 挪到**账号入口**上。这样 auto 会把
+     「我的 + 退出」整组一起顶到右边，两者始终紧挨（只隔一个 nav gap=2px），
+     一眼就能看出「退出旁边那个就是账号设置」。
+
+     ⚠️ 顺序不能反：auto 必须加在**靠前**的那个元素（.user）上。
+     加在 #logout 上就是老写法，只会把退出一个人推走。
+     ⚠️ 未登录时没有 .user（显示的是「登录」链接），此时让「登录」靠右。 */
+  .topbar nav a.user,
+  .topbar nav a[href="login.html"] { margin-left: auto; }
+}
+
+/* ------------------------------------------------------------------
+   顶栏高度的**实测校准值**（对应上面那条换行规则）
+   ------------------------------------------------------------------
+   用户反馈「显示 星期还要低一点，顶部导航栏挡住了」—— 根因就是
+   顶栏换了行、变高了，而 `--topbar-h` 还停在 64px（只够 1 行的高度）。
+   实测顶栏分**两档**（逐个像素扫 320~700px 量出来的真值）：
+
+       视口宽度        顶栏高度     几行    说明
+       >= 641px        63.09px     1 行    logo 与导航同排
+       <= 640px        92.27px     2 行    logo 1 行 + 导航整体折行
+
+   ⚠️ 手机那档从 89.44 涨到 **92.27**，是因为本轮给顶栏加了「我的」账号入口
+   （20~65px 宽、带边框和 padding，比原来的空格高一点）—— 所以变量也得
+   跟着从 92 提到 96。差 0.27px 虽然肉眼几乎看不出，但表头会被切掉一条边，
+   并且会被 tools/test_timetable_freeze.mjs 判失败。
+
+   ⚠️⚠️ 这里**原来有三档**：`<= 361px` 那档曾是 3 行、126.88px、变量给 130px。
+   本轮加了账号入口「我的」之后，顺手把窄屏 nav 的 gap(4->2) 和 padding(6/11->6/7)
+   收窄，360px 从 **3 行变回 2 行**，实测高度回落到 2 行档
+   —— 所以 `<= 361px` 那条 `--topbar-h` 必须同步下调，
+   否则课表表头会被推到顶栏下方一大段空白里（上一轮踩过同样的坑）。
+   ⚠️ 测试只断言「变量 >= 实测高度」，**"给大了"它查不出来**，改动要人肉复核。
+
+   所以下面就按「实测值 + 余量」给两档。
+   ⚠️ 断言由 tools/test_timetable_freeze.mjs 守着：它会把 `--topbar-h`
+      和顶栏实测高度对账，**变量小于实测高度就报失败** ——
+      以后谁改了顶栏的 padding / 字号 / 导航项数量，测试会立刻亮红，
+      不会像这次一样无声跑偏。
+
+   ⚠️⚠️ 断点必须和**真实换行点对齐**，不能用"顺手取整"的数。
+   踩过的坑：第一版把第二档写成 `max-width: 430px`，想"多覆盖一点更保险"，
+   结果 390px 的普通手机被划进第三档，拿到 130px —— 而它顶栏其实只有 89.44px。
+   表头因此被推到顶栏下方 **40px 的空白里**，看着像"悬浮在半空"，
+   比原来的遮挡还怪。**余量要加在"值"上（92 而不是 89.44），
+   不能加在"断点"上**。
+
+   ⚠️⚠️ 为什么**不**用 JS 把顶栏实测高度写回变量？
+   看着更"智能"，但代价是：首屏（脚本还没跑）会用错误默认值渲染一帧，
+   课表表头先闪一下错位再归位；断网 / JS 报错时校准就彻底没了。
+   纯 CSS 的三档断点没有这两个问题，也不用挂 ResizeObserver。
+   ------------------------------------------------------------------ */
+
+/* 2 行（<= 640px，含窄机）：实测 92.27px
+   ------------------------------------------------------------------
+   ⚠️ 这个 92 原来对应的是**没有账号入口**时的 89.44px。本轮加了「我的」
+   胶囊之后，顶栏实测涨到 **92.27px** —— 92 就**不够了**，差 0.27px。
+   差这一点点也会被 tools/test_timetable_freeze.mjs 抓出来（断言是
+   `变量 >= 实测`，不给容差），而且真机上表头会被顶栏切掉一条头发丝。
+   给到 96（实测 + 约 4px 余量），和 PC 档 68 vs 63.09 的余量口径一致。
+
+   ⚠️ 窄机(<=381px)现在也是 2 行 —— 见上文「三档变两档」的说明。
+   断点跟着上面的账号入口一起从 361 挪到 381，保持两处对齐。 */
+@media (max-width: 640px) {
+  :root { --topbar-h: 96px; }
+}
+
+@media (max-width: 381px) {
+  :root { --topbar-h: 96px; }
+}
+
+/* 无障碍：尊重系统的「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ================= 地图导航：输入框高亮 + 课表时间列 ================= */
+
+/* 当前会被「点地图标记」填入的那个输入框，加个醒目边框 */
+#origin.field-target,
+#dest.field-target {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+  background: color-mix(in srgb, var(--brand) 4%, var(--card));
+}
+/* 两个框各自加个小标记，说明点地图会填到哪 */
+.field:has(#origin.field-target) > label::after,
+.field:has(#dest.field-target) > label::after {
+  content: " ← 点地图填这里";
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* 地图标签：**不接收鼠标事件**。
+   ------------------------------------------------------------------
+   踩过的坑（实测 elementFromPoint 才查出来）：
+   教学楼的常驻标签是一个绝对定位的 DOM 方块，它会**盖在别的标记上面**，
+   而它自己是可接收指针事件的 —— 于是：
+     · 被它压住的小圆点，鼠标悬停上去**悬停事件落在标签上**，
+       那个点的名字永远不出现；
+     · 点击也一样被吞掉，点不动。
+   实测校园里就有好几个点被教学楼标签挡住（雅颂楼等）。
+   标签本身不需要任何交互（点击是标记的事，不是标签的事），
+   所以直接让它对指针透明，把事件还给下面的标记。 */
+.amap-marker-label {
+  cursor: pointer;
+  pointer-events: none;   /* ← 别挡住下面的标记 */
+}
+/* 但标签在悬停时鼠标要能变成手型？不需要 —— 悬停由标记自己处理，
+   标记本来就有 cursor:pointer。标签透明后手型照常出现。 */
+
+/* ------------------------------------------------------------------
+   抹平高德标签容器自带的「白底 + 灰边」
+   ------------------------------------------------------------------
+   高德 JS API 会给每个 marker label 套一层 `.amap-marker-label`，
+   它自带：padding:2px 5px / border:1px solid #ccc / background:#fff /
+           font-size:12px / line-height:1。
+   我们在标签内部再画一个彩色小方块，就等于「蓝底方块套在白框里」——
+   字比白框小一圈、四周留出一圈白边，看起来就是
+   「标签和字大小不匹配、有留白」。把外层彻底清零后，
+   尺寸完全由内部 .poi-label 决定，圆点和字就对齐了。 */
+.amap-marker-label {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  font-size: 0 !important;   /* 干掉容器的 12px 默认字号，避免撑出额外高度 */
+  cursor: pointer;
+}
+
+/* 地图标签（教学楼常驻 / 其它类型悬停）统一走这里，
+   两处共用一套尺寸，图上不会再出现两种大小的名字。 */
+.poi-label {
+  display: inline-block;
+  box-sizing: border-box;
+  background: var(--poi-color, #4a5568);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;          /* 固定行高：标签高度可预期，不会忽高忽低 */
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-family: var(--font, inherit);
+  /* 白描边 + 投影：校园楼挨得近，标签偶尔会压到路名/底图上，
+     有一点描边才读得清（纯色底块在浅色底图上容易糊）。 */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .25);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .9), 0 1px 3px rgba(0, 0, 0, .25);
+}
+.poi-label.teaching {
+  font-weight: 600;
+  letter-spacing: .2px;
+  font-size: 11.5px;          /* 教学楼略微放大：它们是最该被一眼找到的 */
+}
+
+/* ================= 课表截图导入 ================= */
+
+/* 识别中：进度条 + 步骤文案 */
+.modal-narrow { max-width: 420px; }
+.scan-bar {
+  height: 6px; border-radius: 99px; overflow: hidden;
+  background: color-mix(in srgb, var(--brand) 12%, var(--card));
+}
+.scan-bar-fill {
+  height: 100%; width: 8%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--brand), #8b5cf6);
+  transition: width .45s cubic-bezier(.4, 0, .2, 1);
+}
+.scan-bar-fill.indeterminate {
+  width: 38% !important;
+  animation: scan-slide 1.5s ease-in-out infinite;
+}
+@keyframes scan-slide {
+  0%   { margin-left: 0; }
+  50%  { margin-left: 62%; }
+  100% { margin-left: 0; }
+}
+
+/* 核对弹窗 —— 要放 7 列（#/星期/节次/课程名/教学楼/教室/教师），
+   880px 下「课程名」被压到只剩一百来像素，长课名连头都看不全，所以放宽到 1040px。 */
+.modal-wide { max-width: 1040px; width: min(1040px, 96vw); }
+
+/* 识别存疑的课程卡：整张卡变色 + 左侧竖条，扫一眼就知道要补哪
+   （比只给某个字上色更醒目，也不影响阅读卡片内容） */
+.course-chip.need-check {
+  background: linear-gradient(135deg, var(--warn-bg), var(--warn-chip-bg)) !important;
+  border: 1.5px dashed #f59e0b !important;
+  box-shadow: inset 3px 0 0 #f59e0b;
+  position: relative;
+}
+.course-chip.need-check b { color: #92400e; }
+/* 右上角一个小感叹号，提示「这里没认准」 */
+.course-chip.need-check::after {
+  content: "!";
+  position: absolute; top: 2px; right: 4px;
+  font-size: 10px; font-weight: 800; line-height: 1;
+  color: #b45309; background: #fde68a;
+  width: 13px; height: 13px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 核对表格 */
+.review-table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+/* 表格整体有个宽度上限：1040px 的弹窗减去内边距，再宽也没有意义 ——
+   多出来的宽度全被课程名列吃掉，反而把右边几栏挤窄。
+   超宽屏时让左右留白，而不是把课程名框拉成一条跑道。 */
+.review-table th {
+  text-align: left; font-weight: 600; color: var(--ink-faint);
+  padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.review-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.review-table tr.row-bad { background: var(--warn-bg); }
+.review-table tr.row-bad td:first-child { box-shadow: inset 3px 0 0 #f59e0b; }
+.review-table input, .review-table select {
+  width: 100%; padding: 5px 7px; font-size: 12.5px;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+  font-family: inherit;
+}
+
+/* 星期列的下拉不要被箭头吃掉宽度：给 select 留出箭头位置，
+   否则「周一」会被截成「周…」。 */
+.review-table td:nth-child(2) select,
+.review-table td:nth-child(3) select { padding-right: 20px; }
+
+.review-table input.miss { border-color: #f59e0b; background: var(--warn-bg-2); }
+
+/* 教学楼填了「导航表里没有的楼」：给个琥珀色描边提示，但不拦着不让填。
+   真实校园总有没收录的楼（新楼、外校区），拦死了用户就录不进课表。 */
+.review-table input.unknown { border-color: #d97706; background: var(--warn-bg); }
+
+/* 课程名格：用 textarea 多行显示，课名一眼看全，不用点开。
+   <input> 是单行元素，无论 CSS 怎么写都不换行，
+   「马克思主义基本原理概论」「大学英语(专升本)」这种必然被截断。 */
+.review-table td.cell-name { position: relative; }
+.review-table td.cell-name textarea {
+  width: 100%; padding: 5px 7px; font-size: 12.5px; font-family: inherit;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+  color: var(--ink);
+  line-height: 1.5; resize: none; min-height: 30px;
+  overflow: hidden;            /* 高度由 JS 自适应，别出现内部滚动条 */
+  word-break: break-all;       /* 长串（英文/数字）也强制换行，不撑破格子 */
+  display: block;
+}
+.review-table td.cell-name textarea:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+.review-table td.cell-name textarea.miss { border-color: #f59e0b; background: var(--warn-bg-2); }
+/* 连堂角标浮在课名格右上角 */
+.review-table td.cell-name .badge-span {
+  position: absolute; right: 12px; top: 8px; pointer-events: none;
+}
+
+/* 节次格：下拉 + 一个「南」小标（线上课专用）。
+   线上课没有教学楼 -> 作息只能按南区（基准）算，标出来省得用户猜。 */
+.review-table td.cell-slot { position: relative; }
+.review-table td.cell-slot .badge-region {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 10px; line-height: 14px;
+  padding: 0 4px; border-radius: 3px;
+  background: #e2e8f0; color: #475569;
+  font-weight: 600;
+}
+
+.review-table .badge-warn {
+  display: inline-block; padding: 1px 6px; border-radius: 99px;
+  background: var(--warn-chip-bg); color: var(--warn-chip-ink); font-size: 10.5px; font-weight: 600;
+}
+
+/* 连堂标记：同一门课连排两节。浅蓝底 + 「连堂」角标，
+   让用户一眼分辨「这是学校排的连堂课」而不是「AI 识别重复了」。 */
+.review-table tr.row-span { background: #f5f8ff; }
+.review-table tr.row-span.row-bad { background: var(--warn-bg); }  /* 待补全优先，黄底盖过蓝底 */
+.badge-span {
+  display: inline-block; padding: 1px 6px; border-radius: 99px;
+  background: #e0e7ff; color: #4338ca; font-size: 10.5px; font-weight: 600;
+  white-space: nowrap;
+}
+/* 核对表格外面那层滚动容器：桌面端限制高度，长清单在弹窗里内部滚动，
+   不让整个弹窗高到把底部按钮挤出屏幕。手机上这条会被放开（见文件末尾的
+   @media (max-width: 780px)），因为那时候表格已经变成卡片式，不需要内部滚动。 */
+.review-scroll { max-height: 44vh; overflow: auto; }
+
+.review-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; margin: 4px 0 12px; }
+.review-legend i { font-style: normal; }
+.review-sticky-bar {
+  position: sticky; bottom: 0; background: var(--card); padding-top: 12px;
+  border-top: 1px solid var(--line); margin-top: 12px;
+}
+/* 底部操作条：左边「共 N 条」，右边两个按钮 */
+.review-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.review-foot-btns { display: flex; gap: 10px; }
+
+/* ============================================================
+   核对弹窗 · 手机端改成「一条课一张卡」
+   ------------------------------------------------------------
+   必须改的原因（实测数据，不是估的）：这张表有 8 列
+   （#/星期/节次/课程名/教学楼/教室/周次/教师），colgroup 里写死的固定列宽
+   加起来 644px，而 390px 手机上弹窗只有 ~350px 宽。
+   Playwright 量到的结果是：表格被撑到 644px、可视区只有 302px，
+   **「课程名」那一列被压成 0 宽** —— 课名变成一列竖排的字，
+   右边四列（教学楼/教室/周次/教师）整块跑到屏幕外，
+   用户看到的就是「导入课程会乱」。
+
+   手机上不再用表格：一张卡放一条课，每个字段一行「字段名 + 控件」。
+   字段名来自 td[data-label]（::before 生成），**DOM 结构完全不变** ——
+   bindReviewInputs / confirmImport 都是按 [data-f] 和 data-idx 取值的，
+   一行都不用改。
+   ============================================================ */
+@media (max-width: 780px) {
+  /* 弹窗吃满屏宽：原来的 mask 左右各 20px 太浪费，只留 10px */
+  .modal-mask { padding: 10px; }
+  .modal-wide { width: 100%; max-width: none; padding: 18px 14px 14px; }
+
+  /* 卡片化之后不需要内部滚动了：让整个弹窗滚，
+     底部操作条用 position:sticky 贴在弹窗可视区底部（它本来就是 sticky bottom:0）。 */
+  .review-scroll { max-height: none; overflow: visible; }
+
+  /* ★ 「底部字会穿」（2026-10-18）：操作条 sticky 贴在**内容区**下沿，
+     而 .modal 自己还留着 14px 的 padding-bottom（就是 .modal-wide 那条
+     padding: 18px 14px 14px）。滚动内容是在 padding 边缘裁的，于是那 14px 里
+     会把底下一张卡的「周次 …」露出来 —— 实测 modal 下沿 802 / 操作条下沿 788，
+     缝里 elementFromPoint 取到的是 input。
+     修法：弹窗底部不再留白，把这 14px 挪到操作条自己身上，让它一直垫到弹窗底边；
+     再给条加一点上投影，内容从它后面滚过去时看着是「被盖住」而不是「断掉」。 */
+  #review-mask .modal { padding-bottom: 0; }
+  .review-sticky-bar {
+    z-index: 2;
+    margin-top: 10px;
+    padding: 10px 0 14px;
+    box-shadow: 0 -8px 10px -10px rgba(15, 23, 42, .28);
+  }
+
+  .review-table,
+  .review-table tbody,
+  .review-table tr,
+  .review-table td { display: block; width: auto; }
+  /* 表头在卡片布局里没有意义（一行放不下 8 个字段名），改由每个 td 的 ::before 充当 */
+  .review-table colgroup,
+  .review-table thead { display: none; }
+
+  /* ---- 一张卡 = 一条课 ---- */
+  .review-table tr {
+    position: relative;
+    border: 1px solid var(--line); border-radius: 12px;
+    /* 顶部留 26px 给「第 N 条」那行小字，否则它会压在第一个字段上 */
+    padding: 26px 12px 10px; margin: 0 0 10px;
+    background: var(--card);
+  }
+  /* 卡片右上角的「第 N 条」：告诉用户这是第几条，
+     免得改了三条之后分不清「刚才那条是哪个」。 */
+  .review-table tr::before {
+    content: "第 " attr(data-no) " 条";
+    position: absolute; top: 7px; right: 12px;
+    font-size: 11px; color: var(--ink-faint); white-space: nowrap;
+  }
+  .review-table tr.row-span { background: #f5f8ff; }
+  /* 待补全的左侧竖条原来挂在第一格上，卡片化后改成挂整张卡（圆角也跟着走） */
+  .review-table tr.row-bad { background: var(--warn-bg); box-shadow: inset 3px 0 0 #f59e0b; }
+  .review-table tr.row-bad td:first-child { box-shadow: none; }
+
+  /* ---- 每个字段一行：左字段名（58px）+ 右控件（吃掉剩余） ---- */
+  .review-table td {
+    border: none; padding: 4px 0;
+    display: grid; grid-template-columns: 58px minmax(0, 1fr);
+    gap: 8px; align-items: center;
+  }
+  .review-table td::before {
+    content: attr(data-label);
+    font-size: 12px; color: var(--ink-faint); white-space: nowrap;
+  }
+  /* 序号格在卡片布局里不再需要（编号已经在卡片右上角了） */
+  .review-table td.cell-idx { display: none; }
+
+  /* 课程名是多行输入框，字段名要对齐到第一行，不是垂直居中 */
+  .review-table td.cell-name { align-items: start; }
+  .review-table td.cell-name::before { padding-top: 7px; }
+  /* 连堂角标原来绝对定位在课名格右上角 —— 卡片里那块地方是输入框，
+     会盖住课名。改成跟在课名框下面一行，仍然读得出来。 */
+  .review-table td.cell-name .badge-span {
+    position: static; grid-column: 2; justify-self: start; margin-top: 2px;
+  }
+  /* 「南」小标贴在节次下拉的右侧（下拉已留了 padding-right:20px） */
+  .review-table td.cell-slot .badge-region { right: 22px; }
+
+  /* 输入框在手机上高一点，手指好点 */
+  .review-table input, .review-table select,
+  .review-table td.cell-name textarea { font-size: 14px; padding: 7px 9px; }
+
+  /* ---- 底部操作条：统计一行，按钮一行平分 ---- */
+  .review-foot { flex-direction: column; align-items: stretch; gap: 8px; }
+  .review-foot-btns .btn:first-child { flex: 0 0 auto; }   /* 「取消」不用那么宽 */
+  .review-foot-btns .btn:last-child { flex: 1 1 auto; }    /* 「确认导入」占满剩下的 */
+}
+
+/* ============================================================
+   学业规划子页 —— 二级导航胶囊 + 日程提醒卡片
+   （课表 / 日程提醒 / AI伴学 三个页面共用）
+   ============================================================ */
+
+/* 页面内的子页切换条（顶栏那个下拉之外，再给一次更显眼的入口。
+   顶栏下拉在移动端和「用户不知道要点」的情况下确实不够明显，
+   所以每个子页顶部都平铺一条。） */
+.subnav-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin: -6px 0 20px;
+}
+.subnav-pill {
+  display: inline-flex; align-items: center;
+  padding: 7px 16px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 500;
+  color: var(--ink-soft);
+  background: var(--chip-neutral-bg); border: 1px solid transparent;
+  text-decoration: none;
+  transition: background .18s var(--ease), color .18s var(--ease),
+              border-color .18s var(--ease);
+}
+.subnav-pill:hover { color: var(--brand); background: rgba(99, 102, 241, .1); }
+.subnav-pill.active {
+  color: #fff; font-weight: 600;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 6px 16px rgba(99, 102, 241, .28);
+}
+
+/* ---------- 日程提醒 ---------- */
+.rem-day + .rem-day { margin-top: 22px; }
+.rem-day-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.rem-list { margin-top: 4px; }
+
+.rem-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 12px; border-radius: 10px;
+  border-bottom: 1px solid var(--line);
+  transition: background .16s var(--ease);
+}
+.rem-item:last-child { border-bottom: 0; }
+.rem-item:hover { background: var(--card-2); }
+/* 「正在上课」用淡红底 —— 最需要马上注意的状态，给最强的视觉权重 */
+.rem-item.now { background: var(--danger-bg); border-left: 3px solid #ef4444; }
+/* 「即将上课」用淡黄底 */
+.rem-item.soon { background: var(--warn-bg); border-left: 3px solid #f59e0b; }
+
+.rem-time {
+  flex: 0 0 74px; display: flex; flex-direction: column; line-height: 1.25;
+}
+.rem-time b { font-size: 15px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rem-time span { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+.rem-main { flex: 1 1 auto; min-width: 0; }
+.rem-name { font-size: 14.5px; font-weight: 600; color: var(--ink); word-break: break-word; }
+.rem-where { font-size: 12.5px; margin-top: 2px; }
+
+.rem-badge {
+  display: inline-block; margin-left: 8px; padding: 1px 8px;
+  border-radius: 999px; font-size: 11.5px; font-weight: 600;
+  vertical-align: middle;
+}
+.rem-badge.now { background: #fee2e2; color: #b91c1c; }
+.rem-badge.soon { background: var(--warn-chip-bg); color: var(--warn-ink); }
+
+.rem-nav {
+  flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--brand); background: rgba(99, 102, 241, .1);
+  text-decoration: none;
+  transition: background .16s var(--ease);
+}
+.rem-nav:hover { background: rgba(99, 102, 241, .2); }
+
+@media (max-width: 560px) {
+  .rem-time { flex-basis: 62px; }
+  .rem-nav { display: none; }   /* 窄屏放不下，点了也只是跳地图，先收起来 */
+
+  /* 扫码页：手机/窄屏下把二维码缩一点，保证一屏能看全
+     （尤其是底部的 App 图标和说明，别被挤到折叠线以下） */
+  .auth-card { padding: 24px 18px 20px; }
+  .scan-box { width: 190px; height: 190px; }
+  .scan-box .scan-qr svg { width: 172px; height: 172px; }
+  .scan-apps-list { gap: 10px 11px; }
+  .scan-app { width: 46px; }
+  .scan-app-ico { width: 31px; height: 31px; border-radius: 9px; font-size: 13.5px; }
+  .scan-app-name { font-size: 10.5px; }
+}
+
+/* ============================================================
+   移动端课表「瘦身」（**必须放在文件最后**）
+   ============================================================
+   用户诉求：「移动端的课表显示小一点」。
+
+   桌面端的 720px 最小宽度 + 64px 行高，在手机上一屏只能看到两三行，
+   滚动成本很高。这里整体压一档：
+     · 最小宽度 720 → 600，横向滚的幅度小了
+     · 行高 64 → 46、表头 42 → 36，一屏能看到更多节次
+     · 节次列 116 → 62，把宝贵的横向空间让给 7 个星期列
+     · 卡片、字号、间距同步收一档，避免「格子小了内容溢出来」
+
+   ⚠️⚠️ 这段**不能**放在 .timetable / .slot-col 那堆基础规则的前面。
+   踩过的坑：第一版把它塞在课表基础样式旁边（文件中部），
+   结果**一条都没生效** —— 因为 `.slot-col { padding: 6px 8px !important }`
+   这类基础规则写在它**后面**，选择器权重相同、又都带 !important，
+   按「后来者优先」的规则，基础规则把媒体查询里的覆盖**反杀**了。
+   实测症状：媒体查询里写了 padding: 4px 3px，computed style 拿到的
+   还是 6px 8px；行高想压到 46px，实际每行还是 67px。
+   修法有两步，缺一不可：
+     1. 把基础 `.slot-col` 那条 !important 去掉（见上文 .slot-col 注释）；
+     2. 这段挪到**文件末尾**，作为全站响应式覆盖的统一收尾位置。
+   ============================================================ */
+@media (max-width: 640px) {
+  /* 最小宽度 720 → 700：缩得动，但别缩到「课名放不下」。
+     一开始想压到 600，实测反而更糟 —— 8 列总共就这点宽度，
+     压太小之后每列只剩 ~68px，课名全被截断成省略号，反而更难用。
+     现在只微收 20px，真正的「显小」交给下面的行高和字号来做。 */
+  .tt-wrap .timetable { min-width: 700px; }
+  /* 注意：.tt-wrap 的 overflow / max-height / 表头 top 不在这里给 ——
+     它们在文件中部 `@media (max-width: 799.98px)` 那段统一处理，
+     因为「PC 用 clip、手机用 auto」是个成对的分支，分开写容易改坏一边。 */
+
+  /* 节次列宽度：
+     ⚠️ 这是**实测调出来的下限**。第一版压到 62px，
+     结果「南 10:55-11:45」这种最长的时间串直接放不下，
+     被单元格裁成「南 10:55-11:4」—— 比不缩还糟（截图亲眼确认过）。
+     78px 是「最长那串刚好放得下、又比桌面端 116px 窄 1/3」的值。 */
+  .timetable col.col-slot { width: 78px; }
+  /* 行高：单元格的 height 只是「最小高度」，内容更高时仍会撑开。
+     实测 46px 是「内容刚好放得下」的甜点值（压到 42 反而被内容撑到 53）。 */
+  .timetable th, .timetable td { height: 46px; }
+  .timetable th { height: 34px; font-size: 11.5px; line-height: 1.2; }
+  .timetable th .th-date { font-size: 9.5px; }
+
+  /* 节次列：
+     ⚠️ padding 必须写成 `.timetable td.slot-col`（比基础规则 `.timetable td`
+     权重高一级），否则 `padding: 0` 那条会把它压掉 —— 实测过，
+     写 `.slot-col` 拿到的 computed padding 是 0px。
+
+     line-height 也要压下来：节次列内容是**三行**（节次名 + 南时间 + 北时间），
+     1.35 的行高在小字号下仍会把格子撑到 51px，压到 1.15 才收得进 46px。 */
+  .timetable td.slot-col { padding: 4px 2px; }
+  .slot-col { font-size: 10px; line-height: 1.15; }
+  .slot-col b { font-size: 11px; margin-bottom: 1px; line-height: 1.15; }
+  .slot-times { font-size: 9px; gap: 0; line-height: 1.15; }
+  .slot-times span { gap: 2px; line-height: 1.15; }
+  .slot-times .on { font-size: 10px; }
+  .slot-times .muted { font-size: 8px; }
+  /* 整点行（06:00 / 12:00 这类）**绝不能换行** ——
+     手机上一换行就变成「12:00 / 12:00- / 13:00」三行，格子立刻被撑高。
+     这里锁 nowrap 并把字号缩到一行放得下。 */
+  .slot-col .slot-time-plain { font-size: 9px; line-height: 1.15; white-space: nowrap; }
+
+  /* 课程卡片：内边距和字号都收一档，小格子里也能放下课名 */
+  .timetable tbody td:not(.slot-col) .cell { min-height: 40px; padding: 2px; }
+  .cell { padding: 2px; }
+  .course-chip { padding: 3px 4px; font-size: 10.5px; margin: 1px 0; border-radius: 7px; }
+  .cell .add { font-size: 15px; }
+
+  /* 「线上」「连堂」「周次」这类角标：小屏上字号再小一档，否则会顶破卡片 */
+  .chip-span, .chip-online, .chip-tag, .chip-weeks { font-size: 9px; padding: 0 4px; }
+
+  /* 周次胶囊条在小屏上也会横向滚，把它压扁一点，别占太多纵向空间 */
+  .week-scroll { padding-bottom: 2px; }
+}
+
+/* ==================================================================
+   账号入口（「我的」）的三态切换
+   ==================================================================
+   用户原话：「移动版没办法对账号进行设置」。根因就是上面窄屏顶栏段里
+   那句 `.topbar .user { display: none; }` —— 而 `.topbar .user` 是全站
+   **唯一**的账号设置入口（顶栏 logo 不带链接、也没有别的菜单），
+   把它藏掉等于手机端彻底没有账号入口。所以这里不是"美化"，是在补功能。
+
+   ⚠️ 为什么不能只靠 CSS 把昵称缩短成「我的」？
+   JS 里原先把 `图标 + 昵称` 拼成**一个裸文本节点**，昵称外面没有元素包着，
+   选不中、也就缩不掉。所以 common.js 先把三段包成三个 span，CSS 才有的选。
+
+   三态（按断点切换）：
+     >= 641px   .u-name   全名胶囊（图标 + 昵称）—— 和改动前长得一样
+     <= 640px   .u-short  「我的」胶囊（图标 + 我的）
+     <= 361px   .u-avatar 30px 圆形首字母头像 —— 窄机真的放不下文字了
+
+   ## 宽度预算是硬约束（实测，不是估算）
+   顶栏在 <=640px 时 flex-wrap，第二行 nav 的可用宽 = 视口 - 28px padding：
+
+       视口    nav 可用   改动前需   改动前余   行数
+        360      332      338.08     -6.08    3 行（本身就溢出）
+        390      362      338.08     +23.92   2 行
+
+   ⚠️ **天真的做法会把 390px 撑成 3 行**：直接加「图标 + 我的」胶囊是 43px，
+   需要 381.08 > 362，最主流的机型反而多出一行、`--topbar-h` 又得重算。
+   所以必须同时回收宽度：
+
+       padding 6/11 -> 6/8  : 390 需 351.08 ✅ / 360 需 351.08 ❌
+       + gap 4 -> 3         : 390 需 346.08 ✅ / 360 需 346.08 ❌
+       + 字号 13 -> 12.5    : 390 需 338.08 ✅ / 360 需 338.08 ❌ 差 6.08
+     => 结论：360px 根本放不下 6 个**文字**胶囊，必须给窄机一个图标态。
+
+       图标态 + padding 6/8 + gap 3 : 360 需 333.08 ❌ 差 1.08（就差 1px！）
+       图标态 + padding 6/7 + gap 2 : 360 需 318.08 ✅ 余 13.92
+                                      390 需 318.08 ✅ 余 43.92
+       项宽：主页(40) 学习规划(66) 情绪陪伴(66) 地图导航(66) I(30) 退出(40)
+
+   ⚠️⚠️ **连带影响（必须一起改，漏了就出 bug）**：
+   ① 360px 从 3 行变 2 行后，`@media (max-width: 361px)` 那条 `--topbar-h`
+      原本给 130px（为 3 行留的），必须下调到 2 行档，否则课表表头会被
+      推到下方一大段空白里 —— 上一轮踩过一模一样的坑。
+   ② 加了「我的」胶囊后顶栏实测由 89.44 → **92.27px**，
+      `--topbar-h` 得给到 96（92 差 0.27px，测试会判失败、真机表头被切边）。
+   tools/test_timetable_freeze.mjs 只断言 "变量 >= 实测高度"，
+   **"给大了"的下行偏移它测不出来**，改完要人肉复核。
+   ================================================================== */
+
+/* 基线（>= 641px）：仍是原来的「图标 + 昵称」胶囊，另外两态不参与布局 */
+.topbar .user { display: inline-flex; align-items: center; gap: 6px; }
+.topbar .user .u-short,
+.topbar .user .u-avatar { display: none; }
+.topbar .user .u-name { display: inline-flex; align-items: center; gap: 6px; }
+
+/* 手机（382 ~ 640px）：切成「我的」，昵称不再上顶栏（窄屏也没地方放全名） */
+@media (max-width: 640px) {
+  .topbar .user { padding: 6px 9px; gap: 0; }
+  .topbar .user .u-name { display: none; }
+  .topbar .user .u-short { display: inline-flex; align-items: center; gap: 4px; }
+  .topbar .user .u-short svg { flex: none; }
+}
+
+/* 窄机（<= 381px）：只剩一个圆形首字母头像，30px；导航项同步缩一档
+   ------------------------------------------------------------------
+   ⚠️⚠️ 断点 380（不是 361）是**逐像素扫出来的**，别凭感觉改。
+   第一版我按"361px 以下才用头像"写，结果 362~381px 这一段
+   「我的」胶囊(65px) 需要 353.08px、而 nav 只有 334~353px，
+   **整整 20px 的宽度被漏掉了** —— 375px（iPhone SE / 8，很常见）
+   顶栏因此折成 3 行、从 92px 涨到 127.7px，课表表头又会被顶偏。
+   扫 320~700 的真实变化点：
+       320~346px  头像态 需 318.08 vs nav 292~318  ❌ 3 行（老问题）
+       347~361px  头像态 需 318.08 vs nav 319~333  ✅ 2 行
+       362~380px  「我的」需 353.08 vs nav 334~352  ❌ 3 行（本轮引入）
+       381px      「我的」需 353.08 vs nav 353     ❌ 差 0.08（刀刃上）
+       382~640px  「我的」需 353.08 vs nav 354~612  ✅ 2 行
+   把头像态的**上界提到 381** 一次覆盖两个坏段。
+   ⚠️ 为什么是 381 而不是 380：380 那版实测 381px 仍差 0.08px 折成 3 行 ——
+   断点开闭区间和浏览器取整只差一个像素，卡在刀刃上。
+   取 381 把这一像素并进窄机档，382px 起才用「我的」。
+
+   ⚠️ 光切头像还不够：320px 时头像态仍需 318.08，而 nav 只有 292
+   （差 26.08px）。导航项数和 gap 都已到底，只能动**字号**。
+   实测（320px）：
+       13px / pad 7  需 318.08  ❌ 差 26
+       12.5px / 6    需 300.08  ❌ 差 8
+       12px / 5      需 282.08  ✅ 余 9.92   <- 选它，字号仍可读
+       11.5px / 4    需 264     ✅ 余 28
+   12px 是"放得下 + 还能看清"的平衡点，再小就不礼貌了。
+   ------------------------------------------------------------------ */
+@media (max-width: 381px) {
+  .topbar nav { gap: 2px; }
+  .topbar nav a { font-size: 12px; padding: 6px 5px; }
+  .topbar .user {
+    width: 30px; height: 30px; padding: 0;
+    border-radius: 999px;
+    justify-content: center; flex: none;
+  }
+  .topbar .user .u-short { display: none; }
+  .topbar .user .u-avatar {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+    font-size: 13px; font-weight: 700; line-height: 1;
+  }
+}
+
+/* ---------- 意见反馈 / 管理后台（2026-10-19 新增）----------
+   颜色一律走令牌：三套主题靠「令牌覆盖」生效，这里写死任何一个色值，
+   切主题时这块就不会跟着换（项目踩过这个坑，见 MEMORY.md「三类颜色永不令牌化」）。
+   ⚠️ 只有三类颜色允许写字面值：彩底上的 #fff、mask-image 的 #000、
+      .hero-dot.is-active 的 #fff —— 这里一个都不涉及。 */
+
+.fb-hint { margin: 6px 0 0; font-size: 12.5px; }
+
+/* 一条反馈：用户页与管理页共用同一套外观，避免两边看起来像两个功能 */
+.fb-item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: var(--card-2);
+}
+.fb-item:last-child { margin-bottom: 0; }
+.fb-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.fb-kind {
+  font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+  background: var(--brand-soft); color: var(--brand);
+}
+.fb-state {
+  font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+  background: var(--warn-bg); color: var(--warn);
+}
+.fb-state.is-replied { background: var(--ok-bg); color: var(--ok); }
+.fb-user { font-size: 12.5px; color: var(--ink-soft); }
+.fb-time { font-size: 12px; margin-left: auto; }
+.fb-content {
+  margin: 0 0 8px; line-height: 1.75;
+  white-space: pre-wrap;      /* 用户写的换行要保留，否则一段话挤成一坨 */
+  word-break: break-word;     /* 长英文/链接不许把卡片撑破 */
+}
+.fb-contact { margin: 0 0 8px; font-size: 12.5px; }
+.fb-reply {
+  margin: 10px 0 6px; padding: 10px 12px; border-radius: 10px;
+  background: var(--brand-soft);
+}
+.fb-reply-head {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 700; color: var(--brand); margin-bottom: 4px;
+}
+.fb-reply p { margin: 0; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+.fb-reply-time { margin-top: 6px; font-size: 12px; }
+.fb-wait { margin: 0; font-size: 12.5px; }
+
+/* ---- 管理后台 ---- */
+.ad-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-stats {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ad-stat {
+  display: flex; gap: 10px; align-items: flex-start; min-width: 0;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--card-2);
+}
+.ad-stat .s-ico {
+  flex: none; width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--brand-soft); color: var(--brand);
+}
+.ad-stat .s-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
+.ad-stat .s-label { font-size: 12.5px; color: var(--ink-soft); }
+.ad-stat .s-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+.ad-note { margin: 12px 0 0; font-size: 12.5px; }
+.ad-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+.ad-legend .tl-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-soft); }
+.ad-legend .tl-item i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.ad-chart { margin: 2px 0 0; }
+.ad-filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
+.ad-reply-box { margin-top: 10px; }
+.ad-reply-box textarea {
+  width: 100%; box-sizing: border-box; resize: vertical;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  font: inherit; line-height: 1.7;
+}
+.ad-reply-box textarea:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.ad-reply-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.ad-reply-tip { font-size: 12px; }
+.ad-reply-open { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .ad-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .ad-stats { grid-template-columns: 1fr; }
+  .fb-time { margin-left: 0; width: 100%; }
+}
+
+   管理员「数据大屏」（2026-10-20）
+   ---------------------------------------------------------------------------
+   用户要求：管理页只放「数据」和「反馈」，数据做成 ECharts 大屏。
+
+   写样式时守两条既有规矩：
+     · **只用令牌**，不写死颜色 —— 三套主题靠令牌覆盖，写死的颜色在黑夜/护眼
+       下就是一块刺眼的白板。唯一例外是图表里的 SVG/Canvas 颜色，
+       那份在 admin.js 里从 getComputedStyle 读令牌再喂给 ECharts。
+     · 大屏是「一屏能看完」，所以网格用 minmax 自适应：宽屏 3 列、
+       平板 2 列、手机 1 列，不做横向滚动。
+   =========================================================================== */
+.adm { max-width: 1180px; }
+
+.adm-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap; margin: 18px 0 14px;
+}
+.adm-title { margin: 0; font-size: 22px; letter-spacing: .5px; }
+.adm-sub { margin: 5px 0 0; font-size: 12.5px; color: var(--ink-faint); }
+.adm-head-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* 实时指示灯：绿点呼吸。状态文字比颜色更重要（色觉障碍也读得懂） */
+.adm-live {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--ink-soft);
+  padding: 5px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card-2);
+}
+.adm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); }
+.adm-live[data-state="ok"] .adm-dot {
+  background: var(--map);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--map) 55%, transparent);
+  animation: admPulse 2s ease-out infinite;
+}
+.adm-live[data-state="err"] .adm-dot { background: var(--danger); }
+.adm-live[data-state="wait"] .adm-dot { background: var(--warn); }
+@keyframes admPulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--map) 50%, transparent); }
+  70%  { box-shadow: 0 0 0 7px color-mix(in srgb, var(--map) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--map) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adm-live[data-state="ok"] .adm-dot { animation: none; }
+}
+
+.adm-block { margin-top: 18px; }
+.adm-block-title {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 10px; font-size: 16px;
+}
+.adm-block-title .h-ico { color: var(--brand); }
+
+/* ---- KPI 行：8 个数字，宽屏 4 列、平板 2 列、手机 1 列 ---- */
+.adm-kpis {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 900px) { .adm-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .adm-kpis { grid-template-columns: 1fr; } }
+.adm-kpi {
+  border: 1px solid var(--line); border-radius: 14px; background: var(--card);
+  padding: 13px 14px; min-height: 86px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.adm-kpi .k-label { font-size: 12.5px; color: var(--ink-soft); }
+.adm-kpi .k-num {
+  font-size: 27px; font-weight: 800; line-height: 1.15;
+  font-variant-numeric: tabular-nums;   /* 数字等宽，跳动时不抖 */
+}
+.adm-kpi .k-sub { font-size: 11.5px; color: var(--ink-faint); }
+.adm-kpi.is-hot { border-color: color-mix(in srgb, var(--brand) 35%, var(--line)); }
+.adm-kpi.is-hot .k-num { color: var(--brand); }
+
+/* ---- 图表网格 ---- */
+.adm-grid {
+  display: grid; gap: 12px; margin-top: 12px;
+  /* 三列：第一行「走势(占2) + 反馈类型」，第二行「用户构成 + 待办 + 情绪」，
+     正好填满、不留半行空白。窄屏退成 2 列 / 1 列。 */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 900px) { .adm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .adm-grid { grid-template-columns: 1fr; } }
+.adm-card {
+  margin: 0; padding: 12px 12px 6px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--card);
+}
+.adm-span2 { grid-column: span 2; }
+@media (max-width: 900px) {
+  .adm-span2 { grid-column: span 2; }   /* 2 列时正好整行 */
+}
+@media (max-width: 620px) {
+  .adm-span2 { grid-column: span 1; }
+}
+.adm-cap { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 2px; }
+.adm-chart { width: 100%; height: 214px; }
+#ch-daily { height: 238px; }
+
+.adm-note { margin: 12px 0 0; font-size: 12px; color: var(--ink-faint); line-height: 1.7; }

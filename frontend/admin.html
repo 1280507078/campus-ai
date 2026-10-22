@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据大屏 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <!--
+    ★ 管理员的两件事拆成两个页面（2026-10-20 用户要求）：
+        admin.html          数据（ECharts 大屏）        ← 本页
+        admin-feedback.html 反馈（收到的反馈 + 回复）
+      以前两块挤在一页里（大屏在上、列表在下），又高又杂，也不好单独把某一页发给别人看。
+      顶栏由 common.js 的 renderTopbar("admin") 注入（NAV_ADMIN），只有「数据 / 反馈」两项。
+  -->
+  <main id="main" class="container adm">
+    <header class="adm-head">
+      <div class="adm-head-main">
+        <h1 class="adm-title">数据大屏</h1>
+        <p class="adm-sub">全站用户数据 · 每 10 秒自动刷新 · 口径不含管理员账号</p>
+      </div>
+      <div class="adm-head-actions">
+        <span class="adm-live" id="adm-live" data-state="wait">
+          <i class="adm-dot" aria-hidden="true"></i>
+          <span id="adm-live-text">连接中…</span>
+        </span>
+        <button class="btn ghost sm" id="ad-refresh" type="button">
+          <span class="h-ico" data-icon="compass" data-icon-size="15"></span> 立即刷新
+        </button>
+
+      </div>
+    </header>
+
+    <!-- 非管理员 / 未登录时只显示这一块，数据与反馈区一律不渲染 -->
+    <div class="card acc-card" id="ad-denied" hidden>
+      <h3 class="acc-title">没有访问权限</h3>
+      <p class="muted acc-note-top" id="ad-denied-msg">
+        这个页面只有管理员账号可以打开。
+      </p>
+      <a class="btn ghost sm" href="account.html">回到我的</a>
+    </div>
+
+    <div id="ad-body" hidden>
+      <!-- ================= 一、数据 ================= -->
+      <section class="adm-block" id="ad-data">
+        <h2 class="adm-block-title">
+          <span class="h-ico" data-icon="target" data-icon-size="18"></span>数据
+        </h2>
+
+        <div class="adm-kpis" id="ad-kpis"></div>
+
+        <div class="adm-grid">
+          <figure class="adm-card adm-span2">
+            <figcaption class="adm-cap">近 7 天走势</figcaption>
+            <div class="adm-chart" id="ch-daily"></div>
+          </figure>
+          <figure class="adm-card">
+            <figcaption class="adm-cap">反馈类型分布</figcaption>
+            <div class="adm-chart" id="ch-fbkind"></div>
+          </figure>
+          <figure class="adm-card">
+            <figcaption class="adm-cap">用户构成</figcaption>
+            <div class="adm-chart" id="ch-users"></div>
+          </figure>
+          <figure class="adm-card">
+            <figcaption class="adm-cap">反馈回复率</figcaption>
+            <div class="adm-chart" id="ch-fbreply"></div>
+          </figure>
+          <figure class="adm-card">
+            <figcaption class="adm-cap">情绪测评（近 30 天均值 · 满分 12）</figcaption>
+            <div class="adm-chart" id="ch-emotion"></div>
+          </figure>
+        </div>
+
+        <p class="adm-note" id="ad-generated"></p>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <!-- ★ ECharts 用**本地文件**，不走 CDN：演示机常常没外网，走 CDN 会白屏 -->
+  <script src="js/vendor/echarts.min.js?v=20261022a"></script>
+  <script src="js/admin.js?v=20261022a"></script>
+</body>
+</html>

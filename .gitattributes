@@ -1,0 +1,22 @@
+# 编码与换行策略 —— 本项目在中文 Windows 上演示，
+# cmd / pip / Navicat 等工具按「系统 ANSI 代码页(cp936/GBK)」读取文件，
+# 与 UTF-8 不匹配就会乱码或直接抛 UnicodeDecodeError。已踩过两次坑。
+
+# 【1】由系统编码读取的文件：关闭换行转换，保持 CRLF。
+#      -text 让 git 不做 CRLF<->LF 转换，避免检出后换行被改写。
+*.bat   -text
+*.cmd   -text
+*.sql   -text
+
+# 【2】由认 UTF-8 的工具读取的文件：交给 git 正常处理换行。
+*.py    text
+*.js    text
+*.css   text
+*.html  text
+*.md    text
+*.json  text
+
+# 【3】编码守卫：提交前可运行
+#     python3 tools/check_encoding.py
+#     它会检查上述两类文件是否用了正确的编码，
+#     并能识别「其实是 UTF-8 却被按 GBK 读」的乱码。

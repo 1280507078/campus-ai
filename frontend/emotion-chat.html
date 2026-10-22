@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 倾听对话 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="chat" data-icon-size="22"></span>AI 倾听对话</h2>
+        <p class="muted">我在这里听你说。慢慢讲，不着急，你的每一种感受都值得被认真对待。</p>
+      </div>
+      <div class="row tight">
+        <a class="btn" href="emotion-quiz.html">
+          <span class="h-ico" data-icon="target" data-icon-size="16"></span>去做情绪测评
+        </a>
+      </div>
+    </div>
+
+    <!-- 引导卡：通往测评的另一条路 -->
+    <div class="alert info" style="margin-bottom:20px;">
+      <span class="h-ico" data-icon="sparkle" data-icon-size="18"></span>
+      <div>
+        不太确定自己的状态？可以花 1 分钟做一次
+        <a href="emotion-quiz.html" style="color:inherit;font-weight:600;text-decoration:underline;">情绪测评</a>，
+        从抑郁与焦虑两个维度看看最近的自己。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="spread">
+        <h3 style="margin:0; display:flex; align-items:center;">
+          <span class="h-ico" data-icon="chat" data-icon-size="20"></span>对话
+        </h3>
+        <button class="btn ghost" onclick="clearChat()">清空对话</button>
+      </div>
+      <div class="chat-box" id="chat" style="margin-top:14px;"></div>
+      <div class="row" style="margin-top:12px; gap:10px; flex-wrap:nowrap;">
+        <input id="msg" placeholder="说点什么吧（回车发送）" style="flex:1; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; font-family:inherit;" onkeydown="if(event.key==='Enter')send()" />
+        <button class="btn" id="btn-send" onclick="send()">发送</button>
+      </div>
+      <p class="muted" style="margin-top:8px;">若你正经历强烈痛苦，请及时联系学校心理中心或拨打心理援助热线 400-161-9995。</p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/emotion-chat.js?v=20261022a"></script>
+</body>
+</html>

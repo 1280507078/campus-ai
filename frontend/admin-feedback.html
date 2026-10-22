@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户反馈 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <!--
+    ★ 管理员的两件事拆成两个页面（2026-10-20 用户要求）：
+        admin.html          数据（ECharts 大屏）
+        admin-feedback.html 反馈（收到的反馈 + 回复）  ← 本页
+      以前两块挤在 admin.html 里，点「反馈」只是滚到下面那一块，
+      一页里又是大屏又是列表，看着乱，也不好单独发给别人看。
+  -->
+  <main id="main" class="container adm">
+    <header class="adm-head">
+      <div class="adm-head-main">
+        <h1 class="adm-title">用户反馈</h1>
+        <p class="adm-sub">用户提交的意见与问题 · 回复会显示在对方的「我的反馈」里</p>
+      </div>
+      <div class="adm-head-actions">
+        <!-- 跟数据页同一套：绿灯 + 最后刷新时间，每 10 秒自己拉一次 -->
+        <span class="adm-live" id="adm-live" data-state="wait">
+          <i class="adm-dot" aria-hidden="true"></i>
+          <span id="adm-live-text">连接中…</span>
+        </span>
+        <button class="btn ghost sm" id="fb-refresh" type="button">
+          <span class="h-ico" data-icon="compass" data-icon-size="15"></span> 立即刷新
+        </button>
+
+      </div>
+    </header>
+
+    <!-- 非管理员 / 未登录时只显示这一块 -->
+    <div class="card acc-card" id="ad-denied" hidden>
+      <h3 class="acc-title">没有访问权限</h3>
+      <p class="muted acc-note-top" id="ad-denied-msg">
+        这个页面只有管理员账号可以打开。
+      </p>
+      <a class="btn ghost sm" href="account.html">回到我的</a>
+    </div>
+
+    <section class="adm-block" id="ad-fb" hidden>
+      <div class="ad-filters" id="ad-filters" role="group" aria-label="反馈筛选">
+        <button class="btn ghost sm btn-on" data-only="" type="button">全部</button>
+        <button class="btn ghost sm" data-only="pending" type="button">待回复</button>
+        <button class="btn ghost sm" data-only="replied" type="button">已回复</button>
+      </div>
+      <div id="ad-feedback">
+        <div class="skel-line w60"></div>
+        <div class="skel-line w40"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/admin-feedback.js?v=20261022a"></script>
+</body>
+</html>

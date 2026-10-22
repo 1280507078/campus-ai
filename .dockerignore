@@ -1,0 +1,44 @@
+# 构建上下文排除清单。
+#
+# 两个必须排掉的类别：
+#   1. **密钥与真实数据**：backend/.env（真实 GLM/Qdrant/高德 Key）、
+#      backend/campus_ai.db（真实用户数据）。这两样进了镜像层就等于公开 ——
+#      `docker history` / `docker save` 都能翻出来，删掉文件也没用，层里还在。
+#   2. **构建产物与环境残留**：__pycache__ / *.pyc / node_modules / reports。
+#      它们不影响运行，只会让镜像变大、让缓存失效更频繁。
+
+# ---- 密钥与数据（最重要）----
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/campus_ai.db
+backend/campus_ai.db-*
+backend/campus_ai.db.*
+backend/data_export/
+backend/.package_marker
+# 语料指纹：机器本地算出来的，随镜像带过去反而会让
+# 「语料有变动」判据失效（镜像里的指纹是构建机的，不是运行时的）
+backend/data/.docs_fingerprint
+backend/certs/
+
+# ---- Python 残留 ----
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- 前端/工具链残留 ----
+node_modules/
+**/node_modules/
+tools/
+reports/
+docs/
+
+# ---- 交付物与版本库 ----
+*.zip
+.git/
+.github/
+包内结构.txt
+如何启动.md
+使用说明.pdf

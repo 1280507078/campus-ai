@@ -1,0 +1,195 @@
+{
+  "generated_at": "2026-10-21 23:28:37",
+  "cases_file": "C:\\Users\\z1280\\WorkBuddy\\2026-10-11-22-26-47\\campus-ai-h\\backend\\eval\\agent_cases.json",
+  "route": {
+    "accuracy": 1.0,
+    "passed": 68,
+    "total": 68,
+    "by_category": {
+      "D": {
+        "passed": 21,
+        "total": 21
+      },
+      "E": {
+        "passed": 11,
+        "total": 11
+      },
+      "L": {
+        "passed": 9,
+        "total": 9
+      },
+      "P": {
+        "passed": 8,
+        "total": 8
+      },
+      "R": {
+        "passed": 8,
+        "total": 8
+      },
+      "S": {
+        "passed": 4,
+        "total": 4
+      },
+      "X": {
+        "passed": 7,
+        "total": 7
+      }
+    },
+    "failures": []
+  },
+  "holdout": {
+    "accuracy": 1.0,
+    "passed": 21,
+    "total": 21,
+    "rows": [
+      {
+        "id": "H01",
+        "q": "我想办休学，先找谁",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H02",
+        "q": "转专业要什么条件",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H03",
+        "q": "缓考怎么申请呢",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H04",
+        "q": "辅修可以大二报名吗",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H05",
+        "q": "国庆放几天",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H06",
+        "q": "元旦放假吗",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H07",
+        "q": "第5周是几号",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H08",
+        "q": "大四什么时候毕业",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H09",
+        "q": "学位证丢了怎么补",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H10",
+        "q": "教室怎么借",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H12",
+        "q": "宿舍空调坏了找谁修",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H13",
+        "q": "怎么才能提高绩点",
+        "expect": "explain",
+        "actual": "explain",
+        "ok": true
+      },
+      {
+        "id": "H14",
+        "q": "帮我排个期末复习计划",
+        "expect": "plan",
+        "actual": "plan",
+        "ok": true
+      },
+      {
+        "id": "H15",
+        "q": "明天上午有课吗",
+        "expect": "local_ask",
+        "actual": "local_ask",
+        "ok": true
+      },
+      {
+        "id": "H16",
+        "q": "周六10-12点做实验",
+        "expect": "schedule_add",
+        "actual": "schedule_add",
+        "ok": true
+      },
+      {
+        "id": "H17",
+        "q": "下周三四晚上七点半到九点练瑜伽",
+        "expect": "schedule_add",
+        "actual": "schedule_add",
+        "ok": true
+      },
+      {
+        "id": "H18",
+        "q": "福州今天下雨吗",
+        "expect": "quick",
+        "actual": "quick",
+        "ok": true
+      },
+      {
+        "id": "H19",
+        "q": "田径场怎么走",
+        "expect": "quick",
+        "actual": "quick",
+        "ok": true
+      },
+      {
+        "id": "H20",
+        "q": "医保在哪报销",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H21",
+        "q": "选课什么时候开始",
+        "expect": "docs",
+        "actual": "docs",
+        "ok": true
+      },
+      {
+        "id": "H22",
+        "q": "帮我把下周的复习安排一下",
+        "expect": "plan",
+        "actual": "plan",
+        "ok": true
+      }
+    ],
+    "failures": []
+  }
+}

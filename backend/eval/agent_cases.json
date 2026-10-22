@@ -1,0 +1,581 @@
+{
+  "_readme": [
+    "Agent 评测集。字段说明：",
+    "  id          : 唯一编号，报告里按它定位失败样例",
+    "  q           : 用户原话（不要改写，模型对措辞很敏感）",
+    "  route       : 期望路由 route_of() 的返回值：schedule_add / quick / docs / explain / local_ask / plan",
+    "  docs_hit    : 仅 docs 有意义。true = 语料里应该有答案；false = 语料里没有，必须明确说「没写」",
+    "  must_contain: 答案里必须出现的片段（任一命中即可，用来挡「答非所问」）",
+    "  must_not    : 答案里不许出现的片段（挡幻觉与串味）",
+    "  note        : 这条用例是为了防什么错误而存在",
+    "",
+    "⚠️ route 标注不是「我觉得应该是」，而是「route_of 应该判成」。",
+    "   标注与实现不一致时，要么改标注（判据是对的），要么改规则（标注是对的）——",
+    "   两者都要在报告里写清楚改的是哪一边。"
+  ],
+  "cases": [
+    {
+      "id": "D01",
+      "q": "休学需要准备什么材料？",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "休学"
+      ],
+      "note": "学籍异动，语料有原文"
+    },
+    {
+      "id": "D02",
+      "q": "休学手续怎么办",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "休学"
+      ],
+      "note": "同义说法也要能命中"
+    },
+    {
+      "id": "D03",
+      "q": "我想转专业，要走什么流程",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "转专业"
+      ],
+      "note": "13 篇办事指南里最长的一篇"
+    },
+    {
+      "id": "D04",
+      "q": "怎么申请缓考",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "缓考"
+      ],
+      "note": "检索分数最高的一类（0.72）"
+    },
+    {
+      "id": "D05",
+      "q": "这门课挂了怎么重修",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "重修"
+      ],
+      "note": "口语化说法"
+    },
+    {
+      "id": "D06",
+      "q": "辅修报名流程是什么",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "辅修"
+      ],
+      "note": "易与转专业混淆"
+    },
+    {
+      "id": "D07",
+      "q": "学分认定怎么弄",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "学分"
+      ],
+      "note": "学分置换/认定"
+    },
+    {
+      "id": "D08",
+      "q": "毕业证明书怎么开",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "证明"
+      ],
+      "note": "证明材料类"
+    },
+    {
+      "id": "D09",
+      "q": "出国留学要开在读证明，怎么办",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "在读"
+      ],
+      "note": "长句 + 目的从句"
+    },
+    {
+      "id": "D10",
+      "q": "退学手续怎么办",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "退学"
+      ],
+      "note": "休/退/复学三篇相似，别串篇"
+    },
+    {
+      "id": "D11",
+      "q": "复学需要什么材料",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "复学"
+      ],
+      "note": "同上"
+    },
+    {
+      "id": "D12",
+      "q": "查卷怎么申请",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "查卷"
+      ],
+      "note": "考务类"
+    },
+    {
+      "id": "D13",
+      "q": "教室借用怎么申请",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "教室"
+      ],
+      "note": "场地类"
+    },
+    {
+      "id": "D14",
+      "q": "什么时候放寒假",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "寒假",
+        "1月21",
+        "01-21"
+      ],
+      "note": "校历；向量分只有 0.44，靠字面锚点救回来"
+    },
+    {
+      "id": "D15",
+      "q": "第10周是哪几天",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "11-09",
+        "11月9"
+      ],
+      "note": "校历周次对照，需要真算对"
+    },
+    {
+      "id": "D16",
+      "q": "这学期什么时候开学",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "9月7",
+        "09-07"
+      ],
+      "note": "校历"
+    },
+    {
+      "id": "D17",
+      "q": "校历在哪看",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "校历"
+      ],
+      "note": "元问题：问校历本身"
+    },
+    {
+      "id": "D18",
+      "q": "第二学期什么时候开始",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "2月22",
+        "02-22"
+      ],
+      "note": "跨学期，别答成第一学期"
+    },
+    {
+      "id": "D19",
+      "q": "什么时候开始放暑假",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "7月8",
+        "07-08"
+      ],
+      "note": "校历"
+    },
+    {
+      "id": "D20",
+      "q": "中秋节是哪天",
+      "route": "docs",
+      "docs_hit": true,
+      "must_contain": [
+        "9月25",
+        "09-25"
+      ],
+      "note": "校历节假日表"
+    },
+    {
+      "id": "R01",
+      "q": "校园卡丢了怎么补",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "复印件",
+        "报纸",
+        "学位"
+      ],
+      "note": "★ 实测会误命中「毕业学位证明」0.458，必须拒答"
+    },
+    {
+      "id": "R02",
+      "q": "图书馆几点开门",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "上线",
+        "课表、旁听"
+      ],
+      "note": "语料无营业时间"
+    },
+    {
+      "id": "R03",
+      "q": "三食堂几点关门",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "转专业",
+        "重修"
+      ],
+      "note": "食堂不在语料里（本树没有食堂页）"
+    },
+    {
+      "id": "R04",
+      "q": "怎么申请奖学金",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "缓考",
+        "辅修"
+      ],
+      "note": "★ 泛动作词「申请」会误命中缓考，已由停用词挡住"
+    },
+    {
+      "id": "R05",
+      "q": "宿舍报修怎么弄",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "休学",
+        "退学"
+      ],
+      "note": "后勤事务不在教务处语料里"
+    },
+    {
+      "id": "R06",
+      "q": "补办学生证要多久",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "报纸",
+        "身份证复印件一份"
+      ],
+      "note": "学生证与毕业证明书是两件事"
+    },
+    {
+      "id": "R07",
+      "q": "医保怎么报销",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "一站式",
+        "教务处审批"
+      ],
+      "note": "完全不相关"
+    },
+    {
+      "id": "R08",
+      "q": "国际交流项目怎么报名",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "转专业",
+        "辅修"
+      ],
+      "note": "语料只有出国在读证明，没有项目报名"
+    },
+    {
+      "id": "E01",
+      "q": "高数怎么复习",
+      "route": "explain",
+      "note": "★ 曾是最大 bug：被当成 plan，回了一张时间表"
+    },
+    {
+      "id": "E02",
+      "q": "我记不住单词怎么办",
+      "route": "explain",
+      "note": "求方法"
+    },
+    {
+      "id": "E03",
+      "q": "什么是洛必达法则",
+      "route": "explain",
+      "note": "求讲解；不许被 docs 抢走"
+    },
+    {
+      "id": "E04",
+      "q": "线代听不懂",
+      "route": "explain",
+      "note": "求诊断"
+    },
+    {
+      "id": "E05",
+      "q": "总是拖延，静不下心",
+      "route": "explain",
+      "note": "情绪/方法混合"
+    },
+    {
+      "id": "E06",
+      "q": "四级作文有什么技巧",
+      "route": "explain",
+      "note": "求技巧"
+    },
+    {
+      "id": "E07",
+      "q": "为什么我看懂了题还是做不对",
+      "route": "explain",
+      "note": "为什么我…"
+    },
+    {
+      "id": "E08",
+      "q": "数据结构怎么入门",
+      "route": "explain",
+      "note": "怎么入门"
+    },
+    {
+      "id": "E09",
+      "q": "教我一下概率论怎么学",
+      "route": "explain",
+      "note": "教我 + 怎么学"
+    },
+    {
+      "id": "E10",
+      "q": "背了就忘，有什么方法",
+      "route": "explain",
+      "note": "有什么方法"
+    },
+    {
+      "id": "L01",
+      "q": "明天有课吗",
+      "route": "local_ask",
+      "note": "★ 模型会答成「今天」，必须本地算"
+    },
+    {
+      "id": "L02",
+      "q": "周四有课吗",
+      "route": "local_ask",
+      "note": "点名日期"
+    },
+    {
+      "id": "L03",
+      "q": "这周哪几天有课",
+      "route": "local_ask",
+      "note": "空档归纳"
+    },
+    {
+      "id": "L04",
+      "q": "今天第几节有课",
+      "route": "local_ask",
+      "note": "细节问法"
+    },
+    {
+      "id": "L05",
+      "q": "高等数学几点的课",
+      "route": "local_ask",
+      "note": "按课名问"
+    },
+    {
+      "id": "L06",
+      "q": "后天有没有课",
+      "route": "local_ask",
+      "note": "相对日期"
+    },
+    {
+      "id": "L07",
+      "q": "明天上几门",
+      "route": "local_ask",
+      "note": "★ _LOCAL_ASK_HINTS 粗筛会挡掉，靠 force 兜"
+    },
+    {
+      "id": "L08",
+      "q": "这周哪天有空",
+      "route": "local_ask",
+      "note": "空档"
+    },
+    {
+      "id": "L09",
+      "q": "周五的课上到几点",
+      "route": "local_ask",
+      "note": "细节问法：只给一个时间"
+    },
+    {
+      "id": "P01",
+      "q": "帮我排一份这周的复习计划",
+      "route": "plan",
+      "note": "标准排表请求｜tools 期望按实测修正：先查课表再算空档",
+      "tools": [
+        "get_timetable",
+        "find_free_slots"
+      ]
+    },
+    {
+      "id": "P02",
+      "q": "下周每天晚上帮我安排两小时学英语",
+      "route": "plan",
+      "note": "时间配方场景｜tools 期望按实测修正：先查课表再算空档",
+      "tools": [
+        "get_timetable",
+        "find_free_slots"
+      ]
+    },
+    {
+      "id": "P03",
+      "q": "这周太满了，帮我减一点",
+      "route": "plan",
+      "note": "反馈类"
+    },
+    {
+      "id": "P04",
+      "q": "离期末还有三周，怎么规划",
+      "route": "plan",
+      "note": "规划动词"
+    },
+    {
+      "id": "P05",
+      "q": "帮我做一个考研复习方案",
+      "route": "plan",
+      "note": "方案"
+    },
+    {
+      "id": "P06",
+      "q": "我要准备四级，排个计划",
+      "route": "plan",
+      "note": "排 + 目标｜tools 期望按实测修正：先查课表再算空档",
+      "tools": [
+        "get_timetable",
+        "find_free_slots"
+      ]
+    },
+    {
+      "id": "P07",
+      "q": "周末想补一下这周的课，帮我理一下时间",
+      "route": "plan",
+      "note": "理一下（动作词）"
+    },
+    {
+      "id": "P08",
+      "q": "帮我拆成每天两段来学",
+      "route": "plan",
+      "note": "拆成"
+    },
+    {
+      "id": "S01",
+      "q": "周六18-19点上钢琴课，排2周",
+      "route": "schedule_add",
+      "note": "★ 必须只写一条 Course，不能排计划"
+    },
+    {
+      "id": "S02",
+      "q": "下周三下午2点到4点开班会",
+      "route": "schedule_add",
+      "note": "下周三 + 下午"
+    },
+    {
+      "id": "S03",
+      "q": "明天下午3-5点体检",
+      "route": "schedule_add",
+      "note": "相对日期"
+    },
+    {
+      "id": "S04",
+      "q": "每周二四晚上七点到八点半练琴",
+      "route": "schedule_add",
+      "note": "一串星期 + 中文钟点"
+    },
+    {
+      "id": "X01",
+      "q": "大学有几个楼",
+      "route": "quick",
+      "note": "闲聊/校园事实：原来 33 秒调了课表+空档两个工具去答「有几个楼」",
+      "tools": []
+    },
+    {
+      "id": "X02",
+      "q": "你好",
+      "route": "plan",
+      "note": "寒暄，不该触发任何工具"
+    },
+    {
+      "id": "X03",
+      "q": "今天天气怎么样",
+      "route": "quick",
+      "note": "该调 get_weather",
+      "tools": [
+        "get_weather"
+      ]
+    },
+    {
+      "id": "X04",
+      "q": "博文楼在哪",
+      "route": "quick",
+      "note": "该调 get_building_info",
+      "tools": [
+        "get_building_info"
+      ]
+    },
+    {
+      "id": "X05",
+      "q": "计算机组成原理是哪位老师",
+      "route": "quick",
+      "note": "课表信息",
+      "tools": [
+        "get_timetable"
+      ]
+    },
+    {
+      "id": "X06",
+      "q": "谢谢",
+      "route": "plan",
+      "note": "收尾语"
+    },
+    {
+      "id": "X07",
+      "q": "我下周三要去医院，还能排计划吗",
+      "route": "plan",
+      "note": "带日期但不是加课（没给钟点区间）"
+    },
+    {
+      "id": "E11",
+      "q": "这门课老师讲得太快了怎么办",
+      "route": "explain",
+      "note": "★ 原留出集 H18：判不出来（讲得太快=课堂跟不上，不是排表）。补规则后移入开发集"
+    },
+    {
+      "id": "D21",
+      "q": "成绩单在哪打印",
+      "route": "docs",
+      "docs_hit": false,
+      "must_not": [
+        "转专业",
+        "休学"
+      ],
+      "note": "语料只有均分证明，无成绩单打印（2026-10-21 从留出集 H11 移入：它被用来调过参，再算留出就是自欺）"
+    }
+  ]
+}

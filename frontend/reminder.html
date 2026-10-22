@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日程提醒 · 学业规划 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。
+       没存过偏好、或选了「跟随系统」时，按系统的深色偏好决定初始主题。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="clock" data-icon-size="22"></span>日程提醒</h2>
+        <p class="muted">今天和明天要上什么课，一眼看清。临近上课会高亮，也可以开启浏览器通知到点提醒你。</p>
+      </div>
+      <div class="row">
+        <button class="btn ghost" onclick="toggleNotify()" id="btn-notify"
+                aria-pressed="false" title="点击开启上课提醒">开启通知</button>
+        <!-- ★ 刷新必须真的去后端拉一次数据，见 planner-reminder.js 的 refreshReminder()。
+             原来这里写的是 renderReminders() —— 那只是拿内存里的数据重画一遍，
+             画出来和刚才一模一样，用户点完看不到任何变化，就是「刷新没反应」。 -->
+        <button class="btn ghost" onclick="refreshReminder()" id="btn-refresh-reminder"
+                title="重新从账号读取时间表">刷新</button>
+      </div>
+    </div>
+
+    <div class="subnav-row">
+      <a class="subnav-pill" href="planner.html">时间表</a>
+      <a class="subnav-pill active" href="reminder.html">日程提醒</a>
+      <a class="subnav-pill" href="plan.html">AI伴学</a>
+    </div>
+
+    <div class="card" id="reminder-card">
+      <div id="reminder-body">
+        <div class="empty">
+          <div class="e-ico" data-icon="inbox" data-icon-size="32"></div>
+          <p>正在读取你的时间表…</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:14px;">
+      提醒只在你打开本页时生效（浏览器通知也一样）——
+      这是网页应用的限制，不是 bug。想要更稳的提醒，可以把本页固定在浏览器标签里。
+    </p>
+  </div>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/campus.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/planner-core.js?v=20261022a"></script>
+  <script src="js/planner-reminder.js?v=20261022a"></script>
+</body>
+</html>

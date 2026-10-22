@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>意见反馈 · 校园 AI 助手</title>
+  <link rel="icon" href="favicon.ico?v=20261022a" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261022a" />
+  <link rel="apple-touch-icon" href="favicon.png?v=20261022a" />
+  <!-- 主题要在首次绘制前落到 <html> 上，否则刷新会先闪一下白底。
+       这段**必须是内联**的：换成外链脚本会晚一帧，那一帧就足够看见闪白了。 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t || t === "auto") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        if (t === "dark" || t === "eye") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* 隐私模式读不到，按白天走 */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=20261022a" />
+</head>
+<body>
+  <main id="main" class="container">
+    <div class="page-head">
+      <div>
+        <h2><span class="h-ico" data-icon="chat" data-icon-size="22"></span>意见反馈</h2>
+        <p class="muted">用着不顺手的地方、想要的功能，都可以直接写在这里。管理员回复后，本页下方能看到。</p>
+      </div>
+      <a class="btn ghost" href="account.html">返回我的</a>
+    </div>
+
+    <!-- 表单用 <form> 而不是一个 div：回车提交、浏览器自带的必填提示都能用上 -->
+    <form class="card acc-card" id="fb-form" novalidate>
+      <h3 class="acc-title">写一条反馈</h3>
+
+      <div class="field">
+        <label for="fb-kind">类型</label>
+        <select id="fb-kind">
+          <option value="suggest">功能建议</option>
+          <option value="bug">问题反馈</option>
+          <option value="ux">使用体验</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fb-content">具体内容</label>
+        <textarea id="fb-content" rows="6" maxlength="1000"
+                  placeholder="例如：课表导入后周三第三节显示成了周四，用的截图导入。"></textarea>
+        <p class="muted fb-hint"><span id="fb-count">0</span> / 1000 字</p>
+      </div>
+
+      <div class="field">
+        <label for="fb-contact">联系方式（可选）</label>
+        <input id="fb-contact" maxlength="64" autocomplete="off"
+               placeholder="邮箱或微信，方便进一步联系你" />
+        <p class="muted fb-hint">不填也能提交 —— 回复会显示在下面的「我的反馈」里。</p>
+      </div>
+
+      <button class="btn" id="fb-submit" type="submit">
+        <span class="h-ico" data-icon="arrow" data-icon-size="16"></span> 提交反馈
+      </button>
+    </form>
+
+    <section class="card acc-card" id="fb-history">
+      <h3 class="acc-title">我的反馈</h3>
+      <div id="fb-list">
+        <div class="skel-line w60"></div>
+        <div class="skel-line w40"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js?v=20261022a"></script>
+  <script src="js/icons.js?v=20261022a"></script>
+  <script src="js/common.js?v=20261022a"></script>
+  <script src="js/feedback.js?v=20261022a"></script>
+</body>
+</html>

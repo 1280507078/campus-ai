@@ -1,0 +1,182 @@
+# 持续集成：每次推送 / 提 PR 时，把「能自动判对错」的那部分全跑一遍。
+#
+# ## 为什么只有这三个作业
+#
+# 这套东西的验证手段有四种，只有前两种适合放 CI：
+#
+#   1. **纯逻辑守卫**（不需要网络、不需要 Key）—— 放 CI，秒级，失败原因明确。
+#   2. **起服务跑 e2e / 无障碍审计**（本地起后端 + Chromium）—— 放 CI，但要先
+#      把环境降级到「没有第三方 Key 也能启动」，否则 CI 里的 Key 泄露 = 账单事故。
+#   3. **真跑模型的 Agent 评测**（tools/eval_agent.py --live）—— **不放 CI**：
+#      一条要 30 秒、要花钱，而且模型输出有随机性，放进 CI 会变成"随机飘红"，
+#      大家很快就学会无脑重跑。它属于**发版前手工跑一次**的东西，报告见
+#      docs/agent-eval.md。
+#   4. **打包 / 构建号 / PDF 手册** —— 依赖 Windows 路径与本地 Chrome 打印，
+#      放 CI 收益低、维护成本高，留在 tools/ 里手工执行。
+#
+# ## 离线降级
+#
+# 所有作业都显式把第三方 Key 置空。理由不只是省钱：
+# **一个在「没有 Key」时起不来的接口，本身就是缺陷** —— 真实用户第一次解压
+# 运行时就是没有 Key 的。CI 里不带 Key，等于每天替我们验一遍这件事。
+#
+# ⚠️ 诚实说明：本仓库当前**不是 git 仓库**（开发期内网单机迭代），这份工作流
+#    只在本机逐条手工跑过对应的命令并核对过输出（见 docs/agent-eval.md 的
+#    「验证记录」），**没有在 GitHub Actions 上真跑过**。首次接入时如果某条
+#    步骤报错，优先看「本机跑的是什么路径、CI 上那个文件在不在」。
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # 一律不注入真实 Key：没 Key 也得能起来、能跑测试
+  GLM_API_KEY: ""
+  QDRANT_URL: ""
+  QDRANT_API_KEY: ""
+  AMAP_WEB_KEY: ""
+  AMAP_JS_KEY: ""
+  AMAP_SECURITY_CODE: ""
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # ① 后端契约测试 + 覆盖率
+  # ---------------------------------------------------------------------------
+  backend-contract:
+    name: 后端契约测试 + 覆盖率
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install coverage
+
+      # 这四个脚本是**脚本式**测试（每个文件自带 check()/结论文案/退出码），
+      # 不是 pytest 风格，所以不能 `pytest tools/` —— 那样会把它们当测试模块
+      # 收集，跑到末尾的 sys.exit() 直接 INTERNALERROR。用按文件跑的方式。
+      - name: 跑契约测试
+        run: |
+          set -e
+          for t in test_rag_docs test_study_agent test_scan_login_contract test_data_export; do
+            echo "--- $t"
+            python -m coverage run -a --source=backend "tools/$t.py"
+          done
+
+      - name: 覆盖率报告
+        run: |
+          python -m coverage report --omit="backend/data/*" | tee reports/coverage.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: reports/coverage.txt
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------------
+  # ② 前端纯逻辑守卫（不起服务、不开浏览器）
+  # ---------------------------------------------------------------------------
+  frontend-static:
+    name: 前端纯逻辑守卫
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 全部前端脚本语法检查
+        run: |
+          set -e
+          n=0
+          for f in frontend/js/*.js frontend/js/vendor/*.js; do
+            node --check "$f"
+            n=$((n + 1))
+          done
+          echo "语法检查通过：$n 个文件"
+
+      # 这几个脚本只读源码 / 纯函数，不连后端也不开浏览器，
+      # 所以不需要 `npm install` —— 装了反而慢。
+      - name: 跑静态守卫
+        run: |
+          set -e
+          for t in test_api_base test_campus_graph test_campus_places test_plan_chat test_term_timetable; do
+            echo "--- $t"
+            node "tools/$t.mjs"
+          done
+
+  # ---------------------------------------------------------------------------
+  # ③ 起服务跑 e2e + 无障碍审计
+  # ---------------------------------------------------------------------------
+  e2e-and-a11y:
+    name: e2e + 无障碍审计
+    runs-on: ubuntu-latest
+    needs: backend-contract
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 安装依赖（后端 + Playwright + axe）
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          npm install --no-save playwright @axe-core/playwright
+          npx playwright install --with-deps chromium
+
+      - name: 起后端（等 /api/ping 通）
+        run: |
+          cd backend
+          PORT=8011 python main.py > /tmp/server.log 2>&1 &
+          echo "server_pid=$!" >> "$GITHUB_ENV"
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8011/api/ping > /dev/null; then
+              echo "后端已就绪（第 ${i} 次探测）"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "后端 60 秒内没起来，日志：" && tail -60 /tmp/server.log && exit 1
+
+      - name: 全站 e2e（逐页打开，断言无报错、无白屏）
+        env:
+          CAMPUS_API_PORT: "8011"
+        run: node tools/test_site_smoke.mjs
+
+      # 非 0 退出 = 有 serious/critical 违规。moderate/minor 只打印不判死，
+      # 否则这个作业会长期飘红，然后所有人开始无视它。
+      - name: 无障碍审计（WCAG 2.1 A/AA，浅色 + 黑夜）
+        env:
+          CAMPUS_API_PORT: "8011"
+        run: node tools/audit_a11y.mjs
+
+      - name: 收后端日志
+        if: always()
+        run: tail -100 /tmp/server.log || true
