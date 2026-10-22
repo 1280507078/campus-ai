@@ -181,7 +181,7 @@ check("★ 开场白带 greeting 类（e2e 靠它把开场白和真回答分开�
 check("★ planner-core 刷新时叫的是页面上真实存在的函数名（updatePlanTip）",
   /callIfDefined\("updatePlanTip"\)/.test(CORE) && !/callIfDefined\("renderPlanHint"\)/.test(CORE));
 
-// ★ 防回归：「AI 看到空课表」是踩过的真坑（用户刚导入还没保存时库里是空的）
+// ★ 防回归：「AI 看到空课表」是踩过的真问题（用户刚导入还没保存时库里是空的）
 check("★ 发送时带上当前课表（别改回只发 goal/days）",
   /courses:\s*\(typeof courses/.test(JS) && /\.map\(stripLocal\)/.test(JS));
 check("★ 发送时带上对话上下文 history（多轮追问才接得住）",

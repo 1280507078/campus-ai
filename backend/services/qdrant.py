@@ -291,7 +291,7 @@ async def search_memory(user_id: int, query: str, top_k: int = 3,
 async def delete_user_memory(user_id: int) -> bool:
     """删除某个用户的**全部**向量记忆（注销账号时必须调用）。
 
-    ⚠️⚠️ 为什么这个方法必须存在（踩过的坑，别再删掉它）：
+    ⚠️⚠️ 为什么这个方法必须存在（注意点，别再删掉它）：
       SQLite 的 `users.id` 是自增主键，但**没有 AUTOINCREMENT**，删掉最大的一行后
       新插入会**复用同一个 id**。而 Qdrant 里所有向量靠 payload.user_id 关联用户，
       如果注销时只删 SQLite、不删 Qdrant：

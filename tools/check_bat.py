@@ -148,7 +148,7 @@ _DIR_DP0 = re.compile(r'--dir\s+"%{1,2}~dp0\s*"', re.I)
 
 
 def _check_dir_with_dp0(lines: list[str]) -> list[str]:
-    """找出 `--dir "%%~dp0"` 这种会被结尾反斜杠坑掉的参数。"""
+    """找出 `--dir "%%~dp0"` 这种会被结尾反斜杠问题掉的参数。"""
     out = []
     for i, ln in enumerate(lines, 1):
         s = ln.strip()
@@ -185,7 +185,7 @@ def _check_rebuild_and_resplit(lines: list[str]) -> list[str]:
             concat_vars[m.group(1).lower()] = i
             continue
 
-        # 之后如果再对那个变量做 tokens=... delims=: 切分，就是踩坑了
+        # 之后如果再对那个变量做 tokens=... delims=: 切分，就是踩问题了
         if "delims=:" not in s:
             continue
         for var, decl_line in concat_vars.items():

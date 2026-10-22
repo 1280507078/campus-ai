@@ -45,7 +45,7 @@ def iso_utc(dt) -> str:
 
     库里存的是 UTC（`datetime.utcnow`），前端 `new Date(iso)` 会按本地时区
     还原。**必须带 Z**：不带的话浏览器会把它当本地时间，东八区会整整差 8 小时
-    （这个坑在情绪趋势接口上踩过，注释也留在那儿）。
+    （这个问题在情绪趋势接口上踩过，注释也留在那儿）。
     """
     d = dt or datetime.utcnow()
     return d.isoformat() + "Z"

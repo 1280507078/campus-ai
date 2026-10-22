@@ -14,7 +14,7 @@
  *
  * ⚠️ 源码注释里出现「课表」是**故意的**（它们在讲历史与内部机制），
  *    所以 HTML 一律先剥掉注释再断言；JS 用「精确旧文案」而不是全文扫，
- *    否则会把正确实现判成失败（这个坑在 test_plan_chat.mjs 上已经踩过一次）。
+ *    否则会把正确实现判成失败（这个问题在 test_plan_chat.mjs 上已经踩过一次）。
  */
 import fs from "node:fs";
 import path from "node:path";

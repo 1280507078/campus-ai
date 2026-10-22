@@ -153,7 +153,7 @@ def looks_like_period(value) -> bool:
 class _Iat:
     """替身：让 `grid.iat[r, c]` 这种**下标语法**能跑。
 
-    ⚠️ 这里踩过一次坑：pandas 的 `.iat` 是个支持 `[]` 的**属性**
+    ⚠️ 这里踩过一次问题：pandas 的 `.iat` 是个支持 `[]` 的**属性**
     （`df.iat[r, c]`），不是方法（不是 `df.iat(r, c)`）。
     我一开始写成了方法，结果下游几十处 `df.iat[r, c]` 全部报
     `TypeError: 'method' object is not subscriptable`。
@@ -407,7 +407,7 @@ def _pick_sheet(xl, warnings: list[str]) -> tuple[str, "object"]:
 
     ⚠️ 只取第一个 sheet，不「把所有 sheet 合并」。
 
-    实测踩到的坑：用户从教务系统导出的 .xls 里，第一个 sheet 是本学期的课表，
+    实测踩到的问题：用户从教务系统导出的 .xls 里，第一个 sheet 是本学期的课表，
     后面往往还挂着上学期的、或者别的学院的残留表（同一份文件里见过
     「2026-2027-1 网络工程」和「2025-2 经济管理学院」两张完全无关的表）。
     如果无脑合并，两个学院的课会混进同一张课表，而且**不会报错** ——

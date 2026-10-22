@@ -355,7 +355,7 @@ print(json.dumps({
 
 /* ---------------- ⑥ 节次 / 星期表头的各种写法 ----------------
  *
- * 血泪教训（问题记录：「xls不能识别」）：
+ * 注意（问题记录：「xls不能识别」）：
  *   原来的路由层写的是 `_PERIOD_TO_ORDER.get(int(period))`，只要节次格不是**纯数字**
  *   就抛 ValueError，被最外层兜底 except 抓住 -> 用户看到
  *   「这个表格读不了，可能是文件损坏或格式太特殊」。
@@ -402,7 +402,7 @@ wb.save(sys.argv[3])
     return { status: r.status(), body };
   };
 
-  /* ⑥-1 节次写成「第N节」+ 星期写成「星期一」—— 两个坑一起踩 */
+  /* ⑥-1 节次写成「第N节」+ 星期写成「星期一」—— 两个问题一起出现 */
   {
     const f = makeCase([['第1节', '数据库原理', '计算机网络'], ['第5节', '操作系统', '数据结构']],
       ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']);
@@ -476,7 +476,7 @@ wb.save(sys.argv[3])
 console.log('\n--- ⑦ 上课周次透传（导入 -> 核对 -> 落库）---');
 if (!XLS) {
   /* 没有样例 .xls 时必须**明确跳过**，不能就这么往下跑。
-     踩过的坑：这里曾经直接 setInputFiles(XLS)，而 XLS 是 undefined ——
+     注意点：这里曾经直接 setInputFiles(XLS)，而 XLS 是 undefined ——
      playwright 收到 undefined 会在自己的 coreBundle 里抛
      「TypeError: Cannot read properties of undefined (reading 'buffer')」，
      整个测试脚本当场崩掉，前面几十条 PASS 也一起没了。报错还完全指不到
@@ -525,7 +525,7 @@ if (!XLS) {
       : bad(`计算机网络 周次不对：${JSON.stringify(r.items.filter(x => x.name === '计算机网络').map(x => x.weeks))}`);
 
   /* ⑦-4 落库时 weeks 不能被 confirmImport 的白名单漏掉 ——
-     这是最容易踩的坑：漏了不报错、不提示，但导入的课全变「每周都上」。 */
+     这是最容易踩的问题：漏了不报错、不提示，但导入的课全变「每周都上」。 */
   const btn = await p.$('#review-body button:has-text("确认导入")');
   if (!btn) { bad('找不到「确认导入」按钮'); }
   else {
@@ -595,10 +595,10 @@ console.log('\n--- ⑧ 缺 pandas 时自动降级（不依赖它也能导入）-
 {
   const { execFileSync } = await import('child_process');
   /* ⚠️ 样例 .xls 是**可选输入**（这台机器上没有就跳过），绝不能写死 Linux 路径。
-     踩过的坑：这一节原来把 '/root/uploads/xxx-学生课表.xls' 硬编码在注入的
+     注意点：这一节原来把 '/root/uploads/xxx-学生课表.xls' 硬编码在注入的
      python 里，于是没有那两份样例的机器上必然 4 条 FAIL，报的却是
      「FileNotFoundError」—— 看着像导入功能坏了，其实只是缺测试素材。
-     同一个坑在 ⑦ 也有一份（那里更糟：XLS 是 undefined，直接把 playwright 打崩）。
+     同一个问题在 ⑦ 也有一份（那里更糟：XLS 是 undefined，直接把 playwright 打崩）。
      现在统一走 SAMPLES 探测，没有就明确 SKIP，并把「坏文件仍给人话」那条
      不依赖样例的断言留下来继续跑。 */
   const sampleList = SAMPLES.filter((p) => { try { return fs.existsSync(p); } catch { return false; } })

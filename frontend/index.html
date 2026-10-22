@@ -182,7 +182,7 @@
       if (!getUser()) return;
       const box = document.getElementById("stats");
       try {
-        /* ⚠️ 这里踩过两个坑，都写下来：
+        /* ⚠️ 这里有两点要注意，都写下来：
            1. 课程存的是**真实日期** date（"2026-09-21"），没有「星期几」字段。
               但一条 date=周二 的课在 weeks 里说明的那几周**每周都要上**，
               所以「今天有没有课」不能写 `c.date === 今天` ——

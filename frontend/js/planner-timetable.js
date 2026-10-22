@@ -935,7 +935,7 @@ function importTextFile(file) {
         lng: b ? b.lng : null,
         lat: b ? b.lat : null,
         // ⚠️ weeks 必须跟着走！
-        //    这就是「白名单式拷贝」的经典坑：上面这份对象是**新造的**，
+        //    这就是「白名单式拷贝」的经典问题：上面这份对象是**新造的**，
         //    少写一个字段就无声丢掉一个 —— JSON/CSV 里带了周次，
         //    导入后却全变成「每周都上」，而且**一点报错都没有**。
         //    （toLocalCourse 那条路早就带了 weeks，唯独这里漏了。）
@@ -1176,7 +1176,7 @@ function bindReviewInputs() {
     if (bEl && pendingImport[idx]) markBuildingCell(bEl, pendingImport[idx]);
 
     // 课名格现在是 textarea（多行），高度自适应内容，不需要「点击才展开」了。
-    // 但 <textarea> 有个隐形坑：它默认 `overflow: auto` + 固定行高，
+    // 但 <textarea> 有个隐形问题：它默认 `overflow: auto` + 固定行高，
     // 内容正好卡在两行边界时会露出一条滚动条。所以每次输入后把高度
     // 重算一遍（先归零再按 scrollHeight 撑开），永远刚好装下内容。
     const ta = tr.querySelector("td.cell-name textarea");

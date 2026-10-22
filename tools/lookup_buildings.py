@@ -101,7 +101,7 @@ def search_poi(key: str, keyword: str, city: str, offset: int = 3) -> list:
 def lookup(key: str, names: list, city: str, prefix: str) -> dict:
     """逐个查证，返回 {点位名: (lng, lat) 或 None}。
 
-    搜索词拼接有个坑：生活类点位本身可能就含学校前缀
+    搜索词拼接有个注意点：生活类点位本身可能就含学校前缀
     （「阳光学院东区餐厅」「阳光学院信息实验楼」），
     再拼一次会变成「阳光学院阳光学院东区餐厅」，必然搜不到。
     所以先看名字里有没有前缀，有就不拼。

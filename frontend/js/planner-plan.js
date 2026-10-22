@@ -22,7 +22,7 @@
 
    依赖 planner-core.js（courses 状态 / api / onEl / stripLocal）。
 
-   ⚠️ 这里有一个必须记住的坑（更早一轮修的，别改回去）：
+   ⚠️ 这里有一个必须记住的问题（更早一轮修的，别改回去）：
       生成计划时**必须把当前课表一并传给后端**。
       早期这里只发了 `{goal, days}`，后端只能去数据库读 Course 表 ——
       而用户「刚导入还没点保存」时库里是空的，AI 于是回答
@@ -358,7 +358,7 @@ function autoGrowPlanInput(el) {
 /**
  * 回车键：Enter 发送，Shift+Enter 换行。
  *
- * ⚠️ 两个坑：
+ * ⚠️ 两个注意点：
  *   1. <textarea> 里 Enter 默认是**换行**，不 preventDefault 就是「按了没反应」；
  *   2. 中文输入法选字时按的回车不能当发送（isComposing / keyCode 229），
  *      否则「打拼音按回车选第一个词」会直接把半句话发出去。
