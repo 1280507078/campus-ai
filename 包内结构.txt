@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 177 个文件，合计 4,960,004 字节
+共 177 个文件，合计 4,960,008 字节
 本包构建号：2026-10-22-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -470,7 +470,7 @@ Campus AI Assistant —— 包内结构
     backend/routers/emotion.py                               5,369 字节
     backend/routers/feedback.py                              5,030 字节
     backend/routers/map_weather.py                           4,828 字节
-    backend/routers/planner.py                             154,971 字节
+    backend/routers/planner.py                             154,975 字节
     backend/schema.sql                                       7,648 字节
     backend/seed.py                                          7,930 字节
     backend/services/amap.py                                 6,581 字节

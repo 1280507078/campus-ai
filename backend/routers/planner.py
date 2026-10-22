@@ -910,7 +910,7 @@ async def generate_plan(req: PlanRequest, user: User = Depends(get_current_user)
             return _resp(_doc)
 
     # ★★★ 2026-10-20：求方法 / 求讲解 -> 学习教练（不调工具、不排表）。
-    #   改之前「高数怎么复习」会被当成 plan，问句：怎么学"收到一张时间表。
+    #   改之前「高数怎么复习」会被当成 plan，问的是"怎么学"，收到一张时间表。
     if _route == "explain":
         _coach = await ask_coach(goal, who_line=who_line, context=ctx_line)
         return _resp(_coach or local_coach(goal))
