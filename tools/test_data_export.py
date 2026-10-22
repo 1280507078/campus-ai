@@ -134,7 +134,16 @@ check("个人输出也落了盘，且文件名带账号名",
 
 print("\n--- ③ 容错：导出失败绝不能带崩主流程 ---")
 _bak = DX.EXPORT_DIR
-DX.EXPORT_DIR = Path("Z:/definitely-not-a-real-drive/out")   # 写不进去
+# ★ 2026-10-22 跨平台修正：原来写的是 Path("Z:/definitely-not-a-real-drive/out")。
+#   Windows 上「Z: 盘不存在」确实写不进去，但 **Linux 上「Z:」只是一个普通目录名**
+#   —— os.makedirs 会欢快地在仓库根下建出 `Z:/definitely-not-a-real-drive/out/`
+#   并把 JSON 真写进去，于是「写盘失败」这条断言在 CI 上必挂（第一次跑 GitHub
+#   Actions 就栽在这：18 通过 / 2 失败，两条都是这一处）。
+#   改成「拿一个普通文件当目录用」：两个平台都会抛 NotADirectoryError / OSError，
+#   而且不会在任何地方留下垃圾目录。
+_not_a_dir = Path(tempfile.mkdtemp()) / "regular-file.txt"
+_not_a_dir.write_text("x", encoding="utf-8")
+DX.EXPORT_DIR = _not_a_dir / "out"      # 往文件底下建目录 → 必定失败
 try:
     res_bad = DX.emit(snap_all, "测试：写盘失败")
     check("★ 写盘失败时仍返回结果、不抛异常",
