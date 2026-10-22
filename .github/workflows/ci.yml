@@ -74,11 +74,23 @@ jobs:
       # 收集，跑到末尾的 sys.exit() 直接 INTERNALERROR。用按文件跑的方式。
       - name: 跑契约测试
         run: |
-          set -e
+          # ★ 2026-10-22 改成「全部跑完再判负 + 把每个脚本的输出写进 step summary」：
+          #   原来 set -e 一挂就停，页面上只留一句 "Process completed with exit code 1"，
+          #   看不到是哪个脚本、哪一条断言挂了（第一次在 GitHub 上跑就栽在这上面）。
+          #   现在：① 四个脚本都跑完；② 每个的输出尾部写进 $GITHUB_STEP_SUMMARY，
+          #   在 run 页面上直接可见，不用点进日志翻。
+          set -uo pipefail
+          fail=0
           for t in test_rag_docs test_study_agent test_scan_login_contract test_data_export; do
             echo "--- $t"
-            python -m coverage run -a --source=backend "tools/$t.py"
+            if ! out=$(python -m coverage run -a --source=backend "tools/$t.py" 2>&1); then
+              fail=1
+              echo "::error::$t 失败"
+            fi
+            echo "$out" | tail -25
+            { echo "<details><summary>$t</summary>"; echo; echo '```'; echo "$out" | tail -25; echo '```'; echo; echo "</details>"; } >> "$GITHUB_STEP_SUMMARY"
           done
+          exit $fail
 
       - name: 覆盖率报告
         run: |
