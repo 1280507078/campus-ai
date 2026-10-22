@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 182 个文件，合计 5,965,873 字节
+共 182 个文件，合计 5,964,972 字节
 本包构建号：2026-10-22-c
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -471,7 +471,7 @@ Campus AI Assistant —— 包内结构
     backend/errors.py                                        6,554 字节
     backend/eval/agent_cases.json                           16,132 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
-    backend/main.py                                         17,637 字节
+    backend/main.py                                         17,617 字节
     backend/models/orm.py                                    8,234 字节
     backend/models/schemas.py                               14,986 字节
     backend/requirements.txt                                 2,991 字节
@@ -527,7 +527,7 @@ Campus AI Assistant —— 包内结构
     frontend/js/emotion-result.js                            4,733 字节
     frontend/js/feedback.js                                  6,114 字节
     frontend/js/icons.js                                    12,489 字节
-    frontend/js/login.js                                    34,614 字节
+    frontend/js/login.js                                    34,573 字节
     frontend/js/nav.js                                      56,838 字节
     frontend/js/planner-core.js                             18,312 字节
     frontend/js/planner-plan.js                             23,195 字节
@@ -545,7 +545,7 @@ Campus AI Assistant —— 包内结构
     frontend/planner.html                                    7,423 字节
     frontend/reminder.html                                   3,548 字节
     frontend/scan-confirm.html                               2,811 字节
-    frontend/serve_nocache.py                                5,237 字节
+    frontend/serve_nocache.py                                5,216 字节
 
 【reports/】 （23 个）
     reports/agent_eval_20261021-223244.json                  2,688 字节
@@ -576,7 +576,7 @@ Campus AI Assistant —— 包内结构
     tools/_patch_theme_css.py                               16,107 字节
     tools/audit_a11y.mjs                                     7,721 字节
     tools/behavior_test.js                                   4,699 字节
-    tools/bump_build.py                                      6,190 字节
+    tools/bump_build.py                                      6,025 字节
     tools/check_bat.py                                      14,126 字节
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
@@ -607,7 +607,7 @@ Campus AI Assistant —— 包内结构
     tools/test_study_agent.py                               21,669 字节
     tools/test_term_timetable.mjs                           10,660 字节
     tools/test_timetable_freeze.mjs                         52,455 字节
-    tools/test_xls_import.mjs                               38,875 字节
+    tools/test_xls_import.mjs                               38,143 字节
     tools/verify.js                                          3,819 字节
 
 【启动工具/】 （4 个）
@@ -626,7 +626,7 @@ Campus AI Assistant —— 包内结构
     jsconfig.json                                              398 字节
     README.md                                               38,278 字节
     start-windows.bat                                       27,055 字节
-    如何启动.md                                                134,689 字节
+    如何启动.md                                                134,767 字节
 
 --------------------------------------------------------
 

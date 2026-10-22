@@ -17,11 +17,11 @@
 
 用法
 ----
-    python tools/bump_build.py 2026-09-26-h      # 改成指定的构建号
+    python tools/bump_build.py 2026-10-22-c      # 改成指定的构建号
     python tools/bump_build.py --check           # 只检查各处是否一致
 
 构建号的写法约定：`YYYY-MM-DD-x`，x 是当天的小写字母序号（a/b/c...）。
-前端 ?v= 用去掉连字符的形式（20260926h），因为历史上一直这么用。
+前端 ?v= 用去掉连字符的形式（20261022c），因为历史上一直这么用。
 """
 
 from __future__ import annotations
@@ -33,10 +33,10 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BUILD_FILE = ROOT / "backend" / "build.txt"
 
-# 构建号形如 2026-09-26-h
+# 构建号形如 2026-10-22-c
 BUILD_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z]$")
 
-# 前端 ?v= 的值：把 2026-09-26-h 压成 20260926h
+# 前端 ?v= 的值：把 2026-10-22-c 压成 20261022c
 # 前端页脚里那个静态的「构建 xxxx」参与同步。
 # 它标识的是**前端这份代码**（后端版本由 /api/ping 自己在运行时上报），
 # 两者必须分开显示，否则「前后端版本对不上」就看不出来了。
@@ -48,7 +48,7 @@ V_RE = re.compile(r"\?v=[0-9a-zA-Z]+")
 
 
 def to_v(tag: str) -> str:
-    """2026-09-26-h -> 20260926h（前端缓存参数的历史写法）"""
+    """2026-10-22-c -> 20261022c（前端缓存参数的历史写法）"""
     return tag.replace("-", "")
 
 
@@ -66,7 +66,7 @@ def check() -> int:
         return 1
     if not BUILD_RE.match(tag):
         print(f"[FAIL] {BUILD_FILE.relative_to(ROOT)} 里的构建号格式不对：{tag!r}")
-        print("       期望形如 2026-09-26-h")
+        print("       期望形如 2026-10-22-c")
         return 1
 
     want_v = to_v(tag)
@@ -117,7 +117,7 @@ def check() -> int:
 
 def bump(tag: str) -> int:
     if not BUILD_RE.match(tag):
-        print(f"[FAIL] 构建号格式不对：{tag!r}，期望形如 2026-09-26-h")
+        print(f"[FAIL] 构建号格式不对：{tag!r}，期望形如 2026-10-22-c")
         return 1
 
     old = read_current()

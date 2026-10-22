@@ -277,7 +277,7 @@ console.log('\n--- ⑤·三 后端自报构建标记与能力 ---');
     : bad('读不到 backend/build.txt（构建号失去了唯一来源）');
   /^\d{4}-\d{2}-\d{2}-[a-z]$/.test(j.build || '')
     ? ok('构建号格式正确（YYYY-MM-DD-x）')
-    : bad(`构建号格式异常：${JSON.stringify(j.build)}，期望形如 2026-09-26-h`);
+    : bad(`构建号格式异常：${JSON.stringify(j.build)}，期望形如 2026-10-22-c`);
   j.build === onDisk
     ? ok('接口自报构建号与 build.txt 完全一致')
     : bad(`接口自报 ${JSON.stringify(j.build)} 与 build.txt ${JSON.stringify(onDisk)} 不一致 —— 说明存在第二个来源`);
