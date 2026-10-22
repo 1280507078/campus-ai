@@ -1,14 +1,14 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 179 个文件，合计 5,946,560 字节
-本包构建号：2026-10-22-a
+共 182 个文件，合计 5,964,680 字节
+本包构建号：2026-10-22-c
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
       双击 start-windows.bat 即可（首次会自动装 Python 依赖）。
       详见 如何启动.md。
 
-本次更新（构建 2026-10-22-a）：
+本次更新（构建 2026-10-22-c）：
   ── 本版（build 2026-10-22-a，修「问错工具」+ 手册语料加到 29 篇）────
   ① ★★★【实测发现】问天气、问楼在哪时，伴学会去调排表工具并交出一份计划：
      6 条标注里错 3 条，工具选择准确率只有 50%。根因是路由只分五类，凡是不走
@@ -459,7 +459,7 @@ Campus AI Assistant —— 包内结构
     backend/data/campus_docs/阳光学院图书馆管理办法.md                  5,707 字节
     backend/database.py                                     13,150 字节
     backend/errors.py                                        6,554 字节
-    backend/eval/agent_cases.json                           14,342 字节
+    backend/eval/agent_cases.json                           16,132 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
     backend/main.py                                         17,637 字节
     backend/models/orm.py                                    8,234 字节
@@ -470,7 +470,7 @@ Campus AI Assistant —— 包内结构
     backend/routers/emotion.py                               5,468 字节
     backend/routers/feedback.py                              5,033 字节
     backend/routers/map_weather.py                           4,828 字节
-    backend/routers/planner.py                             154,984 字节
+    backend/routers/planner.py                             155,280 字节
     backend/schema.sql                                       7,648 字节
     backend/seed.py                                          7,930 字节
     backend/services/amap.py                                 6,587 字节
@@ -480,7 +480,7 @@ Campus AI Assistant —— 包内结构
     backend/services/qdrant.py                              25,671 字节
     backend/services/rag_docs.py                             9,634 字节
     backend/services/scan_login.py                           7,448 字节
-    backend/services/study_agent.py                        111,131 字节
+    backend/services/study_agent.py                        114,086 字节
     backend/services/timetable_excel.py                     38,271 字节
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              28,418 字节
@@ -508,8 +508,8 @@ Campus AI Assistant —— 包内结构
     frontend/js/account.js                                   6,893 字节
     frontend/js/admin-feedback.js                            8,835 字节
     frontend/js/admin.js                                    16,519 字节
-    frontend/js/campus-graph.js                             49,179 字节
-    frontend/js/campus.js                                   27,832 字节
+    frontend/js/campus-graph.js                             49,423 字节
+    frontend/js/campus.js                                   27,841 字节
     frontend/js/common.js                                   39,822 字节
     frontend/js/config.js                                    6,242 字节
     frontend/js/emotion-chat.js                              7,292 字节
@@ -537,7 +537,7 @@ Campus AI Assistant —— 包内结构
     frontend/scan-confirm.html                               2,811 字节
     frontend/serve_nocache.py                                5,237 字节
 
-【reports/】 （20 个）
+【reports/】 （23 个）
     reports/agent_eval_20261021-223244.json                  2,688 字节
     reports/agent_eval_20261021-223323.json                    754 字节
     reports/agent_eval_20261021-223348.json                  3,945 字节
@@ -554,6 +554,9 @@ Campus AI Assistant —— 包内结构
     reports/agent_eval_20261021-233610.json                  4,217 字节
     reports/agent_eval_20261021-234518.json                 16,374 字节
     reports/agent_eval_20261021-235154.json                  4,217 字节
+    reports/agent_eval_20261022-220235.json                  4,384 字节
+    reports/agent_eval_20261022-220243.json                  4,221 字节
+    reports/agent_eval_20261022-220636.json                  4,221 字节
     reports/coverage.txt                                     2,575 字节
     reports/lighthouse-index.report.html                   503,370 字节
     reports/lighthouse-login.report.html                   488,332 字节
