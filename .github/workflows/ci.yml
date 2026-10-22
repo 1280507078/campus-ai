@@ -192,3 +192,44 @@ jobs:
       - name: 收后端日志
         if: always()
         run: tail -100 /tmp/server.log || true
+
+  # ---------------------------------------------------------------------------
+  # ④ 镜像能真的构建并跑起来
+  #    只验证「Dockerfile 拿来就能用」，不推任何 registry（不需要账号与密钥）。
+  #    放 CI 跑而不是本机跑：runner 自带 Docker，省掉在开发机上装 Docker Desktop，
+  #    而且每次提交都验证一次，镜像不会悄悄坏掉。
+  # ---------------------------------------------------------------------------
+  docker-build:
+    name: 镜像构建 + 冒烟
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: docker build
+        run: docker build -t campus-ai:ci .
+
+      - name: 起容器并探 /api/ping
+        run: |
+          set -e
+          # .env 不进镜像（.dockerignore 已排除），所以这里不传任何 Key ——
+          # 正好验证「没有 Key 也能起来、只是 AI 功能降级」这个设计。
+          docker run -d --name ci-app -p 8012:3000 campus-ai:ci
+          ok=0
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8012/api/ping > /tmp/ping.json; then
+              echo "第 ${i} 秒就绪：$(cat /tmp/ping.json)"
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error::容器 60 秒内没有响应 /api/ping"
+            docker logs ci-app
+            exit 1
+          fi
+          grep -q '"ok": *true' /tmp/ping.json || { echo "::error::/api/ping 返回异常"; exit 1; }
+
+      - name: 收容器日志
+        if: always()
+        run: docker logs ci-app 2>&1 | tail -50 || true

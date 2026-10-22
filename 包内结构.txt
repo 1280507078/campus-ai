@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 177 个文件，合计 4,950,939 字节
+共 179 个文件，合计 5,946,275 字节
 本包构建号：2026-10-22-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -421,7 +421,7 @@ Campus AI Assistant —— 包内结构
 --------------------------------------------------------
 
 【.github/】 （1 个）
-    .github/workflows/ci.yml                                 7,838 字节
+    .github/workflows/ci.yml                                 9,541 字节
 
 【backend/】 （60 个）
     backend/.env                                             3,667 字节
@@ -489,22 +489,22 @@ Campus AI Assistant —— 包内结构
     docs/agent-eval.md                                      18,811 字节
 
 【frontend/】 （47 个）
-    frontend/account.html                                    5,772 字节
-    frontend/admin-feedback.html                             3,316 字节
-    frontend/admin.html                                      4,353 字节
+    frontend/account.html                                    5,918 字节
+    frontend/admin-feedback.html                             3,462 字节
+    frontend/admin.html                                      4,499 字节
     frontend/css/style.css                                 146,802 字节
-    frontend/emotion-chat.html                               3,431 字节
-    frontend/emotion-quiz.html                               2,948 字节
-    frontend/emotion-result.html                             3,600 字节
+    frontend/emotion-chat.html                               3,577 字节
+    frontend/emotion-quiz.html                               3,094 字节
+    frontend/emotion-result.html                             3,746 字节
     frontend/favicon.ico                                    25,460 字节
     frontend/favicon.png                                     2,881 字节
-    frontend/feedback.html                                   3,479 字节
+    frontend/feedback.html                                   3,625 字节
     frontend/img/feature-emotion.png                       146,689 字节
     frontend/img/feature-map.png                           113,999 字节
     frontend/img/feature-planner.png                       130,487 字节
     frontend/img/hero-gate.jpg                             128,723 字节
     frontend/img/hero-library.jpg                          133,822 字节
-    frontend/index.html                                     12,081 字节
+    frontend/index.html                                     12,093 字节
     frontend/js/account.js                                   6,893 字节
     frontend/js/admin-feedback.js                            8,835 字节
     frontend/js/admin.js                                    16,519 字节
@@ -529,15 +529,15 @@ Campus AI Assistant —— 包内结构
     frontend/js/types.js                                     3,495 字节
     frontend/js/vendor/echarts.min.js                    1,030,855 字节
     frontend/jsconfig.json                                     336 字节
-    frontend/login.html                                      7,024 字节
-    frontend/nav.html                                        5,099 字节
-    frontend/plan.html                                       5,109 字节
-    frontend/planner.html                                    7,277 字节
-    frontend/reminder.html                                   3,402 字节
-    frontend/scan-confirm.html                               2,665 字节
+    frontend/login.html                                      7,191 字节
+    frontend/nav.html                                        5,245 字节
+    frontend/plan.html                                       5,255 字节
+    frontend/planner.html                                    7,423 字节
+    frontend/reminder.html                                   3,548 字节
+    frontend/scan-confirm.html                               2,811 字节
     frontend/serve_nocache.py                                5,237 字节
 
-【reports/】 （18 个）
+【reports/】 （20 个）
     reports/agent_eval_20261021-223244.json                  2,688 字节
     reports/agent_eval_20261021-223323.json                    754 字节
     reports/agent_eval_20261021-223348.json                  3,945 字节
@@ -555,6 +555,8 @@ Campus AI Assistant —— 包内结构
     reports/agent_eval_20261021-234518.json                 16,374 字节
     reports/agent_eval_20261021-235154.json                  4,217 字节
     reports/coverage.txt                                     2,575 字节
+    reports/lighthouse-index.report.html                   503,370 字节
+    reports/lighthouse-login.report.html                   488,332 字节
     reports/test-run-2026-10-22.txt                          1,850 字节
 
 【tools/】 （36 个）
