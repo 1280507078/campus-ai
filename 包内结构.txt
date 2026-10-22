@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 182 个文件，合计 5,964,972 字节
+共 182 个文件，合计 5,962,034 字节
 本包构建号：2026-10-22-c
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -518,7 +518,7 @@ Campus AI Assistant —— 包内结构
     frontend/js/account.js                                   6,893 字节
     frontend/js/admin-feedback.js                            8,835 字节
     frontend/js/admin.js                                    16,519 字节
-    frontend/js/campus-graph.js                             49,423 字节
+    frontend/js/campus-graph.js                             49,393 字节
     frontend/js/campus.js                                   27,841 字节
     frontend/js/common.js                                   39,822 字节
     frontend/js/config.js                                    6,242 字节
@@ -585,7 +585,7 @@ Campus AI Assistant —— 包内结构
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
-    tools/qa_campus_graph.py                                 8,400 字节
+    tools/qa_campus_graph.py                                 8,382 字节
     tools/refdata/campus_shot.json                             274 字节
     tools/refdata/campus_shot.png                          565,707 字节
     tools/shrink_png.py                                      6,898 字节
@@ -624,9 +624,9 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               38,278 字节
+    README.md                                               37,567 字节
     start-windows.bat                                       27,055 字节
-    如何启动.md                                                134,767 字节
+    如何启动.md                                                132,588 字节
 
 --------------------------------------------------------
 

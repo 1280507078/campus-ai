@@ -87,7 +87,7 @@ def build_edt():
     road = (img[..., 0] >= 254) & (img[..., 1] >= 254) & (img[..., 2] >= 254)
     # 水印（右下角"高德地图"字样）也是纯白，挖掉
     road[int(IH - 34 * 2):, : 360 * 2] = False
-    # 橙色高架（马尾隧道）压住地面：它下面本来就看不到白路，不算"不贴路"
+    # 橙色高架压住地面：它下面本来就看不到白路，不算"不贴路"
     orange = (img[..., 0] > 225) & (img[..., 1] > 120) & (img[..., 1] < 225) & (img[..., 2] < 190)
     road &= ~ndi.binary_dilation(orange, np.ones((21, 21), bool))
     edt = ndi.distance_transform_edt(~road) * M
