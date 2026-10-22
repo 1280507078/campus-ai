@@ -188,7 +188,7 @@ async def glm_chat_tools(messages: list, tools: list,
 async def glm_embed(texts: list, timeout: float = 30.0) -> list:
     """把一批文本向量化（智谱 Embedding 接口，OpenAI 兼容）。
 
-    主要用于情绪陪伴的长期记忆检索：把用户说过的话转成向量存进 Qdrant，
+    主要用于情绪陪伴的长期记忆检索：把聊过的话转成向量存进 Qdrant，
     下次对话时按语义相似度找回相关片段，让 AI 记得用户此前说过什么。
 
     Args:

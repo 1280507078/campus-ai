@@ -47,7 +47,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     后果不是"偶尔失败"，而是**所有需要登录的接口一律 401**：前端 `api()` 见 401
     就清掉 token、弹「登录状态已过期」、跳回登录页；用户重新登录，token 是新的、
-    密码也对，下一次请求还是 401 —— 于是**永远登不进去**（用户报的
+    密码也对，下一次请求还是 401 —— 于是**永远登不进去**（问题记录：
     「一直登录不了」就是这个）。而且它只在部署环境出现，本机怎么测都正常。
 
     解法：另起一个网关不会去碰的自定义头 `X-Campus-Token`，并**优先**读它；
@@ -204,7 +204,7 @@ async def delete_account(data: AccountDelete, user: User = Depends(get_current_u
 
     uid = int(user.id)          # 先留存，后面 db.delete 之后就取不到了
 
-    # --- 0) ★ 先把这个人的数据**输出**出来，再动手删（用户 2026-10-14 要求）---
+    # --- 0) ★ 先把这个人的数据**输出**出来，再动手删（2026-10-14 需求）---
     #    范围 = 「个人」：SQLite 的课表 / 情绪对话原文 / 测评 + 向量库条数，
     #    打印一份人能读的清单，并落一份 JSON 到 backend/data_export/。
     #    ⚠️ 顺序很重要 —— 必须在 db.delete 之前，删完就什么都读不到了。

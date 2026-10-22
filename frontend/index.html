@@ -141,7 +141,7 @@
       }
       function stop() { if (timer) { clearInterval(timer); timer = null; } }
       function start() {
-        if (reduce) return;          // 用户要求减少动效：不自动轮播
+        if (reduce) return;          // 减少动效：不自动轮播
         stop();
         timer = setInterval(() => show(idx + 1), INTERVAL);
       }

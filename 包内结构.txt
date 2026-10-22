@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 176 个文件，合计 4,938,764 字节
+共 177 个文件，合计 4,960,004 字节
 本包构建号：2026-10-22-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -10,7 +10,7 @@ Campus AI Assistant —— 包内结构
 
 本次更新（构建 2026-10-22-a）：
   ── 本版（build 2026-10-22-a，修「问错工具」+ 手册语料加到 29 篇）────
-  ① ★★★【用户指出】问天气、问楼在哪时，伴学会去调排表工具并交出一份计划：
+  ① ★★★【实测发现】问天气、问楼在哪时，伴学会去调排表工具并交出一份计划：
      6 条标注里错 3 条，工具选择准确率只有 50%。根因是路由只分五类，凡是不走
      课表、不走学校规定、不走学习教练的句子，全都落到 plan，而 plan 的主流程就是排表。
   ② ★★★【新路由】路由改六类，新增 quick：问天气、问楼在哪、学校有几个楼、
@@ -26,13 +26,20 @@ Campus AI Assistant —— 包内结构
      《一卡通线上充值指南》（两件事都含「校园卡」三个字），模型照着充值步骤
      编出一整套补办流程。现在先从问句里抽动作词（补办/挂失/报修/预约/打印…），
      再到检索片段里逐个核对，一个都没出现就直接写进提示词告警：检索结果里
-     没有用户问的这个操作。把判断从模型手里拿走，改后明确回答「手册里没写这条流程」。
+     没有问的这个操作。把判断从模型手里拿走，改后明确回答「手册里没写这条流程」。
   ⑤ ★★★【静默哑掉的根因】以前只在部署那一刻导一次语料，一旦失败或漏导，
      检索恒为空、伴学永远拒答，而日志里什么线索都没有。现在启动时后台自检：
      集合为空、或语料指纹变了，就重新导入；指纹只算文件内容不算修改时间，
      同一份语料在开发机和服务器上算出同一个值，不会每次部署白导一遍。
   ⑥ 【守卫】手册问答 83/83、伴学 82/82、鉴权 27/27、导出 22/22、前端静态 250/250、
      路由离线 68/68 与留出集 21/21、在线 15/15；真浏览器验收无报错。
+  ⑦ ★★★【CI 真的跑起来了】github.com/1280507078/campus-ai 上三个作业全绿：
+     后端契约测试 + 覆盖率、前端纯逻辑守卫、e2e + 无障碍审计（11 页逐页打开，
+     控制台错误 0；axe 扫浅色 13 页 + 黑夜 3 页，serious/critical 为 0）。
+     跑绿的过程中修掉两处只在 Linux 上才炸的写法：写盘失败用例原来拿不存在的
+     Z 盘当死路，Linux 里 Z: 只是普通目录名，反而真写进去了；几个脚本把浏览器
+     路径写死成 /root/.cache 下的 chromium-1208，而 GitHub runner 的家目录是
+     /home/runner 且版本号会变。两处都改成不依赖平台。
 
   ── build 2026-10-21-h（学生手册问答 + 无障碍 + 工程化产物）────
   ① ★★★【新能力 RAG】AI 伴学能回答学校规定的办事流程了：语料取自教务处官网
@@ -55,7 +62,7 @@ Campus AI Assistant —— 包内结构
      全站 e2e 11/11 页、课表冻结 106/106、路由离线 67/67 与留出 17/17、在线 15/15。
 
   ── build 2026-10-21-f（地图页换成开发包同款版式）────
-  ① ★★★【用户要求】地图页与开发包 e 包保持一致：又大又清楚的地图 + 右侧导航设置，
+  ① ★★★【需求】地图页与开发包 e 包保持一致：又大又清楚的地图 + 右侧导航设置，
      路面、楼名、类型筛选（全部/教学楼/宿舍/食堂餐饮/其他）都回来了。
   ② 【无食堂入口】竞赛包没有食堂模块，所以只保留「清除路线」，不出现食堂档口按钮。
   ③ 【可访问性】页面主体改用 main，起终点输入框的标签真正关联（点文字能聚焦输入框），
@@ -64,7 +71,7 @@ Campus AI Assistant —— 包内结构
   ⑤ 【守卫】verify_h 72/72、自带伴学 76/76、静态契约 27/27；真浏览器验收无报错。
 
   ── build 2026-10-20-y（伴学：加了「学习教练」人格）────
-  ① ★★★【用户反馈】「问的容易出错、没有学习性」—— 根因是只有一个规划 Agent 人格。
+  ① ★★★【实测问题】「问的容易出错、没有学习性」—— 根因是只有一个规划 Agent 人格。
   ② ★★★【新能力】「怎么学/记不住/听不懂/什么是…」-> 走 COACH_PROMPT：不调工具、
      不排表，讲卡点 + 2-3 条能落地的做法 + 一个例子 + 今天的第一步；AI 不可用时按话题兜底。
   ③ 【判据】排除只挑动作词（排/安排/计划…），不能用「复习/提高」这些话题词。
@@ -109,7 +116,7 @@ Campus AI Assistant —— 包内结构
   ④ 【守卫】gtest/verify_h.py 47 -> 50 条；h 自带 test_study_agent 76/76。
 
   ── build 2026-10-20-k（伴学：口径再放宽 + 空档改成归纳回答）────
-  ① ★★★【用户要求】「继续测试，让伴学更智能，口径大点」。体检语料 59 -> 107 句，
+  ① ★★★【需求】「继续测试，让伴学更智能，口径大点」。体检语料 59 -> 107 句，
      挖出 22 处跑偏全部修掉，现在 107/107。
   ② ★★【又补的口语】课多吗、上几门、第一节、最后一节、晚课、没课吧、
      的课（明天的课 / 明天的课几点开始）、空闲、空档、哪天空、哪天没课…
@@ -121,7 +128,7 @@ Campus AI Assistant —— 包内结构
   ⑤ 【守卫】gtest/verify_h.py 35 -> 47 条；h 自带 test_study_agent 76/76。
 
   ── build 2026-10-20-i（伴学：换一种问法也认得出）────
-  ① ★★★【用户实测】「本周五有课吗」答得对，换成「查询本周五的课程」就变成
+  ① ★★★【实测】「本周五有课吗」答得对，换成「查询本周五的课程」就变成
      排了一整天学习计划。根因：本地答课只看「有没有课 / 课表」几个词，
      「动词 + 课」的说法一个都不匹配 → 整句交给模型 → 模型按「排计划」办。
   ② ★★【口径补全】查/看/问/列 + 课、上课吗、要上课、用不用…上课、第几节、
@@ -133,7 +140,7 @@ Campus AI Assistant —— 包内结构
   ④ 【守卫】gtest/verify_h.py 21 -> 35 条（含 9 种换法问课 + 3 种不许抢的排计划）。
 
   ── build 2026-10-20-h（AI 伴学：只按要求排 + 常见时间说法）────
-  ① ★★★【用户原话】「答非所问……只按要求排，不要莫名其妙又输出什么线性代数」，
+  ① ★★★【原句】「答非所问……只按要求排，不要莫名其妙又输出什么线性代数」，
      以及「一问后天就不行了」。本版把开发线 2026-10-20 的伴学修复移植进 h 线。
   ② ★★★【说一条就写一条】「周六18-19点上钢琴课，排2周」以前被当成「排一份两周计划」，
      模型于是排出一整天（练琴 / 复习高数 / 预习线代 / 自习）。现在后端识别
@@ -155,7 +162,7 @@ Campus AI Assistant —— 包内结构
      页脚不再显示「当前时间表为空」。
 
   ── 上一版（build w，2026-10-15 晚）──────────────────────
-  ① ★★【本版·用户要求】学习规划三个子页里，界面上这个功能**统一叫「时间表」**，
+  ① ★★【本版·需求】学习规划三个子页里，界面上这个功能**统一叫「时间表」**，
      不再叫「课表」。改的是**给人看的字**：三页胶囊标签、标题「我的时间表」、
      按钮「导入时间表」「保存时间表」、toast / 空态 / 等待语、Agent 工具名
      （「读取我的时间表」），以及后端展示给用户的文案与提示词用词。
@@ -172,8 +179,8 @@ Campus AI Assistant —— 包内结构
      这类坑这个项目已经栽过三次（扫码文案两次、AI伴学等待语一次）。
 
   ── 上一版（build v，2026-10-15 白天）──────────────────
-  ① ★★★【本版·主线·用户要求】「AI伴学」页从**表单**改成**对话框**。
-     用户原话：「这里使用 AI agent，对话框方式，其他样式去掉」。
+  ① ★★★【本版·主线·需求】「AI伴学」页从**表单**改成**对话框**。
+     原句：「这里使用 AI agent，对话框方式，其他样式去掉」。
      原来是一张「生成设置」表（学习目标 / 计划天数 / 年级 / 专业 +
      「生成计划」按钮）+ 结果框 + 单独挂着的「Agent 调用记录」一块。
      问题是**它看起来像个表单工具，不像一个 Agent** —— 哪怕后台真在调工具，
@@ -187,8 +194,8 @@ Campus AI Assistant —— 包内结构
        · 支持**多轮**：前面说过的话会一起发上去，所以「改成两周」
          「再细一点」这类短追问接得上（后端只回灌 user 原话，计划正文不回灌）。
      等待提示沿用「AI 倾听对话」那套口径：不带省略号 + 给出大概还要多久 + 有温度。
-  ② ★【本版·用户要求】「五期食堂」改名为「五期餐厅」（类别/坐标都不动）。
-     用户给的「食堂餐饮 5」截图里其余 4 条都叫「XX餐厅」，只有它叫「食堂」——
+  ② ★【本版·需求】「五期食堂」改名为「五期餐厅」（类别/坐标都不动）。
+     截图「食堂餐饮 5」里其余 4 条都叫「XX餐厅」，只有它叫「食堂」——
      同一个类别里两套叫法，看着像漏改的。
   ③ 【本版】新增 tools/test_plan_chat.mjs（55 项，纯 Node 秒级）钉住上面这些：
      旧控件不许回来 / 天数只能从话里认 / **发送时必须带上课表**（老坑）/
@@ -206,7 +213,7 @@ Campus AI Assistant —— 包内结构
      tools/test_study_agent.py 加了 6 项钉住（含「天数变了清单也要跟着变」）。
   ── 上一版（build u，2026-10-15 凌晨）────────────────────
   ① ★【本版】地图点位再补 3 处（宿舍类凑齐东/西/五/六四个园区）：
-       · 新增「五期宿舍」-> 宿舍类（用户给的坐标，落在举重中心那片院里，
+       · 新增「五期宿舍」-> 宿舍类（实测踩点坐标，落在举重中心那片院里，
          与主校区隔一条路约 560 米 —— 用户确认过就是那儿）
        · 新增「五期食堂」-> 餐饮类（紧邻高德「柏斯健身台球(阳光学院店)」）
        · 「六期」改名为「六期宿舍」（与西区/东区/五期宿舍口径一致）
@@ -214,8 +221,8 @@ Campus AI Assistant —— 包内结构
         改名的副作用：`findPlace(「六期」)` 这种**简称**不再命中（原来靠完全匹配）。
        查过为什么不加前缀模糊匹配：「六期」会同时前缀命中「六期宿舍」和
        「六期餐厅」，给出一个不确定的答案，比明确地找不到更糟。
-  ② ★★【本版·用户要求】「数据输出」：删数据之前先把它输出出来。
-     用户原话：「每次换包、用户注销账号都要把个人的或者全部的库里数据，
+  ② ★★【本版·需求】「数据输出」：删数据之前先把它输出出来。
+     原句：「每次换包、用户注销账号都要把个人的或者全部的库里数据，
      向量库数据输出。」两条路径正好对应两种范围 ——
        · **换包** -> 范围 = **全部**（打印涉及哪些账号 + 各表条数 + 向量总数）
        · **注销账号** -> 范围 = **个人**（打印该用户的课表/情绪对话原文/
@@ -270,7 +277,7 @@ Campus AI Assistant —— 包内结构
          陈家生煎/1点点/益禾堂/0090汉堡工厂 **整条删除**。
      点位总数 44 -> 42。路网地标表（campus-graph.js）里的「西区宿舍」
      坐标同步更新，否则路线文字指引会指在旧位置。
-  ③ ★【本版】情绪陪伴的等待体验（用户要求：不要省略号 / 要有大概耗时 /
+  ③ ★【本版】情绪陪伴的等待体验（需求：不要省略号 / 要有大概耗时 /
      要有温度）。原来等回复时先插一个「……」的占空气泡，现在改成：
      先说一句人话（「我在认真读你的话，想好好回你一句」），下面跟一行
      不断缩短的秒数；超出预估就换成「还在写，别急」这类安抚语。
@@ -313,7 +320,7 @@ Campus AI Assistant —— 包内结构
      一句话：数据只在用户亲手要求时才消失。
      【注意】backend/campus_ai.db*（含备份）一律不进包 —— 打包与清单
      两处都改成按前缀排除，否则用户数据会随包发出去。
-  3) ★【本版】扫码文案收敛成一句话：**用浏览器打开**（用户要求）。
+  3) ★【本版】扫码文案收敛成一句话：**用浏览器打开**（需求）。
      同一屏的三处口径全部统一，且去掉了所有「谁不行 / 为什么不行」的解释：
        · 提示语   ：请用手机浏览器扫码打开
        · 副标题 / 图标标签：用手机浏览器扫一扫
@@ -326,7 +333,7 @@ Campus AI Assistant —— 包内结构
      一样），页面只有一句「请在浏览器中打开」；而 Safari / Chrome /
      QQ / 钉钉 / 支付宝 / 百度 / 小红书**全部 200**。这是平台策略，
      客户端改不了。
-     为什么界面上**不提**这件事（用户明确要求）：用户要的是「用什么
+     为什么界面上**不提**这件事（需求）：用户要的是「用什么
      打开」，把平台限制摊在界面上既啰嗦、又容易被误读成「这应用有问题」。
   4) ★ 为「公网部署 / 在线演示」做的三处适配。三处都做到**本机行为
      一个字不变**，只为让同一份代码能在云沙箱里跑起来（云平台只给**一个**
@@ -358,7 +365,7 @@ Campus AI Assistant —— 包内结构
      很可能直接放弃扫码 —— 一个本来更好用的入口被一句过时文案劝退了。
      两侧都有断言守着：本机形态进 tools/test_scan_flow.mjs，公网形态由
      gtest/e2e_scan_public.mjs 在真实域名上跑。
-  6) 【上一版】「开始 / 结束」时间改为**只读**（用户要求）。时间本来就由
+  6) 【上一版】「开始 / 结束」时间改为**只读**（需求）。时间本来就由
      「你从课表哪一格点开的」唯一决定（选了教学楼再按该楼所在校区换算），
      让它可编辑只会制造「第 1 节的格子里写 10:00」这种自相矛盾的记录。
      要换时间就换个格子点，或者改教学楼。前端加了 .is-locked 样式（底色压深
@@ -380,7 +387,7 @@ Campus AI Assistant —— 包内结构
      .gitignore 仍然排除 .env（git 仓库里不该有 Key），两条规则各管一段。
      backend/campus_ai.db 仍然不打进包 —— 那是本机运行时的用户数据，
      所以解压到**新目录**等于账号/课表从零开始（解压到原目录不受影响）。
-  8) ★ 按用户要求，把「我的位置」/ 定位功能**整个删除**了（代码、文案、
+  8) ★ 按需求，把「我的位置」/ 定位功能**整个删除**了（代码、文案、
      依赖、测试、启动脚本分支、README 章节）。原因：定位不准，得不偿失。
      删掉的东西：frontend/js/locate.js（多源融合定位模块）、tools/make_cert.py
      （自签证书）、tools/test_locate.mjs、nav.js 里的定位函数与「定位质量」
@@ -395,7 +402,7 @@ Campus AI Assistant —— 包内结构
      为什么值得单独立一条负向测试：删功能比加功能更容易留残渣 —— 删了面板
      忘了删样式、删了调用忘了删函数、删了 JS 忘了删 HTML 按钮，最后页面看着
      正常、代码里躺一堆死代码。
-  11) 【扫码登录排查】用户反馈「手机扫码打不开网页」。逐项排查后确认**不是**
+  11) 【扫码登录排查】实测问题：「手机扫码打不开网页」。逐项排查后确认**不是**
      代码问题：二维码里的地址就是本机 WLAN 真实 IP、服务绑的是 0.0.0.0、
      防火墙对 python.exe 有任意端口入站放行；而把电脑开在 127.0.0.1、用真实
      浏览器跑完整条链路（出码 → 手机打开 → 登录 → 确认 → 电脑端领票进主页）
@@ -414,7 +421,7 @@ Campus AI Assistant —— 包内结构
 --------------------------------------------------------
 
 【.github/】 （1 个）
-    .github/workflows/ci.yml                                 6,793 字节
+    .github/workflows/ci.yml                                 7,838 字节
 
 【backend/】 （60 个）
     backend/.env                                             3,667 字节
@@ -450,30 +457,30 @@ Campus AI Assistant —— 包内结构
     backend/data/campus_docs/校园网准入系统密码找回方法.md                1,896 字节
     backend/data/campus_docs/阳光学院2026-2027学年校历.md            4,503 字节
     backend/data/campus_docs/阳光学院图书馆管理办法.md                  5,707 字节
-    backend/database.py                                     12,892 字节
+    backend/database.py                                     13,150 字节
     backend/errors.py                                        6,554 字节
     backend/eval/agent_cases.json                           14,342 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
-    backend/main.py                                         17,634 字节
-    backend/models/orm.py                                    8,091 字节
+    backend/main.py                                         17,637 字节
+    backend/models/orm.py                                    8,234 字节
     backend/models/schemas.py                               14,638 字节
     backend/requirements.txt                                 2,991 字节
-    backend/routers/admin.py                                12,236 字节
-    backend/routers/auth.py                                 15,950 字节
+    backend/routers/admin.py                                12,499 字节
+    backend/routers/auth.py                                 16,276 字节
     backend/routers/emotion.py                               5,369 字节
-    backend/routers/feedback.py                              4,921 字节
+    backend/routers/feedback.py                              5,030 字节
     backend/routers/map_weather.py                           4,828 字节
-    backend/routers/planner.py                             155,008 字节
+    backend/routers/planner.py                             154,971 字节
     backend/schema.sql                                       7,648 字节
     backend/seed.py                                          7,930 字节
     backend/services/amap.py                                 6,581 字节
     backend/services/data_export.py                         11,664 字节
-    backend/services/glm.py                                 14,380 字节
+    backend/services/glm.py                                 14,685 字节
     backend/services/llm_json.py                             6,466 字节
     backend/services/qdrant.py                              25,674 字节
     backend/services/rag_docs.py                             9,634 字节
     backend/services/scan_login.py                           7,448 字节
-    backend/services/study_agent.py                        111,155 字节
+    backend/services/study_agent.py                        111,122 字节
     backend/services/timetable_excel.py                     37,455 字节
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              27,899 字节
@@ -483,9 +490,9 @@ Campus AI Assistant —— 包内结构
 
 【frontend/】 （47 个）
     frontend/account.html                                    5,772 字节
-    frontend/admin-feedback.html                             3,322 字节
-    frontend/admin.html                                      4,359 字节
-    frontend/css/style.css                                 143,712 字节
+    frontend/admin-feedback.html                             3,316 字节
+    frontend/admin.html                                      4,353 字节
+    frontend/css/style.css                                 146,799 字节
     frontend/emotion-chat.html                               3,431 字节
     frontend/emotion-quiz.html                               2,948 字节
     frontend/emotion-result.html                             3,600 字节
@@ -497,40 +504,40 @@ Campus AI Assistant —— 包内结构
     frontend/img/feature-planner.png                       130,487 字节
     frontend/img/hero-gate.jpg                             128,723 字节
     frontend/img/hero-library.jpg                          133,822 字节
-    frontend/index.html                                     12,090 字节
+    frontend/index.html                                     12,078 字节
     frontend/js/account.js                                   6,893 字节
-    frontend/js/admin-feedback.js                            8,622 字节
-    frontend/js/admin.js                                    16,103 字节
+    frontend/js/admin-feedback.js                            8,835 字节
+    frontend/js/admin.js                                    16,519 字节
     frontend/js/campus-graph.js                             49,194 字节
-    frontend/js/campus.js                                   27,434 字节
-    frontend/js/common.js                                   38,985 字节
+    frontend/js/campus.js                                   27,832 字节
+    frontend/js/common.js                                   39,828 字节
     frontend/js/config.js                                    6,242 字节
-    frontend/js/emotion-chat.js                              7,127 字节
+    frontend/js/emotion-chat.js                              7,292 字节
     frontend/js/emotion-quiz.js                              1,967 字节
     frontend/js/emotion-result.js                            4,733 字节
     frontend/js/feedback.js                                  6,114 字节
-    frontend/js/icons.js                                    12,273 字节
-    frontend/js/login.js                                    33,903 字节
-    frontend/js/nav.js                                      55,679 字节
-    frontend/js/planner-core.js                             18,318 字节
-    frontend/js/planner-plan.js                             23,198 字节
+    frontend/js/icons.js                                    12,489 字节
+    frontend/js/login.js                                    34,614 字节
+    frontend/js/nav.js                                      56,829 字节
+    frontend/js/planner-core.js                             18,312 字节
+    frontend/js/planner-plan.js                             23,186 字节
     frontend/js/planner-reminder.js                         14,728 字节
-    frontend/js/planner-timetable.js                        77,307 字节
+    frontend/js/planner-timetable.js                        78,898 字节
     frontend/js/qrcode.js                                   24,091 字节
     frontend/js/quiz-data.js                                 5,464 字节
     frontend/js/scan-confirm.js                              4,539 字节
     frontend/js/types.js                                     3,495 字节
     frontend/js/vendor/echarts.min.js                    1,030,855 字节
     frontend/jsconfig.json                                     336 字节
-    frontend/login.html                                      7,044 字节
+    frontend/login.html                                      7,024 字节
     frontend/nav.html                                        5,099 字节
-    frontend/plan.html                                       5,122 字节
-    frontend/planner.html                                    7,283 字节
+    frontend/plan.html                                       5,109 字节
+    frontend/planner.html                                    7,277 字节
     frontend/reminder.html                                   3,402 字节
     frontend/scan-confirm.html                               2,665 字节
     frontend/serve_nocache.py                                5,237 字节
 
-【reports/】 （17 个）
+【reports/】 （18 个）
     reports/agent_eval_20261021-223244.json                  2,688 字节
     reports/agent_eval_20261021-223323.json                    754 字节
     reports/agent_eval_20261021-223348.json                  3,945 字节
@@ -548,17 +555,18 @@ Campus AI Assistant —— 包内结构
     reports/agent_eval_20261021-234518.json                 16,374 字节
     reports/agent_eval_20261021-235154.json                  4,217 字节
     reports/coverage.txt                                     2,575 字节
+    reports/test-run-2026-10-22.txt                          1,850 字节
 
 【tools/】 （36 个）
     tools/_patch_theme_css.py                               16,107 字节
     tools/audit_a11y.mjs                                     7,721 字节
     tools/behavior_test.js                                   4,699 字节
     tools/bump_build.py                                      6,025 字节
-    tools/check_bat.py                                      13,777 字节
+    tools/check_bat.py                                      14,120 字节
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
     tools/eval_agent.py                                     12,885 字节
-    tools/gen_structure.py                                  56,331 字节
+    tools/gen_structure.py                                  57,019 字节
     tools/lookup_buildings.py                               10,452 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
@@ -568,23 +576,23 @@ Campus AI Assistant —— 包内结构
     tools/shrink_png.py                                      6,898 字节
     tools/sync_launcher.py                                   4,986 字节
     tools/test_api_base.mjs                                 13,710 字节
-    tools/test_auth_token.mjs                                9,202 字节
-    tools/test_campus_graph.mjs                             16,660 字节
-    tools/test_campus_places.mjs                             7,986 字节
-    tools/test_data_export.py                                9,406 字节
+    tools/test_auth_token.mjs                                9,371 字节
+    tools/test_campus_graph.mjs                             16,935 字节
+    tools/test_campus_places.mjs                             8,099 字节
+    tools/test_data_export.py                               10,353 字节
     tools/test_lan_ip.py                                    13,994 字节
     tools/test_launcher_url.py                               7,122 字节
-    tools/test_map_labels.mjs                               15,947 字节
-    tools/test_mobile_login.mjs                              5,174 字节
-    tools/test_plan_chat.mjs                                12,573 字节
+    tools/test_map_labels.mjs                               16,710 字节
+    tools/test_mobile_login.mjs                              5,734 字节
+    tools/test_plan_chat.mjs                                12,569 字节
     tools/test_rag_docs.py                                  24,567 字节
-    tools/test_scan_flow.mjs                                10,517 字节
-    tools/test_scan_login_contract.py                        6,802 字节
-    tools/test_site_smoke.mjs                                3,581 字节
-    tools/test_study_agent.py                               21,675 字节
-    tools/test_term_timetable.mjs                           10,664 字节
-    tools/test_timetable_freeze.mjs                         51,070 字节
-    tools/test_xls_import.mjs                               37,689 字节
+    tools/test_scan_flow.mjs                                11,143 字节
+    tools/test_scan_login_contract.py                        6,946 字节
+    tools/test_site_smoke.mjs                                4,098 字节
+    tools/test_study_agent.py                               21,663 字节
+    tools/test_term_timetable.mjs                           10,657 字节
+    tools/test_timetable_freeze.mjs                         52,443 字节
+    tools/test_xls_import.mjs                               38,875 字节
     tools/verify.js                                          3,819 字节
 
 【启动工具/】 （4 个）
@@ -601,7 +609,7 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               43,809 字节
+    README.md                                               44,427 字节
     start-windows.bat                                       27,055 字节
     如何启动.md                                                141,327 字节
 

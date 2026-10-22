@@ -203,7 +203,7 @@ def _check_rebuild_and_resplit(lines: list[str]) -> list[str]:
 def check_dependency_sync() -> list[str]:
     """检查「依赖探测清单」是否覆盖了 requirements.txt 里的必需包。
 
-    ⚠️ 这个检查来自一次真实事故（用户报「xls 还是不能识别」）：
+    ⚠️ 这个检查来自一次真实事故（问题记录：「xls 还是不能识别」）：
 
       requirements.txt 当初只列了 pandas 的**引擎**（xlrd / openpyxl），
       忘了 pandas 本身；同时 start-windows.bat 的探测语句只 import
