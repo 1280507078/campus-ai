@@ -117,7 +117,7 @@ const TOOL_LABELS = {
   find_free_slots: "计算空闲时段",
   get_building_info: "识别上课地点",
   get_weather: "查询天气",
-  // ：往时间表里写一条固定安排（不是排计划）
+  // 往时间表里写一条固定安排（不是排计划）
   add_schedule: "写入我的时间表",
 };
 
