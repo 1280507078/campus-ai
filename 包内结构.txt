@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 182 个文件，合计 5,961,597 字节
+共 182 个文件，合计 5,961,594 字节
 本包构建号：2026-10-24-c
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -535,7 +535,7 @@ Campus AI Assistant —— 包内结构
     frontend/js/login.js                                    34,496 字节
     frontend/js/nav.js                                      56,804 字节
     frontend/js/planner-core.js                             18,312 字节
-    frontend/js/planner-plan.js                             23,151 字节
+    frontend/js/planner-plan.js                             23,148 字节
     frontend/js/planner-reminder.js                         14,700 字节
     frontend/js/planner-timetable.js                        78,789 字节
     frontend/js/qrcode.js                                   24,688 字节
