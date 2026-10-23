@@ -1,6 +1,6 @@
 /* 扫码登录端到端验证（双浏览器 context）
  *
- * 验证的语义（用户本轮纠偏后的正确形态）：
+ * 验证的语义（用户此处纠偏后的正确形态）：
  *   ① 电脑端打开 login.html -> 切到「扫码登录」-> 后端出票 -> 渲染二维码
  *   ② 二维码内容必须是 login.html?t=票据（**登录页自己**，不是确认页）
  *   ③ 「手机」用全新 context 打开二维码里的 URL（模拟微信/QQ 扫到）
@@ -15,7 +15,7 @@ const BASE = process.env.CAMPUS_BASE || 'http://127.0.0.1:8000';
    如果升过版，会去找一个更新的 build 号（比如 chromium_headless_shell-1243），
    机器上没有，直接报 “Executable doesn't exist”——看着像测试挂了，其实是环境对不上。
    所以和其它测试脚本统一：显式指向已下载的那份浏览器。 */
-/* ★ 2026-10-22 CI 兼容：原来这里写死了
+/* ★ CI 兼容：原来这里写死了
    '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
    但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
    playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，

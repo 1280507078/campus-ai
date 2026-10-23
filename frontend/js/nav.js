@@ -155,9 +155,9 @@ async function initMap() {
     });
     // ★ 清理「悬停残留」标签 —— 保证「鼠标不在这点上，名字就不该在」。
     //
-    // 为什么非要这一层（实测抓到的真 bug，不是防御性洁癖）：
+    // 为什么非要这一层（抓到的真 bug，不是防御性洁癖）：
     //   非教学楼的标签靠 marker 的 "mouseover" / "mouseout" 开关。
-    //   但高德的 marker 事件**在边界情况下靠不住**：实测悬停一个点之后
+    //   但高德的 marker 事件**在边界情况下靠不住**：悬停一个点之后
     //   把鼠标移到地图空白处，mouseout **根本没触发**，那个标签就永久
     //   留在地图上了（复现出来的是「外语系」）。之后再拖地图、滚轮缩放、
     //   切换筛选，它都赖着不走 —— 滚两下地图，广告牌似的堆一片。
@@ -280,7 +280,7 @@ function syncTypeChips() {
  * 点类型按钮：**独立切换**该类型的显示 / 隐藏。
  *
  * ==================================================================
- * 这里换过一次交互语义，原因值得记下来（实测问题：「无法取消全选模式」）。
+ * 这里换过一次交互语义，原因值得记下来（问题：「无法取消全选模式」）。
  *
  * 旧逻辑是个「单选 / 全选」两态的开关：
  *     从全选点某类      -> 只看这一类
@@ -470,7 +470,7 @@ function teachingLabelHtml(p, dir) {
  * ⚠️ 关于「怎么拿到标签的 DOM」：
  *   `marker.getLabel()` 返回的是 **{content, direction} 这种纯数据对象**，
  *   **没有 .dom / .domElement**。所以想通过它去改标签容器的样式是行不通的
- *   （实测 dom 与 domElement 都是 false）。样式统一交给 style.css 的
+ *   （dom 与 domElement 都是 false）。样式统一交给 style.css 的
  *   `.amap-marker-label` 规则处理，这里不再尝试逐元素改。 */
 function setHardenedLabel(marker, html, dir) {
   marker.setLabel({ content: html, direction: dir });
@@ -479,13 +479,13 @@ function setHardenedLabel(marker, html, dir) {
 /**
  * 撤掉标签（并把引用清干净）。
  *
- * ⚠️⚠️ 这里踩过一个**静默失效**的主要问题，务必看清：
+ * ⚠️⚠️ 这里出现过一个**静默失效**的主要问题，务必看清：
  *
  *   原本写的是 `marker.setLabel(null)` —— 这是高德文档里「移除标签」的写法，
  *   看起来天经地义。**但它在本项目用的这版高德里是空操作**：
  *   标签 DOM 一点没动，标签永远留在地图上。
  *
- *   实测证据（同一个 marker，数页面上 .amap-marker-label 的数量）：
+ *   证据（同一个 marker，数页面上 .amap-marker-label 的数量）：
  *       设置前 10 个 -> setLabel({...}) 后 11 个 -> setLabel(null) 后 **还是 11 个**
  *   而且这不是「只留下空壳」—— 文字、色块全都在，和没清一样。
  *
@@ -974,7 +974,7 @@ function clearRoute() {
  *      还能让 GLM 顺手写一句口语化出行建议。
  *   ② 浏览器直连 Open-Meteo：免费、免 Key、支持跨域。后端拿不到实况时走它。
  *
- * ⚠️ 实测出现过：天气检测不到」，根因是 backend/.env 里的 AMAP_WEB_KEY
+ * ⚠️ 出现过：天气检测不到」，根因是 backend/.env 里的 AMAP_WEB_KEY
  *    默认是空的（config.py 里还是个 TODO），于是后端只能返回占位文案
  *    「暂时拿不到实时天气…」。加上第 ② 级兜底后，**不配任何 Key 也能出天气**。
  */

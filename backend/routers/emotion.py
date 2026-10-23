@@ -40,7 +40,7 @@ async def chat(data: ChatIn, user: User = Depends(get_current_user)):
         # 有记忆时，把片段作为「背景」附在 system 里，并明确要求自然使用、不要罗列。
         #
         # ⚠️ 这里必须**明确禁止复述具体活动名**。
-        #    注意点：原来只说「别生硬罗列」，结果实测 AI 张口就是
+        #    注意点：原来只说「别生硬罗列」，结果AI 张口就是
         #    「记得你之前提到的数学建模大赛」—— 而用户压根没说过竞赛。
         #    根因是历史记忆里有别的话题留下的片段（或语义检索串到了不相干的片段），
         #    模型拿到「背景」后当成了确定事实。对情绪陪伴来说，**编造用户的经历**
@@ -65,7 +65,7 @@ async def chat(data: ChatIn, user: User = Depends(get_current_user)):
     reply = await glm_chat(messages)
     reply = reply or "我在听，慢慢说，我会一直陪着你。"
 
-    # 2) 把这轮对话写回长期记忆（失败不影响返回结果）
+    # 2) 把此处对话写回长期记忆（失败不影响返回结果）
     try:
         await memory.add_memory(user.id, data.message, role="user", dim=EMBED_DIM)
         if reply:

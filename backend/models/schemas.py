@@ -191,7 +191,7 @@ class ImportSheetIn(BaseModel):
 
     为什么不直接收 multipart 文件：
         前端是零构建环境，多传一个文件字段就要改 api() 封装；
-        而课表表格本身很小（实测 32KB），base64 后也才 43KB，
+        而课表表格本身很小（32KB），base64 后也才 43KB，
         走和其它接口一致的 JSON 通道最省事。
 
     name 只用来判断扩展名（.xls 用 xlrd、.xlsx 用 openpyxl），
@@ -246,11 +246,11 @@ class PlanCourse(BaseModel):
     name: str = ""
     building: str = ""
     location: str = ""
-    # ★ 2026-10-18：上课周次的**原始串**（"2-3,6-8周(全部)"，空 = 每周都上）。
+    # ★ 上课周次的**原始串**（"2-3,6-8周(全部)"，空 = 每周都上）。
     #   必须传上来：课表里的课是「每周重复」的 —— 库里一条 date=9/8 的课，
     #   weeks 说明的那几周**每周二都要上**。后端算空档时如果只按 date 相等判断，
     #   就会认为「9/8 之后全天空闲」，于是把上课时间当自习时间排进计划
-    #   （实测输出过「14:50-15:35 预习计算机组成原理」，那正是上课时段）。
+    #   （输出过「14:50-15:35 预习计算机组成原理」，那正是上课时段）。
     weeks: str = ""
 
 
@@ -266,11 +266,11 @@ class PlanRequest(BaseModel):
     #    数据库里没数据，AI 看到的是空课表，于是回答「你还没有添加任何课程」。
     #    现在改为「前端传什么就用什么」，数据库只作为兜底（前端没传时才读）。
     courses: List[PlanCourse] = []
-    # ★ 2026-10-15：AI伴学页改成**对话式**，于是有了"上一轮说了什么"。
+    # ★ AI伴学页改成**对话式**，于是有了"此前说了什么"。
     #   形如 `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]`，
     #   由前端把**当前这条之前**的消息发上来（当前这条在 goal 里，别重复发）。
     #   ⚠️ 后端只用其中的 **user 原话**（见 routers/planner.py 的说明）：
-    #      计划正文动辄两三千字，把上一轮的 assistant 全文回灌既贵又没用。
+    #      计划正文动辄两三千字，把此前的 assistant 全文回灌既贵又没用。
     history: List[dict] = []
 
 
@@ -291,7 +291,7 @@ class PlanResponse(BaseModel):
     # ⚠️ 默认空列表：AI 不可用、降级到本地规则计划时这里就是空的，
     #    前端据此决定要不要渲染「Agent 调用记录」那一段（空的不该显示一个空框）。
     trace: List[AgentStep] = []
-    # ★ 2026-10-21：本次对话的 token 用量与折算成本（见 services/usage.py）。
+    # ★ 本次对话的 token 用量与折算成本（见 services/usage.py）。
     #   默认 None —— 降级路径（没调模型）就是没有，前端不该显示「消耗 0 token」。
     #   前端不读它也不影响任何东西，纯附加信息；评测脚本靠它拿到真实成本。
     usage: Optional[Dict[str, Any]] = None

@@ -39,7 +39,7 @@ function addMsg(role, content) {
    ⚠️ 所有文案一律**不带省略号**，包括按钮上的字。
    ============================================================ */
 
-/** 上一轮真实耗时的平滑值（毫秒），存在本地 */
+/** 此前真实耗时的平滑值（毫秒），存在本地 */
 const ETA_KEY = "emotion_reply_ms";
 const ETA_DEFAULT = 12000;
 /** 低于这个耗时就不记 —— 否则一次极快的回复会把预估拉得很低，
@@ -66,13 +66,13 @@ function pickOne(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** 预估本轮回复耗时（毫秒）。 */
+/** 预估此处回复耗时（毫秒）。 */
 function estimatedMs() {
   const v = Number(localStorage.getItem(ETA_KEY) || "");
   return (v >= ETA_MIN_RECORD && v <= 60000) ? v : ETA_DEFAULT;
 }
 
-/** 记下本轮真实耗时，做指数平滑（新值占 4 成）。 */
+/** 记下此处真实耗时，做指数平滑（新值占 4 成）。 */
 function rememberMs(ms) {
   if (!(ms >= ETA_MIN_RECORD && ms <= 60000)) return;
   const prev = Number(localStorage.getItem(ETA_KEY) || "");

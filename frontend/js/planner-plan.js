@@ -36,7 +36,7 @@
 
 /** 对话记录存本地：换页回来还能看到上一次排的计划。 */
 const PLAN_CHAT_KEY = "plan_chat_history";
-/** 上一轮用的天数。用户不说天数时沿用 —— 下拉框没了，只能靠这个记住。 */
+/** 此前用的天数。用户不说天数时沿用 —— 下拉框没了，只能靠这个记住。 */
 const PLAN_DAYS_KEY = "plan_days";
 /** 本地最多留几条消息。计划正文很长，不设上限会把 localStorage 撑爆。 */
 const PLAN_CHAT_KEEP = 12;
@@ -60,10 +60,10 @@ const DAYS_MAX = 30;
  *
  * 认的顺序是**从具体到笼统**，先数字后汉字：
  *   「3 天」/「三天」/「2周」/「两周」/「半个月」/「一个月」
- * 都认不出来就**沿用上一轮**（比如追问「再细一点」时不该跳回 7 天）。
+ * 都认不出来就**沿用此前**（比如追问「再细一点」时不该跳回 7 天）。
  *
  * @param {string} text 用户这一轮说的话
- * @param {number} [prev] 上一轮用的天数
+ * @param {number} [prev] 此前用的天数
  * @returns {number} 1~30 之间的天数
  */
 function detectDays(text, prev) {
@@ -117,7 +117,7 @@ const TOOL_LABELS = {
   find_free_slots: "计算空闲时段",
   get_building_info: "识别上课地点",
   get_weather: "查询天气",
-  // 2026-10-20：往时间表里写一条固定安排（不是排计划）
+  // ：往时间表里写一条固定安排（不是排计划）
   add_schedule: "写入我的时间表",
 };
 
@@ -272,13 +272,13 @@ function pickOne(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** 预估本轮耗时（毫秒）。 */
+/** 预估此处耗时（毫秒）。 */
 function estimatedMs() {
   const v = Number(localStorage.getItem(ETA_KEY) || "");
   return (v >= ETA_MIN_RECORD && v <= ETA_MAX_RECORD) ? v : ETA_DEFAULT;
 }
 
-/** 记下本轮真实耗时，做指数平滑（新值占 4 成）。 */
+/** 记下此处真实耗时，做指数平滑（新值占 4 成）。 */
 function rememberMs(ms) {
   if (!(ms >= ETA_MIN_RECORD && ms <= ETA_MAX_RECORD)) return;
   const prev = Number(localStorage.getItem(ETA_KEY) || "");
@@ -342,7 +342,7 @@ function showPlanWaiting(estMs) {
  * 删完一段话输入框还支棱着三行。
  * ⚠️ 3 行的高度要**现算**，不能写死 108px：手机端字号 16px（行高 24）、
  *    桌面端 14px（行高 21），再加上下 padding 各 10 —— 写死一个数就会
- *    「说好 3 行却露出 4 行」或者「只显示 2 行半」。实测就是露了 4 行。
+ *    「说好 3 行却露出 4 行」或者「只显示 2 行半」。就是露了 4 行。
  */
 function autoGrowPlanInput(el) {
   const box = el || onEl("plan-msg");
@@ -386,7 +386,7 @@ async function sendPlan() {
   const text = input.value.trim();
   if (!text) { toast("先说点什么吧，比如「期末数据结构冲 90 分」", "info"); return; }
 
-  // ★ 天数从这句话里认（认不出来沿用上一轮）。必须在发请求**之前**算好。
+  // ★ 天数从这句话里认（认不出来沿用此前）。必须在发请求**之前**算好。
   planDays = detectDays(text, planDays);
   try { localStorage.setItem(PLAN_DAYS_KEY, String(planDays)); } catch (e) { /* 忽略 */ }
 
@@ -440,7 +440,7 @@ async function sendPlan() {
 
   pushPlanMsg({ role: "assistant", content: plan, trace });
 
-  // ★ 刚往时间表里写了一条，就把本地那份课表读回来（2026-10-20）。
+  // ★ 刚往时间表里写了一条，就把本地那份课表读回来。
   //   不读的话页面内存里的 courses 还是旧的：页脚还说「当前时间表为空」，
   //   下一句问「周六有没有课」也会拿旧课表去答。
   if ((trace || []).some(t => t && t.tool === "add_schedule")) {

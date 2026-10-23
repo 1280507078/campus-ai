@@ -5,7 +5,7 @@
 
 ## 为什么值得单独测
 
-用户 2026-10-14 的要求是「每次换包、用户注销账号都要把个人的或者全部的库里数据、
+
 向量库数据输出」。这条要求有两个**很容易被悄悄破坏**的点，都靠测试钉住：
 
   1. **顺序**：输出必须在**删除之前**。改代码时顺手挪一下位置（比如把导出放到
@@ -14,7 +14,7 @@
   2. **两处排除规则一致**：导出的 JSON 里是**真实用户数据**（账号、课表、
      情绪对话原文），一旦进了交付包就是隐私事故。而排除规则在
      `gtest/pack_zip.py` 与 `tools/gen_structure.py` **两个文件**里各写了一份，
-     这个项目的历史上已经因为"两处不同步"栽过一次，所以这里两边都断言。
+     这个项目的历史上已经因为"两处不同步"出现过一次，所以这里两边都断言。
 
 ⚠️ 测试全程用**临时数据库 + 临时导出目录**，不碰 `backend/campus_ai.db`，
    也不往 `backend/data_export/` 里丢垃圾。
@@ -134,11 +134,11 @@ check("个人输出也落了盘，且文件名带账号名",
 
 print("\n--- ③ 容错：导出失败绝不能带崩主流程 ---")
 _bak = DX.EXPORT_DIR
-# ★ 2026-10-22 跨平台修正：原来写的是 Path("Z:/definitely-not-a-real-drive/out")。
+# ★ 跨平台修正：原来写的是 Path("Z:/definitely-not-a-real-drive/out")。
 #   Windows 上「Z: 盘不存在」确实写不进去，但 **Linux 上「Z:」只是一个普通目录名**
 #   —— os.makedirs 会欢快地在仓库根下建出 `Z:/definitely-not-a-real-drive/out/`
 #   并把 JSON 真写进去，于是「写盘失败」这条断言在 CI 上必挂（第一次跑 GitHub
-#   Actions 就栽在这：18 通过 / 2 失败，两条都是这一处）。
+#   Actions 就出错在这：18 通过 / 2 失败，两条都是这一处）。
 #   改成「拿一个普通文件当目录用」：两个平台都会抛 NotADirectoryError / OSError，
 #   而且不会在任何地方留下垃圾目录。
 _not_a_dir = Path(tempfile.mkdtemp()) / "regular-file.txt"

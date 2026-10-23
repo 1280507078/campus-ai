@@ -176,7 +176,7 @@ def _ensure_user_index(client, collection: str = COLLECTION) -> None:
 
     Qdrant Cloud 有一条硬性要求：**只要检索时带 filter，被过滤的字段就必须先建索引**，
     否则查询直接返回 400（Index required but not found）。
-    我们按 user_id 过滤做用户隔离，所以这个索引是必需的。
+    按 user_id 过滤做用户隔离，所以这个索引是必需的。
     """
     try:
         from qdrant_client.models import PayloadSchemaType
@@ -296,7 +296,7 @@ async def delete_user_memory(user_id: int) -> bool:
       新插入会**复用同一个 id**。而 Qdrant 里所有向量靠 payload.user_id 关联用户，
       如果注销时只删 SQLite、不删 Qdrant：
           张三(id=1) 注销 -> 李四注册又拿到 id=1 -> 检索到张三的全部情绪记忆
-      新用户直接「继承」了前一个人的隐私记录。实测已复现（残留 3 条含学号的记忆）。
+      新用户直接「继承」了前一个人的隐私记录。已复现（残留 3 条含学号的记忆）。
       **"AI 没说出来" ≠ "数据不在"** —— 提示词约束只能挡住嘴，挡不住库，必须在存储层真删。
 
     Returns:
@@ -495,7 +495,7 @@ async def search_docs(query: str, top_k: int = 4, min_score: float = 0.40,
 
     ★ 这里**没有** user_id 过滤 —— 文档是公共知识。
 
-    ★★ **为什么光靠向量分数不够**（实测踩到的）：
+    ★★ **为什么光靠向量分数不够**（遇到的）：
       问「校园卡丢了怎么补」，向量检索给出的最高分是 0.458 —— 命中的是
       「毕业、学位证明书办理流程」，因为两者都带「补办证件」的语义。
       语料里根本没有校园卡这件事，但分数足够高，模型就会照着毕业证明的流程回答。

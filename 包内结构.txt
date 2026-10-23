@@ -1,15 +1,20 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 182 个文件，合计 5,962,032 字节
-本包构建号：2026-10-22-c
+共 182 个文件，合计 5,961,597 字节
+本包构建号：2026-10-24-c
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
       双击 start-windows.bat 即可（首次会自动装 Python 依赖）。
       详见 如何启动.md。
 
-本次更新（构建 2026-10-22-c）：
-  ── 本版（build 2026-10-22-c，扩伴学口径 + 修文档路误抢）────
+本次更新（构建 2026-10-24-c）：
+  ── 本版（build 2026-10-24-c，用户视图返回主页 + 无障碍小字对比度）────
+  ① 每个页面顶部补一个「← 返回主页」（原来只有账号页有一个写死的按钮）。
+     返回目标跟着当前视角走：管理视角回数据大屏；管理员进用户视图之后回用户主页，
+     不再被一脚踹回数据大屏；普通用户回首页。
+  ② 反馈卡片、日程提醒胶囊里的 12px 小字对比度不足（3.9 / 2.2 : 1），改用文字版令牌。
+  ── 上一版（build 2026-10-22-c，扩伴学口径 + 修文档路误抢）────
   ① ★★★【实测发现】问天气、问楼在哪时，伴学会去调排表工具并交出一份计划：
      6 条标注里错 3 条，工具选择准确率只有 50%。根因是路由只分五类，凡是不走
      课表、不走学校规定、不走学习教练的句子，全都落到 plan，而 plan 的主流程就是排表。
@@ -467,42 +472,42 @@ Campus AI Assistant —— 包内结构
     backend/data/campus_docs/校园网准入系统密码找回方法.md                1,896 字节
     backend/data/campus_docs/阳光学院2026-2027学年校历.md            4,503 字节
     backend/data/campus_docs/阳光学院图书馆管理办法.md                  5,707 字节
-    backend/database.py                                     13,150 字节
+    backend/database.py                                     13,087 字节
     backend/errors.py                                        6,554 字节
     backend/eval/agent_cases.json                           16,132 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
-    backend/main.py                                         17,617 字节
-    backend/models/orm.py                                    8,234 字节
-    backend/models/schemas.py                               14,986 字节
+    backend/main.py                                         17,589 字节
+    backend/models/orm.py                                    8,228 字节
+    backend/models/schemas.py                               14,928 字节
     backend/requirements.txt                                 2,991 字节
     backend/routers/admin.py                                12,499 字节
-    backend/routers/auth.py                                 16,276 字节
-    backend/routers/emotion.py                               5,468 字节
-    backend/routers/feedback.py                              5,033 字节
+    backend/routers/auth.py                                 16,197 字节
+    backend/routers/emotion.py                               5,461 字节
+    backend/routers/feedback.py                              5,019 字节
     backend/routers/map_weather.py                           4,828 字节
-    backend/routers/planner.py                             155,280 字节
+    backend/routers/planner.py                             154,702 字节
     backend/schema.sql                                       7,648 字节
     backend/seed.py                                          7,930 字节
     backend/services/amap.py                                 6,587 字节
     backend/services/data_export.py                         11,664 字节
-    backend/services/glm.py                                 14,682 字节
-    backend/services/llm_json.py                             6,646 字节
-    backend/services/qdrant.py                              25,671 字节
-    backend/services/rag_docs.py                             9,634 字节
+    backend/services/glm.py                                 14,657 字节
+    backend/services/llm_json.py                             6,634 字节
+    backend/services/qdrant.py                              25,653 字节
+    backend/services/rag_docs.py                             9,612 字节
     backend/services/scan_login.py                           7,448 字节
-    backend/services/study_agent.py                        114,086 字节
-    backend/services/timetable_excel.py                     38,271 字节
+    backend/services/study_agent.py                        113,557 字节
+    backend/services/timetable_excel.py                     38,247 字节
     backend/services/usage.py                                3,915 字节
-    backend/services/vision.py                              28,418 字节
+    backend/services/vision.py                              28,365 字节
 
 【docs/】 （1 个）
     docs/agent-eval.md                                      18,811 字节
 
 【frontend/】 （47 个）
-    frontend/account.html                                    5,918 字节
+    frontend/account.html                                    6,117 字节
     frontend/admin-feedback.html                             3,462 字节
     frontend/admin.html                                      4,499 字节
-    frontend/css/style.css                                 146,802 字节
+    frontend/css/style.css                                 145,694 字节
     frontend/emotion-chat.html                               3,577 字节
     frontend/emotion-quiz.html                               3,094 字节
     frontend/emotion-result.html                             3,746 字节
@@ -516,24 +521,24 @@ Campus AI Assistant —— 包内结构
     frontend/img/hero-library.jpg                          133,822 字节
     frontend/index.html                                     12,093 字节
     frontend/js/account.js                                   6,893 字节
-    frontend/js/admin-feedback.js                            8,835 字节
-    frontend/js/admin.js                                    16,519 字节
+    frontend/js/admin-feedback.js                            8,808 字节
+    frontend/js/admin.js                                    16,508 字节
     frontend/js/campus-graph.js                             49,393 字节
     frontend/js/campus.js                                   27,841 字节
-    frontend/js/common.js                                   39,822 字节
-    frontend/js/config.js                                    6,242 字节
-    frontend/js/emotion-chat.js                              7,292 字节
+    frontend/js/common.js                                   42,827 字节
+    frontend/js/config.js                                    6,211 字节
+    frontend/js/emotion-chat.js                              7,289 字节
     frontend/js/emotion-quiz.js                              1,967 字节
     frontend/js/emotion-result.js                            4,733 字节
-    frontend/js/feedback.js                                  6,114 字节
-    frontend/js/icons.js                                    12,489 字节
-    frontend/js/login.js                                    34,573 字节
-    frontend/js/nav.js                                      56,838 字节
+    frontend/js/feedback.js                                  6,020 字节
+    frontend/js/icons.js                                    12,483 字节
+    frontend/js/login.js                                    34,496 字节
+    frontend/js/nav.js                                      56,804 字节
     frontend/js/planner-core.js                             18,312 字节
-    frontend/js/planner-plan.js                             23,195 字节
-    frontend/js/planner-reminder.js                         14,728 字节
-    frontend/js/planner-timetable.js                        78,904 字节
-    frontend/js/qrcode.js                                   24,712 字节
+    frontend/js/planner-plan.js                             23,151 字节
+    frontend/js/planner-reminder.js                         14,700 字节
+    frontend/js/planner-timetable.js                        78,789 字节
+    frontend/js/qrcode.js                                   24,688 字节
     frontend/js/quiz-data.js                                 5,464 字节
     frontend/js/scan-confirm.js                              4,539 字节
     frontend/js/types.js                                     3,495 字节
@@ -574,40 +579,40 @@ Campus AI Assistant —— 包内结构
 
 【tools/】 （36 个）
     tools/_patch_theme_css.py                               16,107 字节
-    tools/audit_a11y.mjs                                     7,721 字节
+    tools/audit_a11y.mjs                                     7,714 字节
     tools/behavior_test.js                                   4,699 字节
     tools/bump_build.py                                      6,025 字节
     tools/check_bat.py                                      14,126 字节
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
-    tools/eval_agent.py                                     12,885 字节
-    tools/gen_structure.py                                  58,248 字节
+    tools/eval_agent.py                                     12,879 字节
+    tools/gen_structure.py                                  58,222 字节
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
-    tools/qa_campus_graph.py                                 8,382 字节
+    tools/qa_campus_graph.py                                 8,376 字节
     tools/refdata/campus_shot.json                             274 字节
     tools/refdata/campus_shot.png                          565,707 字节
     tools/shrink_png.py                                      6,898 字节
     tools/sync_launcher.py                                   5,096 字节
-    tools/test_api_base.mjs                                 14,012 字节
-    tools/test_auth_token.mjs                                9,374 字节
-    tools/test_campus_graph.mjs                             16,938 字节
+    tools/test_api_base.mjs                                 13,975 字节
+    tools/test_auth_token.mjs                                9,367 字节
+    tools/test_campus_graph.mjs                             16,907 字节
     tools/test_campus_places.mjs                             8,099 字节
-    tools/test_data_export.py                               10,353 字节
-    tools/test_lan_ip.py                                    14,361 字节
-    tools/test_launcher_url.py                               7,294 字节
-    tools/test_map_labels.mjs                               16,716 字节
-    tools/test_mobile_login.mjs                              5,734 字节
-    tools/test_plan_chat.mjs                                12,572 字节
-    tools/test_rag_docs.py                                  24,567 字节
-    tools/test_scan_flow.mjs                                11,143 字节
+    tools/test_data_export.py                               10,234 字节
+    tools/test_lan_ip.py                                    14,355 字节
+    tools/test_launcher_url.py                               7,297 字节
+    tools/test_map_labels.mjs                               16,673 字节
+    tools/test_mobile_login.mjs                              5,723 字节
+    tools/test_plan_chat.mjs                                12,564 字节
+    tools/test_rag_docs.py                                  24,516 字节
+    tools/test_scan_flow.mjs                                11,132 字节
     tools/test_scan_login_contract.py                        6,943 字节
-    tools/test_site_smoke.mjs                                4,098 字节
-    tools/test_study_agent.py                               21,669 字节
-    tools/test_term_timetable.mjs                           10,660 字节
-    tools/test_timetable_freeze.mjs                         52,455 字节
-    tools/test_xls_import.mjs                               38,143 字节
+    tools/test_site_smoke.mjs                                4,087 字节
+    tools/test_study_agent.py                               21,614 字节
+    tools/test_term_timetable.mjs                           10,642 字节
+    tools/test_timetable_freeze.mjs                         52,407 字节
+    tools/test_xls_import.mjs                               38,120 字节
     tools/verify.js                                          3,819 字节
 
 【启动工具/】 （4 个）

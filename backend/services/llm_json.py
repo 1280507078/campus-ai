@@ -14,7 +14,7 @@ import re
 def _strip_trailing_commas(t: str) -> str:
     """去掉 JSON 里的**尾随逗号**：`[1, 2, ]` / `{"a": 1, }`。
 
-    ⚠️ 这是实测中最常见、也最阴的一个问题：
+    ⚠️ 这是中最常见、也最阴的一个问题：
        GLM 视觉模型输出二维数组时，很爱写成
            [["a","b"], ["c","d"], ]
                               ↑ 多一个逗号
@@ -91,7 +91,7 @@ def extract_json(text: str) -> tuple[dict, bool]:
         t = re.sub(r"\s*```$", "", t).strip()
 
     # ★ 先修尾随逗号再 parse ★
-    # 实测模型给二维数组时经常写成 [..., ]，严格 JSON 解析会直接失败，
+    # 模型给二维数组时经常写成 [..., ]，严格 JSON 解析会直接失败，
     # 而内容其实是**完全正确**的 —— 不修的话就会把好结果当成「没识别出来」。
     cand = [_strip_trailing_commas(t)]
     i, j = t.find("{"), t.rfind("}")

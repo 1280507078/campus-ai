@@ -99,7 +99,7 @@ async function runGroup(ctx, pages, theme) {
         if (x.impact === 'critical' || x.impact === 'serious') {
           console.log(`         · ${x.id} (${x.impact}) ${x.help}`);
           // 对比度这类问题，**必须有具体数字才修得动**：axe 的 failureSummary 里带着
-          // 「实测 2.9:1，要求 4.5:1」这样的原文，只给选择器等于让人去猜。
+          // 「2.9:1，要求 4.5:1」这样的原文，只给选择器等于让人去猜。
           for (const n of (x.nodes || []).slice(0, 3)) {
             console.log(`           ${(n.target || []).join(' ')}`);
             const fs = String(n.failureSummary || '').replace(/\s+/g, ' ').trim();

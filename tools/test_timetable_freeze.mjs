@@ -8,7 +8,7 @@
  *   1) 表头行（周几）纵向冻结 —— 上下滚动时位置不变
  *   2) 节次列（第几节）横向冻结 —— 左右滚动时位置不变
  *
- * ⚠️⚠️ 这里踩过两个 CSS 问题，写测试前必须知道，否则会以为"测过了没问题"：
+ * ⚠️⚠️ 这里出现过两个 CSS 问题，写测试前必须知道，否则会以为"测过了没问题"：
 
  * 【问题 1】`overflow-x: auto` 会把另一轴的 `overflow-y: visible` **强制算成 auto**
  *   （规范如此），于是容器同时成了纵向滚动容器，表头 sticky 就锚在它身上、
@@ -29,10 +29,10 @@
  *     a) 横向仍可滚（没被 clip 裁掉）      b) 表头纵向冻结不动
  *     c) 节次列横向冻结不动               d) **表头始终在顶栏下方、不被遮住**
  *     e) 表头下方紧接着的是表格内容（不是被表头盖住的空白/错行）
- *   d/e 就是这次实测问题：「星期被顶部导航栏挡住」的回归防线。
+ *   d/e 就是这次问题：「星期被顶部导航栏挡住」的回归防线。
 
- * 另外还守一条：`--topbar-h` 必须 >= 顶栏**实测**高度。
- * 顶栏在窄屏会换行变高（实测 641/361px 两个换行点，89.44 / 126.88px），
+ * 另外还守一条：`--topbar-h` 必须 >= 顶栏****高度。
+ * 顶栏在窄屏会换行变高（641/361px 两个换行点，89.44 / 126.88px），
  * 变量当初写死 64px 就是被这种情况到的。以后谁改了顶栏的 padding/字号/
  * 导航项数量，这条断言会立刻亮红。
  *
@@ -41,7 +41,7 @@
  */
 import pw from 'playwright';
 
-/* ★ 2026-10-22 CI 兼容：原来这里写死了
+/* ★ CI 兼容：原来这里写死了
    '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
    但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
    playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
@@ -161,7 +161,7 @@ console.log('\n--- 1. PC 1440×900：滚到页面最底，周几那行还在吗 
     ? ok('滚到最底时周几那行仍在视口内（没有被滚出屏幕）')
     : bad('滚到最底时周几那行被滚出屏幕了');
 
-  /* PC 端同样守 --topbar-h >= 顶栏实测高度（顶栏遮挡的根因防线） */
+  /* PC 端同样守 --topbar-h >= 顶栏高度（顶栏遮挡的根因防线） */
   const pcVar = await page.evaluate(() => ({
     topbarH: Math.round(document.querySelector('.topbar').getBoundingClientRect().height * 100) / 100,
     varH: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')),
@@ -207,7 +207,7 @@ console.log('\n--- 2. 手机 390×780：拉到最下 + 拉到最右 ---');
       rowH: Math.round(document.querySelector('.timetable tbody td.slot-col').getBoundingClientRect().height),
       rowsVisible: Math.floor(wrap.getBoundingClientRect().height
         / document.querySelector('.timetable tbody td.slot-col').getBoundingClientRect().height),
-      // 顶栏实测高度 vs CSS 变量 —— 防止变量又比真实顶栏矮
+      // 顶栏高度 vs CSS 变量 —— 防止变量又比真实顶栏矮
       topbarH: Math.round(tb.getBoundingClientRect().height * 100) / 100,
       varH: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')),
       thStickyTop: getComputedStyle(document.querySelector('.timetable thead th')).top,
@@ -225,7 +225,7 @@ console.log('\n--- 2. 手机 390×780：拉到最下 + 拉到最右 ---');
     ? ok(`手机端一屏能看到 ${info.rowsVisible} 行（瘦身生效）`)
     : bad(`手机端一屏只能看到 ${info.rowsVisible} 行，偏少`);
 
-  /* 变量必须 >= 顶栏实测高度。这是「星期被顶栏挡住」的根因防线：
+  /* 变量必须 >= 顶栏高度。这是「星期被顶栏挡住」的根因防线：
      顶栏窄屏换行会变高（89.44 / 126.88），变量写小就直接被遮。 */
   info.varH >= info.topbarH
     ? ok(`--topbar-h(${info.varH}px) >= 顶栏实测高度(${info.topbarH}px)，表头不会钻进顶栏`)
@@ -259,7 +259,7 @@ console.log('\n--- 2. 手机 390×780：拉到最下 + 拉到最右 ---');
       },
       scrollTop: Math.round(wrap.scrollTop),
       scrollLeft: Math.round(wrap.scrollLeft),
-      // 节次列文字有没有被裁（上一轮的真实 bug：62px 宽时"南 10:55-11:45"被截）
+      // 节次列文字有没有被裁（此前的真实 bug：62px 宽时"南 10:55-11:45"被截）
       clipped: [...document.querySelectorAll('.slot-col b, .slot-col span')]
         .filter(e => e.scrollWidth > e.clientWidth + 1).length,
     };
@@ -424,7 +424,7 @@ console.log('\n--- 4. 顶栏账号入口：三态 + 窄屏不折成 3 行 ---');
     });
     if (!r) { bad(`${w}px 没有渲染出顶栏`); await c.close(); continue; }
 
-    /* 1) 入口可见且指向账号页 —— 本轮 bug 的直接防线 */
+    /* 1) 入口可见且指向账号页 —— 此处 bug 的直接防线 */
     (r.exists && r.display !== 'none' && r.href === 'account.html')
       ? ok(`${w}px 账号入口可见可点（href=account.html，宽 ${r.w}px）`)
       : bad(`${w}px 账号入口不可用：exists=${r.exists} display=${r.display} href=${r.href}`);
