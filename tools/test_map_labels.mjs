@@ -10,7 +10,7 @@
  *                 为防「选两类 = 十几个标签」又糊掉，加了数量闸
  *                 LABEL_AUTO_MAX = 14：选中点总数超过就退回悬停显示。
  *
- * 类型筛选的交互语义（第 7 轮改过，实测问题：「无法取消全选模式」）：
+ * 类型筛选的交互语义（第 7 轮改过，问题：「无法取消全选模式」）：
  *   · 每个类型按钮都是**独立开/关**（标准多选），不是"单选/全选"两态开关
  *   · 点某类：没选中 -> 加入；已选中 -> 取消（**只取消这一个**）
  *   · 全部取消 = 回到全选（兜底，防地图一片空白）
@@ -25,7 +25,7 @@
  */
 import pw from 'playwright';
 
-/* ★ 2026-10-22 CI 兼容：原来这里写死了
+/* ★ CI 兼容：原来这里写死了
    '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
    但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
    playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
@@ -92,7 +92,7 @@ console.log('\n--- 2. 悬停显示 / 移开消失 ---');
   // 不挂 window），所以这里用 getAllOverlays 遍历 marker 的 position，
   // 再对照 POIS 的坐标找出非教学楼的那些。
   const target = await page.evaluate(() => {
-    // ⚠️ 不能用 window.map —— `let map` 不挂在 window 上（已实测 undefined）。
+    // ⚠️ 不能用 window.map —— `let map` 不挂在 window 上（已undefined）。
     // 高德会把地图实例挂到容器元素上：document.getElementById('map').amap
     const m = document.getElementById('map') && document.getElementById('map').amap;
     if (!m || !m.getAllOverlays) return null;
@@ -107,7 +107,7 @@ console.log('\n--- 2. 悬停显示 / 移开消失 ---');
       const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
       if (cx < 10 || cy < 10 || cx > innerWidth - 10 || cy > innerHeight - 10) continue;
       // ★ 必须确认这个点上真能收到鼠标事件（最顶层元素就是它自己）。
-      //   实测有标记被教学楼常驻标签压住，鼠标移过去事件落在标签上，
+      //   有标记被教学楼常驻标签压住，鼠标移过去事件落在标签上，
       //   测出来的「悬停没反应」是假象。只挑未被遮挡的点来测。
       const top = document.elementFromPoint(cx, cy);
       if (top && (top === dom || dom.contains(top) || top.contains(dom)))
@@ -246,11 +246,11 @@ console.log('\n--- 3b. 多选语义（用户反馈「无法取消全选模式」
     : bad(`全部取消后可见 ${d.visible}，应兜底回全选 ${n0}`);
 }
 
-/* ---------- 4. 拖动地图后不残留悬停标签（实测出现过的问题） ---------- */
+/* ---------- 4. 拖动地图后不残留悬停标签（出现过的问题） ---------- */
 console.log('\n--- 4. 拖地图 / 缩放后不残留 ---');
 {
   const target = await page.evaluate(() => {
-    // ⚠️ 不能用 window.map —— `let map` 不挂在 window 上（已实测 undefined）。
+    // ⚠️ 不能用 window.map —— `let map` 不挂在 window 上（已undefined）。
     // 高德会把地图实例挂到容器元素上：document.getElementById('map').amap
     const m = document.getElementById('map') && document.getElementById('map').amap;
     if (!m || !m.getAllOverlays) return null;

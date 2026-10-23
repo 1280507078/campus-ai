@@ -13,7 +13,7 @@ const { chromium } = pw;
 /* 沙箱/离线机上的 Chromium 是**预先下载好的固定版本**，而 playwright npm 包
    如果升过版，会去找一个更新的 build 号（比如 chromium_headless_shell-1243），
    机器上没有，直接报 “Executable doesn't exist”。这里显式指向已下载的那份。 */
-/* ★ 2026-10-22 CI 兼容：原来这里写死了
+/* ★ CI 兼容：原来这里写死了
    '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
    但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
    playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，

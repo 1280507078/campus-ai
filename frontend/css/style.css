@@ -457,6 +457,21 @@ a.topbar-user, .topbar a.user {
 .container { max-width: 1080px; margin: 0 auto; padding: 28px; }
 .topbar + .container { padding-top: 30px; }
 
+/* 「← 返回主页」：全站由 common.js 的 injectBackHome() 注入（2026-10-23，从开发线同步）。
+   为什么放在页面里而不是只靠顶栏：管理员顶栏只有「数据 / 反馈」，他进用户视图之后
+   没有回用户主页的入口，只有一条「数据」会把他拽回大屏。
+   用中性底 + 深色字，不用 --brand 当小字（13px 下对比度不够）。 */
+.back-home {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin: 0 0 14px; padding: 6px 14px;
+  border-radius: 999px; border: 1px solid transparent;
+  background: var(--chip-neutral-bg); color: var(--ink-soft);
+  font-size: 13px; font-weight: 500; text-decoration: none;
+  transition: color .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease);
+}
+.back-home:hover { color: var(--ink); border-color: var(--line); background: var(--card); }
+.back-home:focus-visible { outline: none; box-shadow: var(--ring); }
+
 /* 页面标题区 */
 .page-head {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -1251,7 +1266,7 @@ a.topbar-user, .topbar a.user {
      · `clip` 是**裁切**而不是**滚动**，它**不会建立滚动容器**，
        也就**不会**把另一个轴强制变成 auto。
      · 于是 sticky 的定位祖先回到页面本身，表头 `top` 就能锚在
-       **视口**（减掉顶栏）上 —— 页面滑到最底下，表头依然在。实测 309px → 0px ✅
+       **视口**（减掉顶栏）上 —— 页面滑到最底下，表头依然在。309px → 0px ✅
 
    手机端表格要横向滚（`min-width` 撑出 720px），`clip` 会把横向也裁掉、
    导致左右滑不动，所以手机端保留 `overflow: auto` + `max-height`
@@ -1283,7 +1298,7 @@ a.topbar-user, .topbar a.user {
        write 死 89px —— 断点见上文「顶栏高度的实测校准值」。
        实测这些控件在 390×780 上占掉约 400px，在 640 高的小屏上更挤，
        但 min-height 会兜住，不至于只剩一条缝。 */
-    /* ★★ 必须有 vh 兜底行（用户手机实测：星期行不跟着滚）。
+    /* ★★ 必须有 vh 兜底行（用户手机星期行不跟着滚）。
        老内核（Chrome < 108 / 部分国产浏览器）不认 dvh —— 整条 max-height
        被丢弃，wrap 没了高度上限就撑到内容全高，sticky 在父容器里
        没有行程可粘，表头跟着页面一起滚走。先写 vh 再写 dvh，
@@ -2112,7 +2127,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
     display: flex; align-items: baseline; gap: 8px; min-width: 0;
   }
   .result-hero .rh-score .tag { margin-top: 0 !important; }
-  /* 结论行：窄屏允许换行，永远不把卡片撑破（2026-10-18） */
+  /* 结论行：窄屏允许换行，永远不把卡片撑破 */
   .result-hero-row { flex-wrap: wrap; }
   .result-hero-row > .rh-score { flex: 0 0 auto; }
   /* 维度卡片：标题可收缩、标尺两端可换行。
@@ -2206,7 +2221,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
    纯 CSS 的三档断点没有这两个问题，也不用挂 ResizeObserver。
    ------------------------------------------------------------------ */
 
-/* 2 行（<= 640px，含窄机）：实测 92.27px
+/* 2 行（<= 640px，含窄机）：92.27px
    ------------------------------------------------------------------
    ⚠️ 这个 92 原来对应的是**没有账号入口**时的 89.44px。本轮加了「我的」
    胶囊之后，顶栏实测涨到 **92.27px** —— 92 就**不够了**，差 0.27px。
@@ -2477,7 +2492,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
      底部操作条用 position:sticky 贴在弹窗可视区底部（它本来就是 sticky bottom:0）。 */
   .review-scroll { max-height: none; overflow: visible; }
 
-  /* ★ 「底部字会穿」（2026-10-18）：操作条 sticky 贴在**内容区**下沿，
+  /* ★ 「底部字会穿」：操作条 sticky 贴在**内容区**下沿，
      而 .modal 自己还留着 14px 的 padding-bottom（就是 .modal-wide 那条
      padding: 18px 14px 14px）。滚动内容是在 padding 边缘裁的，于是那 14px 里
      会把底下一张卡的「周次 …」露出来 —— 实测 modal 下沿 802 / 操作条下沿 788，
@@ -2625,7 +2640,8 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 .rem-nav {
   flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
   font-size: 12.5px; font-weight: 500;
-  color: var(--brand); background: rgba(99, 102, 241, .1);
+  /* 小字用 --brand-text：#6366f1 压在 10% 紫底上只有 3.94:1 */
+  color: var(--brand-text); background: rgba(99, 102, 241, .1);
   text-decoration: none;
   transition: background .16s var(--ease);
 }
@@ -2740,7 +2756,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
      <= 640px   .u-short  「我的」胶囊（图标 + 我的）
      <= 361px   .u-avatar 30px 圆形首字母头像 —— 窄机真的放不下文字了
 
-   ## 宽度预算是硬约束（实测，不是估算）
+   ## 宽度预算是硬约束（，不是估算）
    顶栏在 <=640px 时 flex-wrap，第二行 nav 的可用宽 = 视口 - 28px padding：
 
        视口    nav 可用   改动前需   改动前余   行数
@@ -2828,7 +2844,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
   }
 }
 
-/* ---------- 意见反馈 / 管理后台（2026-10-19 新增）----------
+/* ---------- 意见反馈 / 管理后台----------
    颜色一律走令牌：三套主题靠「令牌覆盖」生效，这里写死任何一个色值，
    切主题时这块就不会跟着换（项目遇到过这种情况，见 MEMORY.md「三类颜色永不令牌化」）。
    ⚠️ 只有三类颜色允许写字面值：彩底上的 #fff、mask-image 的 #000、
@@ -3022,3 +3038,18 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 #ch-daily { height: 238px; }
 
 .adm-note { margin: 12px 0 0; font-size: 12px; color: var(--ink-faint); line-height: 1.7; }
+
+/* ============================================================
+   反馈卡片里的 12px 小字（2026-10-23 补）
+   ------------------------------------------------------------
+   `.fb-kind` / `.fb-reply-head` 用 --brand 压在 --brand-soft 上只有 3.99:1；
+   `.fb-state` 的 --warn / --ok 更糟（黄字压浅黄底约 1.9:1、绿字压浅绿底约 2.2:1）。
+   这几个都是 12px 小字，WCAG AA 要求 4.5:1，直接不达标。
+
+   ⚠️ 为什么以前没发现：`feedback.html` 的列表是**真实数据渲染的**，
+      库里一条反馈都没有的时候，这些元素压根不存在，axe 扫过去是"干净"的。
+      库里有 8 条反馈时才第一次暴露 —— 所以这条规则是数据依赖的，别删。
+   ============================================================ */
+.fb-kind, .fb-reply-head { color: var(--brand-text); }
+.fb-state { color: var(--warn-ink); }
+.fb-state.is-replied { color: var(--ok-ink); }

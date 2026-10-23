@@ -3,7 +3,7 @@
  * 跑法：node tools/test_plan_chat.mjs
  *
  * 为什么要有这个文件：
- *   2026-10-15 需求：「这里使用 AI agent，对话框方式，其他样式去掉」。
+ *   需求：「这里使用 AI agent，对话框方式，其他样式去掉」。
  *   这条改动最容易被**顺手改回去**：只要有人觉得"表单更好用"，
  *   把 plan.html 里的输入框加回来、或者把天数做成下拉框，页面照样能跑、
  *   也不会报任何错 —— 但那就不是用户要的那个东西了。
@@ -84,7 +84,7 @@ if (typeof detectDays === "function") {
     // 上限/下限：说 60 天不能真的排 60 天（后端也只有 30 天数据）
     ["排 60 天", undefined, 30],
     ["排 0 天", undefined, 1],
-    // ★ 认不出来的必须**沿用上一轮**：追问「再细一点」时跳回 7 天是最烦人的
+    // ★ 认不出来的必须**沿用此前**：追问「再细一点」时跳回 7 天是最烦人的
     ["再细一点", 3, 3],
     ["期末数据结构冲 90 分，顺便把六级过了", undefined, 7],
     // 「周末」「周一」不是天数，不能被当成 14 天
@@ -123,7 +123,7 @@ check("页脚提示位 #plan-tip 在（天数怎么改全靠它说）", has('id=
 // ★ 这几条是「其他样式去掉」的实质：撤掉的东西不许回来。
 //   ⚠️ 必须先**剥掉 HTML 注释**再断言：plan.html 里那段注释正是在说明
 //      "这些控件已经被撤掉了"，直接匹配源码会把**正确的新实现判成失败**。
-//      （同一条教训在这个项目里已经栽过：断言"界面不含某词"之前要先剥注释。）
+//      （同一条教训在这个项目里已经出现过：断言"界面不含某词"之前要先剥注释。）
 const HTML_NO_COMMENT = HTML.replace(/<!--[\s\S]*?-->/g, "");
 const hasVisible = (s) => HTML_NO_COMMENT.includes(s);
 
@@ -181,7 +181,7 @@ check("★ 开场白带 greeting 类（e2e 靠它把开场白和真回答分开�
 check("★ planner-core 刷新时叫的是页面上真实存在的函数名（updatePlanTip）",
   /callIfDefined\("updatePlanTip"\)/.test(CORE) && !/callIfDefined\("renderPlanHint"\)/.test(CORE));
 
-// ★ 防回归：「AI 看到空课表」是踩过的真问题（用户刚导入还没保存时库里是空的）
+// ★ 防回归：「AI 看到空课表」是出现过的真问题（用户刚导入还没保存时库里是空的）
 check("★ 发送时带上当前课表（别改回只发 goal/days）",
   /courses:\s*\(typeof courses/.test(JS) && /\.map\(stripLocal\)/.test(JS));
 check("★ 发送时带上对话上下文 history（多轮追问才接得住）",

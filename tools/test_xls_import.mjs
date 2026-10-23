@@ -1,7 +1,7 @@
 /* 课表 Excel（.xls / .xlsx）导入 —— 端到端回归测试。
  *
  * 为什么要单独一个测试：
- *   实测问题：「照片不好识别」，改用教务系统导出的 .xls。原来的导入只认
+ *   问题：「照片不好识别」，改用教务系统导出的 .xls。原来的导入只认
  *   图片和 JSON/CSV，.xls 会被当文本读（readAsText on binary -> 乱码 -> 报错）。
  *   本测试守住这条链路，避免以后有人改 handleImport 的分支判断时又把它弄坏。
  *
@@ -20,7 +20,7 @@
 import pw from 'playwright';
 import fs from 'fs';
 
-/* ★ 2026-10-22 CI 兼容：原来这里写死了
+/* ★ CI 兼容：原来这里写死了
    '/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome'。
    但 GitHub runner 的 HOME 是 /home/runner（不是 /root），而且浏览器目录名带版本号，
    playwright 一升级就变 —— 写死 = 「CI 上必然 Executable doesn't exist」，
@@ -288,7 +288,7 @@ console.log('\n--- ⑤·三 后端自报构建标记与能力 ---');
 
 /* ---------------- ⑤·四 教学楼简称要规范成正式楼名 ----------------
  *
- * 实测问题：「如果是商教教学楼就是商德楼」。
+ * 问题：「如果是商教教学楼就是商德楼」。
  *
  * 教务表格里写的是**口语简称**（「商教514」），而系统内置的楼名表只有正式名
  * （「商德楼」）。对不上时的后果不只是显示不好看：

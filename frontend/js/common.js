@@ -232,10 +232,10 @@ async function api(path, opts = {}) {
   const headers = Object.assign({}, opts.headers || {});
   const token = getToken();
   if (token) {
-    // ★ 两个头都发，别只发 Authorization（2026-10-14 build q 修的真 bug）。
+    // ★ 两个头都发，别只发 Authorization。
     //
     // 公网部署后，托管平台的网关会**改写 / 注入 Authorization 头**：后端拿到的
-    // 永远不是我们发的那个值，于是所有需要登录的接口一律 401，前端只能弹
+    // 永远不是发的那个值，于是所有需要登录的接口一律 401，前端只能弹
     // 「登录状态已过期」并跳回登录页 —— 重新登录也还是一样，永远进不去。
     // 加一个网关不会碰的自定义头就绕开了（后端优先读它，见 routers/auth.py）。
     //
@@ -350,7 +350,7 @@ function requireAuth() {
 /**
  * 取昵称的首字符，用作窄屏顶栏上的圆形头像。
  *
- * 说明：≤361px 的窄机放不下第 6 个文字胶囊（实测差 6px），
+ * 说明：≤361px 的窄机放不下第 6 个文字胶囊（差 6px），
  * 所以「我的」在那一档退化成 30px 的圆形首字母头像。没有昵称时退回用户名，
  * 都取不到就给个问号，保证圆里永远有东西、不会是个空圈。
  *
@@ -550,7 +550,7 @@ function renderTopbar(active) {
       localStorage.setItem("adminView", "admin");
     } else if (!/(?:^|\/)(?:account|login)\.html$/.test(path)) {
       // ⚠️ 个人页（account.html）**自己不写**这个标记：它两边共用同一个地址，
-      //   写一次就会把「从管理视角点进来」这件事抹掉，卡片永远翻不回去（踩过）。
+      //   写一次就会把「从管理视角点进来」这件事抹掉，卡片永远翻不回去（出现过）。
       localStorage.setItem("adminView", "user");
     }
   } catch { /* 隐私模式写不了 localStorage，卡片会退回默认（admin），不影响功能 */ }
@@ -599,7 +599,7 @@ function renderTopbar(active) {
 
   // ⚠️⚠️ 必须幂等：先删掉**已存在的**顶栏再插入新的。
   //
-  // 注意点（实测可见）：账号设置页改完昵称后，顶栏变成了**两条** ——
+  // 注意点（可见）：账号设置页改完昵称后，顶栏变成了**两条** ——
   // 上面一条是旧昵称、下面一条是新昵称，像页面被复制了一份。
   //
   // 原因：改昵称成功后要刷新顶栏上的显示名，account.js 会再调一次
@@ -617,6 +617,74 @@ function renderTopbar(active) {
 
   // 主题开关的交互必须在这里挂 —— 顶栏刚被插进 DOM，元素才存在
   mountThemeSwitch();
+
+  /* 每个页面顶部补一个「← 返回主页」（2026-10-23，从开发线同步）。
+     ⚠️ 必须在**写完 adminView 之后**调用，否则读到的是上一页的视角。 */
+  injectBackHome();
+}
+
+/* ★ 每个页面都放一个「← 返回主页」。
+ *
+ * 为什么不靠顶栏就够了：顶栏确实有「主页」，但
+ *   ① 课表 / 地图这类长页面要往上滑才看得到；
+ *   ② **管理员的顶栏只有「数据 / 反馈」，压根没有回用户主页的入口** ——
+ *      他进了用户视图之后，唯一能点的「数据」会把他直接拽回数据大屏。
+ *
+ * ★★★ 返回目标跟着**当前视角**走，不是跟着身份走：
+ *    · 管理视角（admin.html / admin-feedback.html）-> admin.html，「← 回到数据大屏」
+ *    · 用户视角（管理员点「进入用户视图」之后逛的每一页）-> **用户主页**，
+ *      文案也跟普通用户一样是「← 返回主页」
+ *    · 普通用户 -> index.html
+ *
+ *   用户原话：「管理员进入用户视图点返回主页返回的是用户的主页，而不是管理员的数据页面」。
+ *   所以管理员在用户视图里点「返回主页」，就该落在用户那个欢迎页上继续看，
+ *   不能一脚把他踹回数据大屏 —— 那样等于「看两眼就被赶走」。
+ *
+ *   ⚠️ 用户视角的目标带上 `?view=user`：开发线的 index.html 开头有 adminHome()
+ *      会「管理员 + 没这个参数 -> replace 回 admin.html」。竞赛线现在没有那段
+ *      （管理员点「主页」不会被弹走），但两边保持同一个 URL 才不会在同步时易错点。
+ *
+ * ⚠️ 视角靠 localStorage 的 `adminView` 判断，它由 renderTopbar 在**调用本函数之前**写好。
+ *    别改成读 location.search —— 只有 index.html 会带 ?view=user，点进别的页就丢了。
+ */
+function injectBackHome() {
+  const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const user = getUser();
+  const isAdmin = !!(user && user.is_admin);
+  // 当前视角：admin = 数据/反馈那一侧，user = 管理员点的「进入用户视图」
+  let viewMode = "admin";
+  try { viewMode = localStorage.getItem("adminView") || "admin"; } catch { /* 隐私模式：按管理视角 */ }
+  const inUserView = isAdmin && viewMode === "user";
+
+  const home = !isAdmin ? "index.html"
+    : inUserView ? "index.html?view=user"
+      : "admin.html";
+  // 「自己的主页」不注入：用户视角里 index.html 就是主页，管理视角里是 admin.html
+  const onOwnHome = isAdmin && !inUserView ? page === "admin.html" : page === "index.html";
+  if (page === "login.html" || onOwnHome) return;
+  if (document.querySelector(".back-home")) return;   // 幂等：顶栏可能被刷新多次
+
+  /* ⚠️ 容器选择比开发线多一层兜底：这棵树的页面有的用 <main class="container">，
+     有的是 <div class="container">（index/planner/account/plan），还有 index 那个
+     带 role="main"。只认 <main> 的话，一半页面会把按钮插到 body 最前面 ——
+     贴着屏幕左上角、没有左右留白。 */
+  const host = document.querySelector("main")
+    || document.querySelector('[role="main"]')
+    || document.querySelector(".container")
+    || document.body;
+  const a = document.createElement("a");
+  a.className = "back-home";
+  a.href = home;
+  // 只有「管理视角」才需要说明去的是数据大屏；用户视角下他和普通用户看到的是同一句
+  a.textContent = isAdmin && !inUserView ? "← 回到数据大屏" : "← 返回主页";
+  host.insertBefore(a, host.firstChild);
+}
+
+// 少数页面（二维码落点、没有顶栏的页）也要有返回入口
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", injectBackHome);
+} else {
+  injectBackHome();
 }
 
 /**
@@ -697,7 +765,7 @@ function weekdayOf(iso) {
 /**
  * 把周次串解析成周次数字集合。
  *
- * 教务导出的写法五花八门（实测）：
+ * 教务导出的写法五花八门：
  *   "1周(全部)" / "2-3,6-8周(全部) 19周(全部)" / "1,3,5,7周(全部) 2,6,8周(全部)"
  *
  * ⚠️ 兜底原则：**宁可不隐藏，也不要误隐藏**。

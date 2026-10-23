@@ -34,9 +34,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     """
     校验登录态，取当前用户。
 
-    ★ 为什么不用标准的 `Authorization` 头读 token（2026-10-14 build q 修的真 bug）
+    ★ 为什么不用标准的 `Authorization` 头读 token
     ------------------------------------------------------------------------------
-    公网部署之后，**托管平台的网关会改写 / 注入 `Authorization` 头**。实测证据
+    公网部署之后，**托管平台的网关会改写 / 注入 `Authorization` 头**。证据
     （在同一台机器上用 curl 打线上域名）：
 
       · 客户端**什么都不发** → 后端收到的却不是空 → 走到「解不开 token」分支；
@@ -196,7 +196,7 @@ async def delete_account(data: AccountDelete, user: User = Depends(get_current_u
 
     ⚠️ 第 2 条**不能省**：users.id 没有 AUTOINCREMENT，注销后 id 会被下一个
     注册的用户复用；向量记忆靠 payload.user_id 关联，不删就会让新用户
-    检索到前一个人的隐私记录。实测复现过（新用户 id=1 检索出旧用户含学号的记忆）。
+    检索到前一个人的隐私记录。复现过（新用户 id=1 检索出旧用户含学号的记忆）。
     ⚠️ 取 user.id 必须在 db.delete(user) **之前** —— 删了就取不到了。
     """
     if user.hashed_password != hash_pwd(data.password):
@@ -204,7 +204,7 @@ async def delete_account(data: AccountDelete, user: User = Depends(get_current_u
 
     uid = int(user.id)          # 先留存，后面 db.delete 之后就取不到了
 
-    # --- 0) ★ 先把这个人的数据**输出**出来，再动手删（2026-10-14 需求）---
+    # --- 0) ★ 先把这个人的数据**输出**出来，再动手删---
     #    范围 = 「个人」：SQLite 的课表 / 情绪对话原文 / 测评 + 向量库条数，
     #    打印一份人能读的清单，并落一份 JSON 到 backend/data_export/。
     #    ⚠️ 顺序很重要 —— 必须在 db.delete 之前，删完就什么都读不到了。
@@ -217,7 +217,7 @@ async def delete_account(data: AccountDelete, user: User = Depends(get_current_u
         #    `from services import qdrant as memory`，那是一个**函数内局部名**，
         #    在这段代码的位置上还不存在 —— 直接用 `memory` 会抛
         #    `UnboundLocalError: cannot access local variable 'memory'`。
-        #    （实测踩到：被下面的 try 吞掉，表现为"注销成功但没有任何输出"，
+        #    （遇到：被下面的 try 吞掉，表现为"注销成功但没有任何输出"，
         #      也就是用户最不想要的那种静默失败。）
         from services import qdrant as memory_svc
         vec_points = await memory_svc.count_user_memory(uid)

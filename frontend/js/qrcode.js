@@ -25,8 +25,8 @@
 
 /**
  * 各版本（1~10）在不同纠错等级下的码字分配。
- * 只枚举到版本 10 —— 再大对我们没有意义（版本 10-M 能装 216 字节，
- * 而我们的扫码登录 payload 只有 ~60 字节）。
+ * 只枚举到版本 10 —— 再大对没有意义（版本 10-M 能装 216 字节，
+ * 而的扫码登录 payload 只有 ~60 字节）。
  *
  * 每一项是 `[dataCw, eccPerBlock, blocks]`：
  *   dataCw       —— **数据码字**总数（不含纠错码字）
@@ -157,7 +157,7 @@ function qrEncodeData(text, ecc) {
     // ⚠️ 取的是**第 0 项**（数据码字数）。曾经这里手滑写成 `const [, dataCw] = ...`，
     //    多了一个前导逗号 → 解构到的是第 1 项（每块纠错码字数），
     //    于是"容量"被算成 10 个码字，39 字节的内容连版本 10 都判定装不下。
-    //    结论：数组解构的下标最容易写错，改完务必跑一遍实测。
+    //    结论：数组解构的下标最容易写错，改完务必跑一遍。
     const [dataCw] = QR_ECC_TABLE[v][ecc];
     // 模式指示符 4 + 字符计数（版本 1~9 用 8 位，10+ 用 16 位）
     const headerBits = 4 + (v <= 9 ? 8 : 16);
@@ -543,7 +543,7 @@ function qrMatrix(text, opts = {}) {
     qrWriteFormat(candidate, size, ecc, mask);
     qrWriteVersion(candidate, size, version);
     const p = qrMaskPenalty(candidate, size);
-    // ⚠️ 用 `<=` 而不是 `<`：评分**出现平局是常事**（实测内容 "A" 时
+    // ⚠️ 用 `<=` 而不是 `<`：评分**出现平局是常事**（内容 "A" 时
     //    mask=3 和 mask=4 都是 355 分）。平局时取**最后一个**，
     //    与主流实现（python-qrcode 等）保持一致 —— 这样同一段内容
     //    在任何工具里生成的图案都完全相同，便于比对和排查。

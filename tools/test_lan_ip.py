@@ -38,7 +38,7 @@ ALWAYS_DROP = ("127.", "169.254.")
 # ⚠️ 之所以只认这几个 ASCII 词：Windows 在任何语言版本下都用拉丁字母打印它们
 #   （中文 Windows 的标题是「无线局域网适配器 WLAN」，「WLAN」是 ASCII）。
 #   如果改成去匹配「适配器」这种本地化词，就会往 .bat 里塞非 ASCII 字节，
-#   cmd 会乱码 —— 这是实测过的问题。
+#   cmd 会乱码 —— 这是出现过的问题。
 WIFI_MARKERS = ("wi-fi", "wlan", "wireless")
 
 
@@ -148,7 +148,7 @@ def pick_lan_ip(ipconfig_text: str) -> tuple[str, list[dict]]:
         # ⚠️ TRAP 3 的模拟：旧代码把两段拼成 `head + " " + tail` 之后，
         #    又对这个重建串做了一次 `tokens=2 delims=:`。由于分隔符已被吃掉，
         #    那次切分拿不到东西，IP 就是空的。
-        #    这里显式跑一遍「旧做法」，一旦它能成功取到 IP，说明我们的理解有误；
+        #    这里显式跑一遍「旧做法」，一旦它能成功取到 IP，说明的理解有误；
         #    正常情况它必须是空 —— 这就是当年 LANIP 为空、脚本打开
         #    `http://:5500/login.html` 的原因。
         rebuilt = head + " " + tail
