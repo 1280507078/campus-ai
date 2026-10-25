@@ -20,7 +20,8 @@ EMBED_DIM = 2048
 
 
 @router.post("/chat", response_model=ChatOut)
-async def chat(data: ChatIn, user: User = Depends(get_current_user)):
+async def chat(data: ChatIn, user: User = Depends(get_current_user),
+               db: Session = Depends(get_db)):
     # 1) 检索这个用户此前说过的相关片段，让 AI「记得」他
     past = await memory.search_memory(user.id, data.message, dim=EMBED_DIM)
 
@@ -65,7 +66,21 @@ async def chat(data: ChatIn, user: User = Depends(get_current_user)):
     reply = await glm_chat(messages)
     reply = reply or "我在听，慢慢说，我会一直陪着你。"
 
-    # 2) 把此处对话写回长期记忆（失败不影响返回结果）
+    # 2) 落库：后台的「情绪对话」KPI 与 7 日活跃口径都读这张表。
+    #    只存这一轮的问答对，不存整段历史 —— 整段存会让「会话数」随轮次膨胀，
+    #    而标签写的是「已保存的会话」，口径就说不清了。
+    #    写入失败不能让用户丢回复：回滚后只记日志，照常返回 reply。
+    try:
+        db.add(ChatSession(user_id=user.id, messages=[
+            {"role": "user", "content": data.message},
+            {"role": "assistant", "content": reply},
+        ]))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.warning("写入情绪对话记录失败（不影响本次回复）：%s: %s", type(e).__name__, e)
+
+    # 3) 把此处对话写回长期记忆（失败不影响返回结果）
     try:
         await memory.add_memory(user.id, data.message, role="user", dim=EMBED_DIM)
         if reply:
