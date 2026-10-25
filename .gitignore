@@ -46,6 +46,10 @@ coverage/
 
 # 本地数据库文件（SQLite，运行时自动生成）
 backend/*.db
+# 换包时旧库会另存成 backend/campus_ai.db.bak-<标识>：名字带后缀，`*.db` 逮不住它。
+# 里面是真实账号（bcrypt 哈希）、课表、情绪测评与反馈记录 —— 绝不进仓库、不进交付包。
+backend/*.db.bak-*
+*.db.bak-*
 
 # 打包/解包标记（解压时自动写入的时间戳，只用于判断"包是不是新的"）
 .package_marker
