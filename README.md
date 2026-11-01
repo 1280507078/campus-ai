@@ -40,7 +40,7 @@
 
 | 模块 | 能力 | 页面 |
 |------|------|------|
-| 学习规划 | 学期课表（按周显示、周次条 1–20 周）、添加课程/活动、Excel / CSV 导入（带预览确认）、按教学楼切南北区作息、「沿用上周」、AI 生成计划 | `planner.html` `plan.html` `reminder.html` |
+| 学习规划 | 学期课表（按周显示、周次条 1–20 周）、添加课程/活动、Excel / CSV 导入（带预览确认）、按教学楼切南北区作息、AI 生成计划 | `planner.html` `plan.html` `reminder.html` |
 | 学校事务问答 | 29 篇语料的向量检索、三道反幻觉闸、答案带原文出处 | `plan.html`（对话内） |
 | 情绪陪伴 | AI 倾听对话（带长期记忆）、8 题测评、结果分级与建议 | `emotion-chat.html` `emotion-quiz.html` `emotion-result.html` |
 | 地图导航 | 校园点位、起终点步行路线（自建路网）、文字指引、天气提示 | `nav.html` |
