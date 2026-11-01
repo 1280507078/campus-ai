@@ -458,10 +458,9 @@ if route_of:
               "docs_fingerprint" in dockerignore or "data/.*" in dockerignore,
               "（.dockerignore 里没显式排除）")
     else:
-        # 开发树暂时不带容器产物（Dockerfile / .dockerignore 是竞赛树的工程化交付），
-        # 没这个文件就没这条规则可查 —— 报 SKIP 而不是 FAIL，
-        # 免得「本树根本没有的东西」被算成失败（假失败比不查更糟）。
-        print("  [SKIP] 本树没有 .dockerignore（无容器产物），跳过镜像排除检查")
+        # 没有容器产物的环境不会有 .dockerignore，此时该规则无对象可查。
+        # 报 SKIP 而不是 FAIL —— 假失败比不查更糟，会让真正的失败淹没在噪声里。
+        print("  [SKIP] 没有 .dockerignore（未启用容器交付），跳过镜像排除检查")
     check("★ 包内结构清单也不统计它",
           "docs_fingerprint" in gen_src,
           "（清单脚本没排除，会出现在 包内结构.txt 里）")

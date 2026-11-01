@@ -1,6 +1,6 @@
 /* 无障碍（a11y）审计：用 axe-core 把全站页面扫一遍，按 WCAG 2.1 A/AA 规则判。
 
-   跑法（先起后端，本树前端挂在 /app）：
+   跑法（先起后端，前端由后端挂在 /app）：
      cd backend && PORT=8011 python main.py
      node tools/audit_a11y.mjs                # 默认扫 http://127.0.0.1:8011/app
      CAMPUS_BASE=http://127.0.0.1:8000 node tools/audit_a11y.mjs

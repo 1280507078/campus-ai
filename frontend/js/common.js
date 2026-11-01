@@ -664,7 +664,7 @@ function injectBackHome() {
   if (page === "login.html" || onOwnHome) return;
   if (document.querySelector(".back-home")) return;   // 幂等：顶栏可能被刷新多次
 
-  /* ⚠️ 容器选择比开发线多一层兜底：这棵树的页面有的用 <main class="container">，
+  /* ⚠️ 容器选择要多一层兜底：各页面的容器写法不统一 —— 有的用 <main class="container">，
      有的是 <div class="container">（index/planner/account/plan），还有 index 那个
      带 role="main"。只认 <main> 的话，一半页面会把按钮插到 body 最前面 ——
      贴着屏幕左上角、没有左右留白。 */

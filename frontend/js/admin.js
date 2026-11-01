@@ -156,8 +156,8 @@ function drawDaily(daily) {
     ch.setOption(EMPTY("近 7 天还没有任何记录"), true);
     return;
   }
-  // ⚠️ 本树没有「伴学对话」这条线：伴学对话存在浏览器 localStorage，
-  //    库里查不到，画上去只能是假的。用「情绪对话」补位 —— 它是真实存在的表。
+  // ⚠️ 这里不画「伴学对话」：那个数据存在浏览器 localStorage，库里查不到，
+  //    画上去只能是假的。用「情绪对话」补位 —— 它有真实的表。
   const series = [
     { key: "users", label: "新用户", color: t.brand },
     { key: "assessments", label: "测评", color: t.emotion },
@@ -265,8 +265,8 @@ function drawUsers(u) {
 
 /* ---- 4.4 反馈回复率 ----
  * 仪表盘比柱状更贴「一个比例」这件事：一眼看出还有多少没回。
- * ⚠️ 本树没有「待办」表，所以这里量的是**反馈**的回复率，
- *    不是开发树那张待办完成率 —— 看板上每个数都要能指到库里的出处。
+ * ⚠️ 这里量的是**反馈**的回复率，不是待办完成率 —— 没有待办表，
+ *    而看板上每个数都要能指到库里的出处。
  */
 function drawFbReply(fb) {
   const t = tokens();

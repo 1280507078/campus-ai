@@ -93,7 +93,7 @@ async def chat(data: ChatIn, user: User = Depends(get_current_user),
 
 @router.get("/memory/stats")
 async def memory_stats(user: User = Depends(get_current_user)):
-    """记忆库健康状态（供调试与演示用）。"""
+    """记忆库健康状态（排查检索异常时看：集合是否存在、向量条数、维度）。"""
     return memory.stats()
 
 

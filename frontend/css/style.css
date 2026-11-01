@@ -2232,7 +2232,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
    高德 JS API 会给每个 marker label 套一层 `.amap-marker-label`，
    它自带：padding:2px 5px / border:1px solid #ccc / background:#fff /
            font-size:12px / line-height:1。
-   我们在标签内部再画一个彩色小方块，就等于「蓝底方块套在白框里」——
+   在标签内部再画一个彩色小方块，就等于「蓝底方块套在白框里」——
    字比白框小一圈、四周留出一圈白边，看起来就是
    「标签和字大小不匹配、有留白」。把外层彻底清零后，
    尺寸完全由内部 .poi-label 决定，圆点和字就对齐了。 */

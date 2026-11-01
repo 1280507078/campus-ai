@@ -33,7 +33,15 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from scipy import ndimage as ndi
+
+# 本脚本只做交付前的质量核验，不参与运行，所以这三个包不进 requirements.txt。
+# 缺依赖时给人话，而不是让评审面对一段 traceback。
+try:
+    from scipy import ndimage as ndi
+except ModuleNotFoundError:
+    print("缺少 scipy：本脚本是交付前的路网质量核验，需要额外装三个包")
+    print("    python -m pip install numpy scipy pillow")
+    sys.exit(2)
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
