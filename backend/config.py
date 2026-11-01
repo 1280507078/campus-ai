@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     GLM_API_KEY: str = ""                       # TODO: 填入智谱 API Key
     GLM_MODEL: str = "glm-4-flash"
     GLM_BASE_URL: str = "https://open.bigmodel.cn/api/paas/v4/"
-    # 课表截图识别用的视觉模型。glm-4v-flash 免费，识别课表足够用；
-    # 想要更准可在 .env 覆盖成 glm-4v / glm-4v-plus（按量计费）。
+    # 多模态模型名（图片理解）。glm-4v-flash 免费；
+    # 想要更强的识图能力可在 .env 覆盖成 glm-4v / glm-4v-plus（按量计费）。
     GLM_VISION_MODEL: str = "glm-4v-flash"
 
     # ===== Qdrant Cloud（情绪陪伴长期记忆检索）=====

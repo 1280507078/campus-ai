@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 170 个文件，合计 9,829,245 字节
+共 170 个文件，合计 9,836,277 字节
 本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -459,13 +459,13 @@ Campus AI Assistant —— 包内结构
 --------------------------------------------------------
 
 【.github/】 （1 个）
-    .github/workflows/ci.yml                                 9,541 字节
+    .github/workflows/ci.yml                                 9,371 字节
 
 【backend/】 （60 个）
     backend/.env                                             3,667 字节
-    backend/.env.example                                     3,999 字节
+    backend/.env.example                                     3,787 字节
     backend/build.txt                                           14 字节
-    backend/config.py                                        4,425 字节
+    backend/config.py                                        4,416 字节
     backend/data/campus_docs/1.学分认定、置换与奖励成绩流程指南.md           2,042 字节
     backend/data/campus_docs/11.学生多媒体教室申请办理流程.md               790 字节
     backend/data/campus_docs/12.辅修报名流程.md                      448 字节
@@ -531,8 +531,8 @@ Campus AI Assistant —— 包内结构
     docs/img/shot-home.jpg                                 149,645 字节
     docs/img/shot-nav.jpg                                  335,724 字节
     docs/使用说明.pdf                                          747,451 字节
-    docs/技术文档.md                                            38,699 字节
-    docs/技术文档.pdf                                        2,187,769 字节
+    docs/技术文档.md                                            39,175 字节
+    docs/技术文档.pdf                                        2,194,325 字节
 
 【frontend/】 （47 个）
     frontend/account.html                                    6,117 字节
@@ -641,7 +641,7 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               17,685 字节
+    README.md                                               18,076 字节
     start-windows.bat                                       27,055 字节
 
 --------------------------------------------------------

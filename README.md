@@ -25,7 +25,7 @@
 本项目把这些入口收敛成一个：
 
 - **学习规划**——按周次显示的时间表、Excel / CSV 课表导入（带解析预览）、能调用工具查真实数据的 AI 排计划；
-- **学校事务问答**——教务处公开的 29 篇办事指南与校历做成可检索知识库，回答时**标出原文出处**，查不到就明说"手册没写"；
+- **学校事务问答**——学校各部门公开的 29 篇办事指南与校历（教务处 14、图书馆 11、后勤 3、信息化中心 1）做成可检索知识库，回答时**标出原文出处**，查不到就明说"手册没写"；
 - **情绪陪伴**——低压力的对话入口（带长期记忆）+ 8 题自评量表（出分与分级建议）；
 - **天气地图导航**——高德底图 + **自建校园步道路网**，给出校内真实步行路线与里程；
 - **管理端**——注册用户、活跃、课表填写率、对话量、测评分布、反馈类型，以及反馈处理列表。
@@ -187,17 +187,18 @@ cp backend/.env.example backend/.env        # Linux / macOS
 
 | 变量 | 必填 | 作用 | 缺失时 |
 |------|------|------|--------|
-| `GLM_API_KEY` | 否 | 学习规划、情绪对话、文档问答、图片识别 | 降级：本地规则计划 / 固定话术 |
+| `GLM_API_KEY` | 否 | 学习规划、情绪对话、文档问答 | 降级：本地规则计划 / 固定话术 |
 | `GLM_MODEL` | 否 | 对话模型名，默认 `glm-4-flash` | — |
+| `GLM_BASE_URL` | 否 | 模型服务地址（OpenAI 兼容，换供应商只改这一行） | 用内置默认值 |
 | `QDRANT_URL` / `QDRANT_API_KEY` | 否 | 文档检索与情绪长期记忆 | 降级：无记忆、文档问答不可用 |
-| `AMAP_KEY` / `AMAP_WEB_KEY` | 否 | 地图底图与天气 | 降级：底图与天气不可用 |
-| `AMAP_SECURITY_CODE` | 否 | 高德 JS API 安全密钥 | 地图不可用 |
-| `DATABASE_URL` | 否 | 默认 SQLite；可填 MySQL | — |
-| `JWT_SECRET` | 建议 | 登录令牌签名 | 使用内置默认值（仅演示可接受） |
+| `AMAP_WEB_KEY` | 否 | 后端：天气、地理编码 | 降级：天气与地理编码不可用 |
+| `DATABASE_URL` | 否 | 默认 SQLite；可填 MySQL | 用 `backend/campus_ai.db` |
+| `API_PORT` / `WEB_PORT` | 否 | 后端端口（默认 8000）/ 静态页端口（默认 5500） | 用默认值 |
+| `SECRET_KEY` | 建议 | 登录令牌签名 | 使用内置默认值（仅演示可接受） |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | 否 | 管理员账号，默认 `admin` / `zrc666` | 配空 = 不建管理员 |
 | `DEMO_USERNAME` / `DEMO_PASSWORD` | 否 | 评审演示账号，默认 `demo` / `demo123456` | 配空 = 不建演示账号 |
 
-前端另有 `frontend/js/config.js`：`AMAP_JS_KEY`、`AMAP_SECURITY_CODE`、`CITY_ADCODE`。
+前端另有 `frontend/js/config.js`：`AMAP_JS_KEY`（Web 端 JS API Key）、`AMAP_SECURITY_CODE`（安全密钥）、`CITY_ADCODE`。地图相关共三个 Key，**后端两个、前端两个，不要填混**。
 
 ### 5.2 依赖清单
 
@@ -235,7 +236,7 @@ python -m services.rag_docs --dry-run   # 先看会切多少块，不写库
 python -m services.rag_docs             # 写入 Qdrant 的 campus_docs 集合
 ```
 
-语料在 `backend/data/campus_docs/`（教务处公开的办事指南 + 校历，共 29 篇），每篇开头带原文链接与抓取日期。**不导也能跑**：检索为空时回答"手册里没查到这条"，不会编流程。
+语料在 `backend/data/campus_docs/`（教务处 / 图书馆 / 后勤 / 信息化中心公开的办事指南与校历，共 29 篇），每篇开头带原文链接与抓取日期。**不导也能跑**：检索为空时回答"手册里没查到这条"，不会编流程。
 
 ### 5.5 安全说明
 
