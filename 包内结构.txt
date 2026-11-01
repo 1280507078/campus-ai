@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 187 个文件，合计 8,159,886 字节
+共 191 个文件，合计 9,837,778 字节
 本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -524,13 +524,17 @@ Campus AI Assistant —— 包内结构
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              28,365 字节
 
-【docs/】 （6 个）
+【docs/】 （10 个）
     docs/agent-eval.md                                      18,811 字节
     docs/img/arch.png                                      248,522 字节
     docs/img/flow.png                                      111,830 字节
+    docs/img/shot-admin.jpg                                176,443 字节
+    docs/img/shot-agent.jpg                                169,919 字节
+    docs/img/shot-home.jpg                                 149,645 字节
+    docs/img/shot-nav.jpg                                  335,724 字节
     docs/使用说明.pdf                                          747,976 字节
-    docs/技术文档.md                                            38,753 字节
-    docs/技术文档.pdf                                        1,063,160 字节
+    docs/技术文档.md                                            40,014 字节
+    docs/技术文档.pdf                                        1,907,370 字节
 
 【frontend/】 （47 个）
     frontend/account.html                                    6,117 字节
@@ -658,7 +662,7 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               17,162 字节
+    README.md                                               17,852 字节
     start-windows.bat                                       27,055 字节
     如何启动.md                                                132,586 字节
 
