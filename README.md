@@ -277,7 +277,7 @@ python -m services.rag_docs             # 写入 Qdrant 的 campus_docs 集合
 | 想做 | 命令 | 说明 |
 |------|------|------|
 | 后端契约 | `python tools/test_rag_docs.py`（另有 `test_study_agent.py` / `test_scan_login_contract.py` / `test_data_export.py`） | 脚本式，自带「结论: N 通过 / M 失败」与退出码 |
-| 前端纯逻辑 | `node tools/test_course_on_date.mjs` 等 | 不起服务、不开浏览器，秒级 |
+| 前端纯逻辑 | `node tools/test_term_timetable.mjs`（按周判断）等 | 不起服务、不开浏览器，秒级 |
 | 全站 e2e | `node tools/test_site_smoke.mjs` | 逐页打开，断言无控制台错误、无白屏 |
 | 无障碍 | `node tools/audit_a11y.mjs` | axe-core 扫 WCAG 2.1 A/AA，浅色 + 黑夜两轮 |
 | 路网质量 | `python tools/qa_campus_graph.py` | 把路线投到底图路像素上量离路距离 |

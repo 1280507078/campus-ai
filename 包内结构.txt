@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 170 个文件，合计 9,836,277 字节
+共 170 个文件，合计 9,836,024 字节
 本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -15,10 +15,9 @@ Campus AI Assistant —— 包内结构
      创新点说明。AI 部分写清选型理由、集成方式与 9 条优化策略，均附实测数据。
   ② ★★★【README】按大赛要求重写：项目介绍、功能一览、技术架构与选型理由、
      安装运行（一键 / Docker / 手动）、环境配置表、测试说明、开发过程、团队信息。
-  ③ ★★★【评审账号】启动时自动创建演示账号 demo（含 7 条示例课程，周一到周五、
-     每周都上，任何一天打开都有课）。此前只有管理员账号，评审注册的新账号
-     课表是空的，「今天有课吗」「排一份计划」这些演示无从谈起。
-     与管理员一样幂等：已存在就跳过，不重置密码、不覆盖改过的课表。
+  ③ ★★★【评审账号】启动时自动创建演示账号 demo，预置 7 条示例课程（周一到周五、
+     每周都上），任何一天打开都有课，「今天有课吗」「排一份计划」都有内容可演示。
+     与管理员账号一致：幂等，已存在就跳过，不重置密码、不覆盖改过的课表。
   ④ 【提交包】-ss 包的顶层只放两份说明：README.md 与技术文档.pdf；
      操作手册在 docs/使用说明.pdf，逐文件清单与重复的启动说明不进包。
   ⑤ 【构建号】升到 2026-11-01-a：14 个页面的 ?v= 与登录页页脚同步。
@@ -598,7 +597,7 @@ Campus AI Assistant —— 包内结构
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
     tools/eval_agent.py                                     12,879 字节
-    tools/gen_structure.py                                  60,700 字节
+    tools/gen_structure.py                                  60,615 字节
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
@@ -636,12 +635,12 @@ Campus AI Assistant —— 包内结构
 【根目录】
     .dockerignore                                            1,275 字节
     .gitattributes                                             830 字节
-    .gitignore                                               1,684 字节
+    .gitignore                                               1,499 字节
     check-lan.bat                                            6,461 字节
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               18,076 字节
+    README.md                                               18,093 字节
     start-windows.bat                                       27,055 字节
 
 --------------------------------------------------------
