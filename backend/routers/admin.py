@@ -113,7 +113,7 @@ def stats(db: Session = Depends(get_db)):
     since30 = now - timedelta(days=30)
 
     # ★ 统计**不含管理员账号**：admin 是系统内置的，把它算进「注册用户」
-    #   会让看板永远多 1 个人，答辩时说「有 1 个真实用户」对不上数字。
+    #   会让看板永远多 1 个人，对外说明「有 1 个真实用户」时与数字不符。
     #   活跃用户也要扣掉 —— 管理员自己进来看看板不该算「有人在用」。
     admin_ids = {int(i) for (i,) in
                  db.query(User.id).filter(User.is_admin == True).all()}   # noqa: E712

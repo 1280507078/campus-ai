@@ -22,7 +22,7 @@
         表头不至于又钻到顶栏底下；顶栏是半透明白底，多出几 px 也不难看。
      ⚠️ 改顶栏的内边距 / 字号 / 导航项数量后，这两个数要重新量。
         tools/test_timetable_freeze.mjs 会把实测值与变量对账
-        （只查「变量 >= 实测」，「给大了」要人肉复核）。 */
+        （只查「变量 >= 实测」，「给大了」需人工复核）。 */
   --topbar-h: 68px;
 
   /* 主色 */
@@ -30,7 +30,7 @@
   --brand-2: #8b5cf6;
   --brand-3: #ec4899;
   --brand-soft: #eef2ff;
-  /* ★ 「品牌色当正文用」需要更深的一档（2026-10-21 无障碍审计）：
+  /* ★ 「品牌色当正文用」需要更深的一档（无障碍审计）：
      #6366f1 在 --brand-soft(#eef2ff) 上只有 3.99:1、在白底 4.47:1，
      都低于 WCAG AA 小字号正文要求的 4.5:1 —— axe 在课表页抓出 4 处。
      但 --brand 不能直接改深：它同时当底色、边框、渐变用（彩底上的白字不动），
@@ -274,7 +274,7 @@ html {
   scroll-behavior: smooth;
   /* 防手机系统字体放大（Android「字体大小」/浏览器文字大小）
      把布局撑出横向滚动条 —— 一旦整页能横滑，用户滑到中间就会看到
-     「左边标题被切一半、右边标签跑出卡片」的样子（2026-10-18 用户截图）。
+     「左边标题被切一半、右边标签跑出卡片」的样子（依据用户截图）。
      ⚠️ 只给 html，**不给 body**：body 一旦自己成了滚动容器，
      时间表的 position:sticky 表头会改相对 body 计算，冻结就废了
      （tools/test_timetable_freeze.mjs 守着这件事）。 */
@@ -446,9 +446,9 @@ a.topbar-user, .topbar a.user {
 .container { max-width: 1080px; margin: 0 auto; padding: 28px; }
 .topbar + .container { padding-top: 30px; }
 
-/* 「← 返回主页」：全站由 common.js 的 injectBackHome() 注入（2026-10-23，从开发线同步）。
-   为什么放在页面里而不是只靠顶栏：管理员顶栏只有「数据 / 反馈」，他进用户视图之后
-   没有回用户主页的入口，只有一条「数据」会把他拽回大屏。
+/* 「← 返回主页」：全站由 common.js 的 injectBackHome() 注入。
+   放在页面内而非仅依赖顶栏的原因：管理员顶栏只有「数据 / 反馈」，进入用户视图后
+   没有返回用户主页的入口，仅「数据」一项会把用户带回大屏。
    用中性底 + 深色字，不用 --brand 当小字（13px 下对比度不够）。 */
 .back-home {
   display: inline-flex; align-items: center; gap: 4px;
@@ -918,7 +918,7 @@ a.topbar-user, .topbar a.user {
 .auth-footer { text-align: center; margin: 20px 0 0; font-size: 13px; color: var(--ink-soft); }
 .auth-footer a { color: var(--ink-soft); font-size: 13px; transition: color .18s var(--ease); }
 .auth-footer a:hover { color: var(--brand); }
-/* 构建标识：方便确认"我跑的到底是哪一版"，排查"改了没生效"这类问题 */
+/* 构建标识：用于确认当前运行的版本，排查「修改未生效」类问题 */
 .build-tag {
   display: inline-block; margin-left: 7px; padding: 1px 7px;
   font-size: 11px; font-weight: 600; letter-spacing: .02em;
@@ -1366,7 +1366,7 @@ a.topbar-user, .topbar a.user {
 
 /* 手机端的「可以横滑」提示。桌面端 8 列放得下，用不着，默认藏起来。
    ⚠️ 这句话是给「右边被切一半」这个观感兜底的，别删：
-   没有它，用户会以为课表布局坏了（2026-10-18 的「时间表界面乱」就是这个）。 */
+   没有它，用户会以为课表布局坏了（「时间表界面乱」即由此引起）。 */
 .tt-swipe-tip { display: none; }
 @media (max-width: 799.98px) {
   /* ⚠️ 必须是 block，不能用 flex：里面的文字和 <b> 是行内节点，
@@ -1615,7 +1615,7 @@ a.topbar-user, .topbar a.user {
 .at-sum { color: var(--ink-soft); }
 .at-sum::before { content: "·"; margin-right: 6px; color: var(--ink-faint); }
 
-/* ---- AI伴学：**对话框式**（2026-10-15 需求：「对话框方式，其他样式去掉」）----
+/* ---- AI伴学：**对话框式**（需求：对话框形式，移除其他样式）----
    原来是「生成设置」表单 + 生成按钮 + 结果框，现在整页只剩一个对话框。
    三处和普通聊天不一样，都是被"计划很长"逼出来的：
 
@@ -1655,7 +1655,7 @@ a.topbar-user, .topbar a.user {
 .msg.ai .bubble { background: #eef0f7; color: var(--ink); border-bottom-left-radius: 5px; }
 
 /* ---- 「正在写」等待气泡（情绪陪伴页）----
-   2026-10-14 需求：等回复时**不要省略号**、要给出大概还要多久、措辞要有温度。
+   需求：等待回复时**不使用省略号**、给出预计时长、措辞保持温度。
    正文那句"人话"由 emotion-chat.js 随机挑，这里只负责观感：
    下面一行小字是还在缩短的秒数，用极轻的呼吸动画表示"它真的在写"，
    而不是一个静止的占位块。 */
@@ -1866,7 +1866,7 @@ a.topbar-user, .topbar a.user {
 [data-icon] svg { display: block; }
 .h-ico { display: inline-flex; align-items: center; margin-right: 7px; color: var(--brand); flex: none; }
 .h-ico svg { display: block; }
-/* ★ 实心按钮上的图标必须是白的（2026-10-18 修）。
+/* ★ 实心按钮上的图标必须为白色。
    上面那条把 .h-ico 写死成 var(--brand)，而 .btn 的文字色是 #fff ——
    于是「去倾诉一下」「开始测评」这类紫底按钮上的图标是**紫的**，
    跟背景几乎同色，用户的原话是「图标根本看不见，看着就像空着一样」。
@@ -2163,7 +2163,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
        <= 640px        92.27px     2 行    logo 1 行 + 导航折行
 
    ⚠️ `--topbar-h` 必须 >= 实测高度。测试只断言这一侧，**「给大了」判不出来**
-      （会让表头下方多出一段空白），改完要人肉复核。
+      （会让表头下方多出一段空白），修改后需人工复核。
    ⚠️ 断点必须与真实换行点对齐，不能顺手取整：断点放大只会让更窄的机器
       套用更高一档的值，表头被推到顶栏下方一段空白里。
       余量加在「值」上（96 而不是 92.27），不加在「断点」上。
@@ -2836,7 +2836,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 }
 
 /* ===========================================================================
-   管理员「数据大屏」（2026-10-20）
+   管理员「数据大屏」
    ---------------------------------------------------------------------------
    需求：管理页只放「数据」和「反馈」，数据做成 ECharts 大屏。
 
@@ -2936,7 +2936,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 .adm-note { margin: 12px 0 0; font-size: 12px; color: var(--ink-faint); line-height: 1.7; }
 
 /* ============================================================
-   反馈卡片里的 12px 小字（2026-10-23 补）
+   反馈卡片里的 12px 小字
    ------------------------------------------------------------
    `.fb-kind` / `.fb-reply-head` 用 --brand 压在 --brand-soft 上只有 3.99:1；
    `.fb-state` 的 --warn / --ok 更糟（黄字压浅黄底约 1.9:1、绿字压浅绿底约 2.2:1）。

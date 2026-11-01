@@ -16,7 +16,7 @@
    唯一要小心的是**同名 const/let 重复声明会 SyntaxError** ——
    所以每个文件里的顶层变量名都保持唯一，别在两边都写 `let courses`。
 
-   ★★ 术语（2026-10-15 需求）：**界面上这个功能一律叫「时间表」，不叫「课表」**。
+   ★★ 术语约束：**界面上这个功能一律叫「时间表」，不叫「课表」**。
    三个子页的胶囊标签 / 标题 / 按钮 / 提示文案 / Agent 工具名 全部已改。
    但下列**内部名称一律未改动，且不得改动**（修改会引发连锁断链）：
      · 变量/函数名    courses / loadTimetable / saveTimetable / renderGrid …
@@ -94,7 +94,7 @@ function callIfDefined(name) {
      weekOffset = 5        -> 第 6 周
    本周落在学期里哪一周，由 mondayOfThisWeek() 现算，不再用作原点。
 
-   ★ 2026-10-18：SEMESTER_START / SEM_WEEKS_BEFORE / SEM_WEEKS_AFTER 与
+   ★ SEMESTER_START / SEM_WEEKS_BEFORE / SEM_WEEKS_AFTER 与
      parseWeeks / weekNumberByDate / courseShownInWeek / isoOf / todayIso /
      weekdayOf / formatWeeksLabel 已整体搬到 common.js —— 因为首页「今日课程」卡
      和日程提醒页也要按「星期+周次」判断今天上什么课，而它们不引本文件。
@@ -268,7 +268,7 @@ async function loadTimetable(silent) {
 function refreshAllViews() {
   callIfDefined("renderGrid");
   callIfDefined("renderReminders");
-  // 页面 2026-10-15 改成对话框后，原来是 renderPlanHint（"AI 能看到几门课"那句提示），
+  // 页面改为对话框后，原为 renderPlanHint（"AI 能看到几门课"这句提示），
   // 现在同一个位置的提示叫 updatePlanTip。**这里必须跟着改名** ——
   // callIfDefined 找不到函数是静默跳过的，写错了不会报错，只是那句提示永远不刷新。
   callIfDefined("updatePlanTip");

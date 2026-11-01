@@ -73,7 +73,7 @@ def get_admin_user(user: User = Depends(get_current_user)) -> User:
 
     ★ 为什么**返回 403 而不是 404**（「假装这个接口不存在」）：
       403 能让真正的前端分清「没登录（401）」「登录了但不是管理员（403）」，
-      admin.js 据此显示不同的提示；404 会让人以为是路径写错，白查半天。
+      admin.js 据此显示不同的提示；404 会让人误判为路径错误，耗费排查时间。
 
     ★ 为什么读 `is_admin` 时要 `bool(...)` 而不是直接 `if not user.is_admin`：
       老库补列后，历史行的值可能是 NULL（`ALTER TABLE ADD COLUMN` 带 DEFAULT
