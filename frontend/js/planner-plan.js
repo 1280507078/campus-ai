@@ -88,11 +88,10 @@ function detectDays(text, prev) {
 
 /* ---------------------------------------------------------------------------
    ⚠️ 这两个 `let` 必须放在纯函数区**后面**。
-      第一版写在前面（`let planDays = DAYS_DEFAULT;` 在 `const DAYS_DEFAULT = 7;` 之前），
+      若把 `let planDays = DAYS_DEFAULT;` 写在 `const DAYS_DEFAULT = 7;` 之前，
       结果是**整个页面全哑** —— `const`/`let` 有"暂时性死区"，声明语句执行到之前
-      访问就抛 `ReferenceError: Cannot access 'DAYS_DEFAULT' before initialization`，
-      而它发生在脚本顶层，于是后面所有函数都没定义、按钮点了没反应。
-      静态检查（甚至只读代码）都看不出来，是真浏览器 e2e 抓到的。
+      访问就抛 `ReferenceError`；它发生在脚本顶层，于是后面所有函数都没定义、
+      按钮点了没反应。只读代码看不出来，要靠真浏览器 e2e 才能抓到。
    =========================================================================== */
 
 /** 对话记录：[{role:"user"|"assistant", content:string, trace?:Array}] */

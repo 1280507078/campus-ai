@@ -216,12 +216,11 @@ function slotByOrder(order) { return slots.find(s => s.order_no === order); }
 
 /** 整学期（周次条覆盖的全部周）的起止日期。
  *
- *  ⚠️ 这里是和「周次条」联动的关键：以前数据只取「本周 ±1 周」，
- *  所以翻不到第 10 周 —— 就算界面给了入口，也拿不到那周的课。
- *  现在把范围放开到周次条同款区间，翻到哪周都有数据。
+ *  ⚠️ 范围必须与「周次条」一致：只取「本周 ±1 周」的话，翻到第 10 周就没有数据，
+ *  界面给了入口也拿不到那周的课。
  *
  *  一次拉整学期而不是「翻到哪周就拉哪周」：一个学期的课表也就几百条，
- *  体积比一张图还小；换来的是翻周**零延迟**，且「沿用上周」能跨任意周工作。 */
+ *  体积比一张图还小；换来翻周**零延迟**，跨周统计也不必再请求。 */
 function semRange() {
   const a = weekRange(-SEM_WEEKS_BEFORE);
   const b = weekRange(SEM_WEEKS_AFTER);
@@ -229,7 +228,7 @@ function semRange() {
 }
 
 /** 读取整学期的课程
- *  @param {boolean} [silent] 静默模式：不弹「已读取」提示（给沿用上周等场景用）
+ *  @param {boolean} [silent] 静默模式：不弹「已读取」提示（批量读取场景用）
  */
 async function loadTimetable(silent) {
   const sem = semRange();

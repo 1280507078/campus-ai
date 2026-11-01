@@ -140,7 +140,7 @@ async function send() {
       // ⚠️ `slice(0, -1)` 去掉刚 push 进去的**这一条用户消息**：
       //    后端 `messages = [system, *history[-10:], {"role":"user","message": text}]`
       //    会自己再补一条，history 里带着就会把同一句话连说两遍。
-      //    （原来这里切掉的是"占位气泡"，顺带把用户消息留在了 history 里 —— 一直有这个重复。）
+      //    （若在这里切掉的是占位气泡，用户消息会留在 history 里，同一句话被说两遍。）
       body: { message: text, history: history.slice(0, -1) },
     });
     reply = data.reply || localComfort(text);

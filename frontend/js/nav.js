@@ -28,11 +28,9 @@
 
    起点留空时用**校内默认出发点**（见 defaultOrigin）。
    ─────────────────────────────────────────────────────────────
-   注意：本页**不提供浏览器定位** —— 该功能已于 2026-10-13 按需求整体删除
-   （定位不准，得不偿失；原因见 README 的「为什么删掉了定位」一节）。
-   起点只能由用户自己填，或留空走 defaultOrigin。所以这里既没有 geolocation
-   调用，也没有 WGS-84 / GCJ-02 坐标转换：本页所有坐标都来自 campus.js 的
-   校内点位（本身就是 GCJ-02，与高德底图一致）。 */
+   本页**不提供浏览器定位**：起点由用户自己填，或留空走 defaultOrigin。
+   因此这里既没有 geolocation 调用，也没有 WGS-84 / GCJ-02 坐标转换 ——
+   所有坐标都来自 campus.js 的校内点位（本身就是 GCJ-02，与高德底图一致）。 */
 
 const CAMPUS_CENTER = CAMPUS.center;
 /* 本页实际使用的点位 = CAMPUS_PLACES 里**没有关掉**的那些。
@@ -58,7 +56,7 @@ let pinnedLabels = new Set(); // 被筛选逻辑「钉住」显示标签的标�
 let hoverShownLabels = new Set();
 /* 为什么用外面的 Map 存点位，而不是 marker.setExtData()：
    高德的 setExtData(v) 是**整体覆盖**一个值，取的时候 getExtData() 不带键，
-   想存多个字段就得自己拼对象，很容易取错（第一版就因此把标签渲染成了 undefined）。
+   想存多个字段就得自己拼对象，很容易取错（取错字段会把标签渲染成 undefined）。
    挂在外面的 Map 里更直白，标记和点位的对应关系一眼可见。 */
 
 
@@ -212,14 +210,10 @@ async function initMap() {
  * 造一个圆形小点当标记图标（内联 SVG，省一次图片请求）。
  * 用 data: URI 而不是图片文件，是为了让颜色能跟类型走。
  *
- * ⚠️ 曾经这里的尺寸是自相矛盾的（也是「标签和字大小不匹配、看着有留白」的根因）：
- *       size = r * 2 + 6   —— 画布按「直径 2r + 6」算
- *       circle 的 r = r/2  —— 但圆只画了半径 r/2
- *    传 r=11 时画布 28px、圆半径却只有 5.5px，圆点只占画布的两成，
- *    剩下全是透明 —— 图标中心（AMap 按 size/2 对齐到坐标点）和视觉圆点
- *    差了半个画布，标签看着就像「飘在旁边、和点对不上」。
- *
- * 现在两边统一：圆半径就是 r，画布 = 直径 + 描边余量。
+ * ⚠️ 三处尺寸必须自洽：画布 size、圆半径、AMap 的锚点（按 size/2 对齐）。
+ *    若画布按 2r+6 算、圆却只画 r/2，圆点只占画布两成、其余全是透明，
+ *    视觉圆点会比锚点偏半个画布 —— 表现为标签「飘在旁边、和点对不上」。
+ *    这里统一为：圆半径就是 r，画布 = 直径 + 描边余量。
  *
  * @param {string} color  填充色，如 "#2b6cb0"
  * @param {number} r      圆点半径（像素），与画布严格自洽
@@ -357,8 +351,8 @@ function applyLabel(m, type, visible) {
 
   // ⚠️ 看不见的标记，标签必须一起清掉。
   //    高德 marker.hide() 只隐藏图标本身，label 是另一个 DOM 元素，不受影响 ——
-  //    第一版就是漏了这一步，导致「只看教学楼」时食堂的点没了、
-  //    但食堂的名字还挂在地图上，看着像数据没过滤干净。
+  //    漏掉这一步时，「只看教学楼」会让食堂的点消失、名字却还挂在地图上，
+  //    看着像数据没过滤干净。
   if (!visible) {
     pinnedLabels.delete(m);
     clearHardenedLabel(m);
@@ -435,30 +429,16 @@ function teachingLabelHtml(p, dir) {
 }
 
 /* ==================================================================
-   标签容器的样式（含高德自带的纯蓝边框）—— 一律交给 style.css 处理
+   标签容器样式（含高德自带的纯蓝边框）—— 一律交给 style.css 处理
    ------------------------------------------------------------------
-   ## 曾经踩的问题：创四小镇外面那个蓝框
-   高德注入的样式表里**写死**了：
+   高德注入的样式表对 `.amap-marker-label` 写死了
+   `border: 1px solid rgb(0, 0, 255)`，所以必须在 style.css 里覆盖。
 
-       .amap-marker-label {
-         position: absolute; z-index: 2;
-         border: 1px solid rgb(0, 0, 255);      <- 纯蓝，就是它
-         background-color: rgb(255, 255, 255);
-         padding: 3px; font-size: 12px; line-height: 14px;
-       }
-
-   ## 曾经的做法（已废弃，留着是为了别再走一遍弯路）
-   写了一个 hardenLabelBox()，想「拿到标签的 DOM，把样式行内按死」。
-   思路本身没错（行内样式优先级最高），**但它拿不到 DOM**：
-   `marker.getLabel()` 返回的是 {content, direction} 纯数据对象，
-   没有 .dom / .domElement（实测两者都是 false）。
-   于是那个函数每次都在 `if (!label || !label.style) return;` 直接返回，
-   **一行都没执行过** —— 以为修好了，其实什么都没做。
-
-   ## 现在的做法
-   全部收敛到 style.css 的 `.amap-marker-label` 规则里。
-   实测 computed style 确认生效（border 为 0、pointer-events 为 none）。
-   好处：一处声明、随样式表一起加载，不存在「标签插入瞬间还没样式」的窗口。
+   ⚠️ 不要用 JS 逐元素改行内样式：`marker.getLabel()` 返回的是
+   {content, direction} 纯数据对象，没有 .dom / .domElement，拿不到标签节点，
+   这类写法会在判空处直接返回、实际什么都不做。
+   收敛到 CSS 之后一处声明、随样式表加载，也不存在「标签刚插入、样式还没到」
+   的窗口。
    ================================================================== */
 
 /** 给某个 marker 挂标签，并把容器样式按死。
@@ -467,11 +447,9 @@ function teachingLabelHtml(p, dir) {
  *  @param {string} html 标签内容
  *  @param {"top"|"bottom"|"right"} dir 方向
  *
- * ⚠️ 关于「怎么拿到标签的 DOM」：
- *   `marker.getLabel()` 返回的是 **{content, direction} 这种纯数据对象**，
- *   **没有 .dom / .domElement**。所以想通过它去改标签容器的样式是行不通的
- *   （dom 与 domElement 都是 false）。样式统一交给 style.css 的
- *   `.amap-marker-label` 规则处理，这里不再尝试逐元素改。 */
+ * ⚠️ `marker.getLabel()` 返回 **{content, direction} 纯数据对象**，
+ *   没有 .dom / .domElement，拿不到标签节点；容器样式统一交给 style.css 的
+ *   `.amap-marker-label` 规则，这里不要尝试逐元素改。 */
 function setHardenedLabel(marker, html, dir) {
   marker.setLabel({ content: html, direction: dir });
 }
@@ -479,24 +457,11 @@ function setHardenedLabel(marker, html, dir) {
 /**
  * 撤掉标签（并把引用清干净）。
  *
- * ⚠️⚠️ 这里出现过一个**静默失效**的主要问题，务必看清：
- *
- *   原本写的是 `marker.setLabel(null)` —— 这是高德文档里「移除标签」的写法，
- *   看起来天经地义。**但它在本项目用的这版高德里是空操作**：
- *   标签 DOM 一点没动，标签永远留在地图上。
- *
- *   证据（同一个 marker，数页面上 .amap-marker-label 的数量）：
- *       设置前 10 个 -> setLabel({...}) 后 11 个 -> setLabel(null) 后 **还是 11 个**
- *   而且这不是「只留下空壳」—— 文字、色块全都在，和没清一样。
- *
- *   后果：所有「悬停显示、移开就收」的功能**全是假的**。鼠标划过一个点，
- *   它的名字就永久钉在地图上了。滚一圈地图，几十个标签糊成一片。
- *   （用户看到的现象正是「悬停后就一直显示」，根因就是这一行。）
- *
- *   正确写法：把 content 设成空串。这会让高德真正把标签 DOM 撤掉：
- *       设置前 10 -> setLabel({content:''}) 后 **10**
- *   而不是移除 DOM 元素 —— 那样虽然看着干净了，marker 内部的 content
- *   状态还在，下次再挂标签会错乱。
+ * ⚠️⚠️ 移除标签只能用 `setLabel({content: ""})`，**不要用 `setLabel(null)`**：
+ *   后者在本项目使用的这版高德里是空操作 —— 标签 DOM 一点不动，名字会永远
+ *   钉在地图上（悬停显示一次之后就不再消失，滚一圈糊成一片）。
+ *   也不要直接删 DOM 节点：那样看着干净了，marker 内部的 content 状态还在，
+ *   下次挂标签会错乱。
  *
  * @param {any} marker 高德 Marker
  */

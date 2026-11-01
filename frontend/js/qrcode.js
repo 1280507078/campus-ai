@@ -596,32 +596,3 @@ function qrSvg(text, opts = {}) {
        + `<g fill="${dark}">${rects}</g>`
        + `</svg>`;
 }
-
-/**
- * 把二维码画到一个 <canvas> 上（用于「保存图片」之类需要位图的场景）。
- * @param {HTMLCanvasElement} canvas
- * @param {string} text
- * @param {{size?: number, margin?: number, ecc?: "L"|"M"|"Q"|"H"}} [opts]
- * @returns {void}
- */
-function qrToCanvas(canvas, text, opts = {}) {
-  const outSize = opts.size || 200;
-  const margin = opts.margin == null ? 2 : opts.margin;
-  const { size, modules } = qrMatrix(text, { ecc: opts.ecc });
-  const total = size + margin * 2;
-  const scale = outSize / total;
-
-  canvas.width = outSize;
-  canvas.height = outSize;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, outSize, outSize);
-  ctx.fillStyle = "#111827";
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (!modules[r][c]) continue;
-      ctx.fillRect((c + margin) * scale, (r + margin) * scale, scale + .4, scale + .4);
-    }
-  }
-}

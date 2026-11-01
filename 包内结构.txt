@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 170 个文件，合计 9,836,024 字节
+共 170 个文件，合计 9,807,353 字节
 本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -494,11 +494,11 @@ Campus AI Assistant —— 包内结构
     backend/data/campus_docs/校园网准入系统密码找回方法.md                1,896 字节
     backend/data/campus_docs/阳光学院2026-2027学年校历.md            4,503 字节
     backend/data/campus_docs/阳光学院图书馆管理办法.md                  5,707 字节
-    backend/database.py                                     13,313 字节
+    backend/database.py                                     12,437 字节
     backend/errors.py                                        6,554 字节
     backend/eval/agent_cases.json                           16,132 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
-    backend/main.py                                         17,589 字节
+    backend/main.py                                         17,115 字节
     backend/models/orm.py                                    8,228 字节
     backend/models/schemas.py                               14,928 字节
     backend/requirements.txt                                 2,991 字节
@@ -507,9 +507,9 @@ Campus AI Assistant —— 包内结构
     backend/routers/emotion.py                               6,266 字节
     backend/routers/feedback.py                              5,019 字节
     backend/routers/map_weather.py                           4,828 字节
-    backend/routers/planner.py                             154,702 字节
+    backend/routers/planner.py                             150,723 字节
     backend/schema.sql                                       7,648 字节
-    backend/seed.py                                         11,254 字节
+    backend/seed.py                                         11,190 字节
     backend/services/amap.py                                 6,587 字节
     backend/services/data_export.py                         11,664 字节
     backend/services/glm.py                                 14,657 字节
@@ -517,8 +517,8 @@ Campus AI Assistant —— 包内结构
     backend/services/qdrant.py                              25,653 字节
     backend/services/rag_docs.py                             9,612 字节
     backend/services/scan_login.py                           7,448 字节
-    backend/services/study_agent.py                        113,557 字节
-    backend/services/timetable_excel.py                     38,247 字节
+    backend/services/study_agent.py                        111,086 字节
+    backend/services/timetable_excel.py                     37,351 字节
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              28,365 字节
 
@@ -537,7 +537,7 @@ Campus AI Assistant —— 包内结构
     frontend/account.html                                    6,117 字节
     frontend/admin-feedback.html                             3,462 字节
     frontend/admin.html                                      4,499 字节
-    frontend/css/style.css                                 145,694 字节
+    frontend/css/style.css                                 138,071 字节
     frontend/emotion-chat.html                               3,577 字节
     frontend/emotion-quiz.html                               3,094 字节
     frontend/emotion-result.html                             3,746 字节
@@ -553,22 +553,22 @@ Campus AI Assistant —— 包内结构
     frontend/js/account.js                                   6,893 字节
     frontend/js/admin-feedback.js                            8,808 字节
     frontend/js/admin.js                                    16,508 字节
-    frontend/js/campus-graph.js                             49,393 字节
-    frontend/js/campus.js                                   27,841 字节
+    frontend/js/campus-graph.js                             48,222 字节
+    frontend/js/campus.js                                   25,314 字节
     frontend/js/common.js                                   42,827 字节
     frontend/js/config.js                                    6,211 字节
-    frontend/js/emotion-chat.js                              7,289 字节
+    frontend/js/emotion-chat.js                              7,098 字节
     frontend/js/emotion-quiz.js                              1,967 字节
     frontend/js/emotion-result.js                            4,733 字节
     frontend/js/feedback.js                                  6,020 字节
-    frontend/js/icons.js                                    12,483 字节
-    frontend/js/login.js                                    34,496 字节
-    frontend/js/nav.js                                      56,804 字节
-    frontend/js/planner-core.js                             18,312 字节
-    frontend/js/planner-plan.js                             23,148 字节
+    frontend/js/icons.js                                    12,252 字节
+    frontend/js/login.js                                    33,575 字节
+    frontend/js/nav.js                                      53,594 字节
+    frontend/js/planner-core.js                             17,797 字节
+    frontend/js/planner-plan.js                             22,567 字节
     frontend/js/planner-reminder.js                         14,700 字节
-    frontend/js/planner-timetable.js                        78,789 字节
-    frontend/js/qrcode.js                                   24,058 字节
+    frontend/js/planner-timetable.js                        77,165 字节
+    frontend/js/qrcode.js                                   23,104 字节
     frontend/js/quiz-data.js                                 5,464 字节
     frontend/js/scan-confirm.js                              4,539 字节
     frontend/js/types.js                                     3,495 字节
@@ -577,7 +577,7 @@ Campus AI Assistant —— 包内结构
     frontend/login.html                                      7,191 字节
     frontend/nav.html                                        5,245 字节
     frontend/plan.html                                       5,255 字节
-    frontend/planner.html                                    7,423 字节
+    frontend/planner.html                                    7,060 字节
     frontend/reminder.html                                   3,548 字节
     frontend/scan-confirm.html                               2,811 字节
     frontend/serve_nocache.py                                5,216 字节

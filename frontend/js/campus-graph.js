@@ -559,16 +559,6 @@ function projectToSeg(px, py, a, b) {
   return { pt, d: haversine(px, py, pt[0], pt[1]), t };
 }
 
-/** 离某坐标最近的路网节点（调试图层用）。 */
-function nearestNode(lng, lat) {
-  let best = null, bestD = Infinity;
-  for (const [id, p] of Object.entries(CAMPUS_GRAPH.nodes)) {
-    const d = haversine(lng, lat, p.lng, p.lat);
-    if (d < bestD) { bestD = d; best = id; }
-  }
-  return { id: best, dist: bestD };
-}
-
 /** 邻接表：id -> [{to, edge, len, pts}]（边双向可用，pts 是「从这个节点出发」方向的折线） */
 const ADJ = (() => {
   const adj = {};
