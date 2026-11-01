@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 171 个文件，合计 9,847,522 字节
+共 170 个文件，合计 9,829,245 字节
 本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -10,7 +10,7 @@ Campus AI Assistant —— 包内结构
 
 本次更新（构建 2026-11-01-a）：
   ── 本版（build 2026-11-01-a，参赛材料包：技术文档 / README / 评审账号）────
-  ① ★★★【技术文档】新增 20 页 PDF（附在提交包里）：项目概述、需求分析、
+  ① ★★★【技术文档】23 页 PDF（附在提交包里，含 6 张图与三级书签）：项目概述、需求分析、
      系统架构设计、AI 技术方案、核心功能实现、测试与部署、总结与展望、
      创新点说明。AI 部分写清选型理由、集成方式与 9 条优化策略，均附实测数据。
   ② ★★★【README】按大赛要求重写：项目介绍、功能一览、技术架构与选型理由、
@@ -19,9 +19,8 @@ Campus AI Assistant —— 包内结构
      每周都上，任何一天打开都有课）。此前只有管理员账号，评审注册的新账号
      课表是空的，「今天有课吗」「排一份计划」这些演示无从谈起。
      与管理员一样幂等：已存在就跳过，不重置密码、不覆盖改过的课表。
-  ④ 【提交包】-ss 包不再删 README，改为放齐大赛要求的材料：
-     README.md + 技术文档.pdf + 使用说明.pdf + 提交材料清单.md；
-     只去掉包内结构.txt（10 万字节的逐文件清单，评审不需要）。
+  ④ 【提交包】-ss 包的顶层只放两份说明：README.md 与技术文档.pdf；
+     操作手册在 docs/使用说明.pdf，逐文件清单与重复的启动说明不进包。
   ⑤ 【构建号】升到 2026-11-01-a：14 个页面的 ?v= 与登录页页脚同步。
 
   ── 上一版（build 2026-10-25-b，情绪对话落库：后台统计不再恒为 0）────
@@ -96,7 +95,7 @@ Campus AI Assistant —— 包内结构
   ④ 【工程化产物】Dockerfile（非 root + HEALTHCHECK）、.dockerignore（排掉 .env 与真实库）、
      .github/workflows/ci.yml（后端契约 + 覆盖率 / 前端静态 / e2e + 无障碍三作业）、
      tools/audit_a11y.mjs、tools/test_rag_docs.py、tools/eval_agent.py 与 backend/eval 评测集、
-     docs/agent-eval.md（评测方法 + 实测指标 + 失败样例 + 成本），reports/ 存原始报告。
+     reports/ 存原始评测报告。
   ⑤ 【守卫】RAG 70/70、伴学 82/82、鉴权 27/27、导出 22/22、前端静态 250/250、
      全站 e2e 11/11 页、课表冻结 106/106、路由离线 67/67 与留出 17/17、在线 15/15。
 
@@ -524,8 +523,7 @@ Campus AI Assistant —— 包内结构
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              28,365 字节
 
-【docs/】 （10 个）
-    docs/agent-eval.md                                      18,506 字节
+【docs/】 （9 个）
     docs/img/arch.png                                      248,522 字节
     docs/img/flow.png                                      111,830 字节
     docs/img/shot-admin.jpg                                176,443 字节
@@ -586,7 +584,7 @@ Campus AI Assistant —— 包内结构
     frontend/serve_nocache.py                                5,216 字节
 
 【reports/】 （4 个）
-    reports/agent_eval_20261101-174818.json                  4,221 字节
+    reports/agent_eval_20261101-175127.json                  4,221 字节
     reports/coverage.txt                                     2,575 字节
     reports/lighthouse-index.report.html                   503,370 字节
     reports/lighthouse-login.report.html                   488,332 字节
@@ -600,7 +598,7 @@ Campus AI Assistant —— 包内结构
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
     tools/eval_agent.py                                     12,879 字节
-    tools/gen_structure.py                                  60,829 字节
+    tools/gen_structure.py                                  60,700 字节
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
@@ -613,7 +611,7 @@ Campus AI Assistant —— 包内结构
     tools/test_auth_token.mjs                                9,367 字节
     tools/test_campus_graph.mjs                             16,907 字节
     tools/test_campus_places.mjs                             8,099 字节
-    tools/test_data_export.py                               10,234 字节
+    tools/test_data_export.py                               10,593 字节
     tools/test_lan_ip.py                                    14,355 字节
     tools/test_launcher_url.py                               7,297 字节
     tools/test_map_labels.mjs                               16,673 字节
@@ -643,7 +641,7 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               17,686 字节
+    README.md                                               17,685 字节
     start-windows.bat                                       27,055 字节
 
 --------------------------------------------------------

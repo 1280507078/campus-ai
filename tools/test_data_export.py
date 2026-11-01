@@ -93,12 +93,18 @@ snap_all = DX.collect()
 check("scope = all", snap_all.get("scope") == "all", str(snap_all.get("scope")))
 sq = snap_all.get("sqlite") or {}
 # ★ 库里除了本测试插的 alice / bob，还有启动时 seed 的**默认管理员 admin**
-#   （2026-10-21 起 admin 是默认入库的系统账号）。导出是「如实列出库里有什么」，
-#   所以 user 数不能写死 2 —— 拿实际账号数比，同时仍然要求 alice / bob 都在。
+#   还有评审演示账号 demo（自带一份示例时间表）。导出是「如实列出库里有什么」，
+#   所以各类行数都不能写死 —— 以库里的实际行数为准，同时仍然要求 alice / bob 都在。
+#   写死行数的代价已经出现过一次：给 demo 加示例课程后，这条断言就误报失败了。
 _expected_users = len(sq.get("usernames") or [])
-check("数对了：courses=2 chat_sessions=1 assessments=1（users 按实际账号数）",
-      sq.get("users") == _expected_users and sq.get("courses") == 2
-      and sq.get("chat_sessions") == 1 and sq.get("assessments") == 1, str(sq))
+_db = get_session_factory()()
+_expected = (_db.query(Course).count(), _db.query(ChatSession).count(),
+             _db.query(Assessment).count())
+_db.close()
+check("数与库一致：courses / chat_sessions / assessments 均等于库内实际行数",
+      sq.get("users") == _expected_users
+      and (sq.get("courses"), sq.get("chat_sessions"), sq.get("assessments")) == _expected
+      and (sq.get("courses") or 0) >= 2, f"库内 {_expected} / 导出 {sq}")
 check("★ 列出了涉及哪些账号（「清了 2 个账号」和「清了谁」是两件事）",
       {"alice", "bob"} <= set(sq.get("usernames") or []), str(sq.get("usernames")))
 check("带上了向量库信息（有没有配、通不通、多少条）",
