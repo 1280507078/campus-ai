@@ -597,7 +597,7 @@ console.log('\n--- ⑧ 缺 pandas 时自动降级（不依赖它也能导入）-
   /* ⚠️ 样例 .xls 是**可选输入**（这台机器上没有就跳过），绝不能写死 Linux 路径。
      注意点：这一节原来把 '/root/uploads/xxx-学生课表.xls' 硬编码在注入的
      python 里，于是没有那两份样例的机器上必然 4 条 FAIL，报的却是
-     「FileNotFoundError」—— 看着像导入功能坏了，其实只是缺测试素材。
+     「FileNotFoundError」—— 表现为导入功能异常，实际是缺少测试素材。
      同一个问题在 ⑦ 也有一份（那里更糟：XLS 是 undefined，直接把 playwright 打崩）。
      现在统一走 SAMPLES 探测，没有就明确 SKIP，并把「坏文件仍给人话」那条
      不依赖样例的断言留下来继续跑。 */

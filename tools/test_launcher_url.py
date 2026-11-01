@@ -92,7 +92,7 @@ check(
     'start "" "http://127.0.0.1:!WEBPORT!/login.html"' in main_blk,
 )
 
-# ── 2. 开浏览器不许再用局域网 IP（选到虚拟网卡时首屏就白页）──
+# ── 2. 打开浏览器不得再使用局域网 IP（选中虚拟网卡时首屏空白）──
 start_lines = [
     line.strip() for line in main_blk.splitlines()
     if line.strip().lower().startswith('start "" "http')

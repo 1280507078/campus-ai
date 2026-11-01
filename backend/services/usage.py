@@ -44,7 +44,7 @@ def _get_buf() -> List[dict]:
 
 def record(model: str = "", prompt_tokens: int = 0, completion_tokens: int = 0,
            total_tokens: int = None) -> None:
-    """记一次调用。任何字段缺失都当 0，绝不抛异常（埋点不许影响主流程）。"""
+    """记一次调用。任何字段缺失都当 0，绝不抛异常（埋点不得影响主流程）。"""
     try:
         p = int(prompt_tokens or 0)
         c = int(completion_tokens or 0)

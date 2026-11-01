@@ -22,7 +22,7 @@
 
    依赖 planner-core.js（courses 状态 / api / onEl / stripLocal）。
 
-   ⚠️ 这里有一个必须记住的问题（更早一轮修的，别改回去）：
+   ⚠️ 修改此处须保留的约束：
       生成计划时**必须把当前课表一并传给后端**。
       早期这里只发了 `{goal, days}`，后端只能去数据库读 Course 表 ——
       而用户「刚导入还没点保存」时库里是空的，AI 于是回答
@@ -36,7 +36,7 @@
 
 /** 对话记录存本地：换页回来还能看到上一次排的计划。 */
 const PLAN_CHAT_KEY = "plan_chat_history";
-/** 此前用的天数。用户不说天数时沿用 —— 下拉框没了，只能靠这个记住。 */
+/** 此前用的天数。用户不说天数时沿用 —— 下拉框已移除，改为依赖此键保存。 */
 const PLAN_DAYS_KEY = "plan_days";
 /** 本地最多留几条消息。计划正文很长，不设上限会把 localStorage 撑爆。 */
 const PLAN_CHAT_KEEP = 12;

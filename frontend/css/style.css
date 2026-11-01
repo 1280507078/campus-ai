@@ -1235,7 +1235,7 @@ a.topbar-user, .topbar a.user {
 
    一句话：**表头行纵向冻结 + 节次列横向冻结**，PC 和手机都要。
 
-   ## 先记住 CSS 里那条会咬人的规范
+   ## 前提：CSS 中一条容易被忽略的规范
    当一个轴是 `auto`/`scroll`、另一个轴是 `visible` 时，
    **`visible` 会被强制计算成 `auto`**。
    所以 `overflow-x: auto` 会让这个盒子**同时**变成纵向滚动容器 ——
@@ -1304,7 +1304,7 @@ a.topbar-user, .topbar a.user {
      手机端表头 / 节次列的冻结
      ------------------------------------------------------------------
      ⚠️⚠️ 这段是被用户截图摁着改了三次才对的，把过程记下来，
-     因为它违反直觉、而且"看起来没问题"的版本其实全是坏的。
+     该规范违反直觉，"看起来正常"的写法实际均不可用。
 
      ## 先看 sticky 的真实规则
      `position: sticky` 的 `top` 是相对**最近的滚动祖先的 padding box 顶边**
@@ -1409,7 +1409,7 @@ a.topbar-user, .topbar a.user {
 
 .week-chip {
   position: relative;
-  flex: 0 0 auto;            /* 不许被压缩，这样才能形成「带子」 */
+  flex: 0 0 auto;            /* 不得被压缩，方可形成「带子」 */
   white-space: nowrap;
   font-size: 13px; font-weight: 600; font-family: inherit;
   color: var(--ink-soft);
@@ -2772,7 +2772,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 .fb-content {
   margin: 0 0 8px; line-height: 1.75;
   white-space: pre-wrap;      /* 用户写的换行要保留，否则一段话挤成一坨 */
-  word-break: break-word;     /* 长英文/链接不许把卡片撑破 */
+  word-break: break-word;     /* 长英文与链接不得撑破卡片 */
 }
 .fb-contact { margin: 0 0 8px; font-size: 12.5px; }
 .fb-reply {

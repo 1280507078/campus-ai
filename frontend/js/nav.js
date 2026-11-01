@@ -197,7 +197,7 @@ async function initMap() {
     map.on("movestart", sweepHoverLabels);
     map.on("zoomstart", sweepHoverLabels);
     renderTypeFilter();   // 类型筛选按钮（依赖 markersByType，所以放在建完标记之后）
-    // 初始视野框住全部点位（校园其实挺大，南北区跨度约 1 公里）
+    // 初始视野覆盖全部点位（南北区跨度约 1 公里）
     fitMarkers(Object.keys(markersByType));
     toast(`地图已加载，共 ${POIS.length} 个校园点位，点击标记可快速填入起终点`, "ok");
   } catch (e) {

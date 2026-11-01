@@ -18,7 +18,7 @@
 
    ★★ 术语（2026-10-15 需求）：**界面上这个功能一律叫「时间表」，不叫「课表」**。
    三个子页的胶囊标签 / 标题 / 按钮 / 提示文案 / Agent 工具名 全部已改。
-   但下面这些**内部名字一律没动，也不许动**（改了会连锁断链）：
+   但下列**内部名称一律未改动，且不得改动**（修改会引发连锁断链）：
      · 变量/函数名    courses / loadTimetable / saveTimetable / renderGrid …
      · localStorage   `timetable_local`
      · DOM id/class   `#tt` / `#tt-body` / `.timetable` / `#file-import` …

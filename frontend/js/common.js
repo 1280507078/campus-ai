@@ -142,7 +142,7 @@ async function _probeBase(candidate) {
     // 如果它被浏览器 HTTP 缓存命中，拿到的就是**上次那个后端**的回答 ——
     // 于是「换了新包、页面却仍显示旧构建号」，而且不管重开多少次都一样，
     // 因为缓存没失效。真实事故：用户换了包，页脚一直显示更早的构建号，
-    // 一度被误判成「没换包成功」，其实是这个探测请求被缓存了。
+    // 曾被误判为「未换包成功」，实际是该探测请求被缓存。
     // 判断版本的东西绝不能走缓存 —— 宁可不缓存，也不要一个可能是错的答案。
     const res = await fetch(url + "?t=" + Date.now(), {
       signal: ctl.signal,
@@ -175,7 +175,7 @@ async function resolveApiBase() {
     //      同源同端口，不该再去猜端口。放在最前面 = 一次命中、零探测延迟。
     //      注意点：原来没有这一项，上来就挨个试 8000~8005，每个最多等 1200ms；
     //      首页的天气是「页面加载即请求」，一旦探测排在后面就会迟迟拿不到数据，
-    //      用户看到的是「暂时拿不到天气」——其实后端好端端地开着。
+    //      用户看到「暂时拿不到天气」——实际后端运行正常。
     //   1) 再试「跟当前页面同主机」的默认端口 —— 兼容前后端分开跑（前端 5500）的老方式，
     //      手机访问时会优先命中电脑的局域网地址（不能用 localhost，那是手机自己）。
     //   2) 最后试 config.js 推导出的地址（启动脚本可能已注入实际端口）。
@@ -366,7 +366,7 @@ function initialOf(user) {
 /* ============================================================
    主题：白天 / 护眼 / 黑夜
    ------------------------------------------------------------
-   颜色本身全在 style.css 的令牌层里，这里只负责「选哪一套 + 记住它」。
+   颜色定义全部位于 style.css 的令牌层，此处仅负责「选择哪一套并持久化」。
 
    为什么放在 common.js：顶栏是 renderTopbar() 统一注入的，
    把开关做进顶栏，就不用每个页面各自接线。
@@ -417,7 +417,7 @@ function applyTheme(setting) {
   else el.setAttribute("data-theme", t);
 }
 
-/** 切换主题并记住。 @param {string} id auto | light | eye | dark @returns {void} */
+/** 切换主题并持久化。 @param {string} id auto | light | eye | dark @returns {void} */
 function setTheme(id) {
   const safe = THEMES.some(x => x.id === id) ? id : "auto";
   try { localStorage.setItem(THEME_KEY, safe); } catch { /* 存不下不影响本次生效 */ }
@@ -525,7 +525,7 @@ function mountThemeSwitch() {
  *      -> 多一次交互：鼠标要悬停、手机窄屏下菜单被平铺，点进去还得再挑。
  *   2. 改成三个一级平铺项（课表、日程提醒、AI伴学）
  *      -> 顶栏被占掉三格，把「情绪陪伴 / 地图导航」挤到边上；
- *         而这三个子页其实是**同一件事的三个视图**，平铺在顶栏会让人
+ *         而这三个子页实际是**同一件事的三个视图**，平铺于顶栏会使
  *         误以为它们是三个并列的功能模块。
  *   3. 现在：顶栏只留**一个**「学习规划」，直接指向课表页（planner.html）。
  *      课表是这三者里最高频的入口，所以点击就直达，不再多一层。
@@ -645,7 +645,7 @@ function renderTopbar(active) {
  *      （管理员点「主页」不会被弹走），但两边保持同一个 URL 才不会在同步时易错点。
  *
  * ⚠️ 视角靠 localStorage 的 `adminView` 判断，它由 renderTopbar 在**调用本函数之前**写好。
- *    别改成读 location.search —— 只有 index.html 会带 ?view=user，点进别的页就丢了。
+ *    不可改为读取 location.search —— 仅 index.html 会带 ?view=user，进入其他页即丢失。
  */
 function injectBackHome() {
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();

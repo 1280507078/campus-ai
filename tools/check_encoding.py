@@ -39,7 +39,7 @@ def walk():
 
 
 def looks_like_utf8_stored_as_gbk(data: bytes) -> bool:
-    """判断 data 是否「其实是 UTF-8，却会被当 GBK 读」。
+    """判断 data 是否「实际为 UTF-8，却会被当作 GBK 读取」。
 
     思路：先按 UTF-8 试解。若成功且解得有意义的中文（CJK 字符占比高），
     说明文件本身是 UTF-8；再按 GBK 解同一段字节，会得到乱码。
@@ -104,7 +104,7 @@ def main():
             # 2) 能被 GBK 解码 ≠ 内容是好的。
             #    UTF-8 中文按 GBK 读通常也能解码，但会变成「鏍″洯」这类乱码。
             #    判断方法：若能作为合法 UTF-8 解码，且解出的是有意义的中文，
-            #    则说明文件其实是 UTF-8 存的 —— 这才会让 pip/cmd 读出错。
+            #    则说明文件实际以 UTF-8 保存 —— 这会导致 pip/cmd 读取异常。
             if looks_like_utf8_stored_as_gbk(data):
                 errors.append(
                     f"{rel(path)}: 疑似 UTF-8 编码（含中文），"

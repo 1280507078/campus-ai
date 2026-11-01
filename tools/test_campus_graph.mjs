@@ -195,7 +195,7 @@ const AMAP_WALK_BASE = {
   '学生公寓→正德楼': 362, '图书馆→正德楼': 181, '商德楼→正德楼': 163,
   '游泳馆→知行楼': 362, '博文楼→知行楼': 700, '知行楼→正德楼': 639,
 };
-const AMAP_DETOUR = 800;    // 高德里程超过它就算「绕出校门」，我们必须更短
+const AMAP_DETOUR = 800;    // 高德里程超过此值判为「绕出校门」，本项目须更短
 
 for (const [a, b] of cases) {
   const from = lm(a), to = lm(b);

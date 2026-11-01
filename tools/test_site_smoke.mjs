@@ -6,12 +6,12 @@ const { chromium } = pw;
 
 /* 后端地址：默认 8000，但解包后用别的端口验证时（CAMPUS_API_PORT=8200）
    就不该写死 —— 否则测试自己连错地址、报 ECONNREFUSED，
-   看着像"页面坏了"，其实是环境对不上。 */
+   表现为「页面异常」，实际是环境不匹配。 */
 const API = process.env.CAMPUS_BASE || `http://127.0.0.1:${process.env.CAMPUS_API_PORT || '8000'}`;
 const BASE = API + '/app';
 /* 沙箱/离线机上的 Chromium 是**预先下载好的固定版本**，而 playwright npm 包
    如果升过版，会去找一个更新的 build 号（比如 chromium_headless_shell-1243），
-   机器上没有，直接报 “Executable doesn't exist”——看着像测试挂了，其实是环境对不上。
+   机器上没有，直接报 “Executable doesn't exist”——表现为测试失败，实际是环境不匹配。
    所以这里和其它测试脚本统一：显式指向已下载的那份浏览器，
    找不到就退回让 playwright 自己找（用户本机 npx playwright install 过也能跑）。 */
 /* ★ CI 兼容：原来这里写死了

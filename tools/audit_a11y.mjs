@@ -37,7 +37,7 @@ const API = process.env.CAMPUS_BASE
 const BASE = API + '/app';
 
 /* 沙箱/离线机上的 Chromium 是预先下载的固定版本，playwright 包升过版会去找
-   另一个 build 号，报 "Executable doesn't exist" —— 看着像页面坏了，其实是
+   另一个 build 号，报 "Executable doesn't exist" —— 表现为页面异常，实际是
    环境对不上。所以显式指定，找不到再退回让 playwright 自己找。 */
 const CHROME = process.env.CHROME_PATH || (() => {
   const p = `${process.env.LOCALAPPDATA || ''}\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe`;

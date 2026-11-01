@@ -186,7 +186,7 @@ function drawDaily(daily) {
     },
     series: series.map((s) => ({
       // ★ 不用 smooth：0/1 这种两三个点的计数，平滑插值会拱出"浪"，
-      //   看起来像数据在剧烈波动，其实只是 0 和 1 两个值。
+      //   呈现为数据剧烈波动，实际只有 0 与 1 两个取值。
       name: s.label, type: "line", smooth: false, symbolSize: 5,
       lineStyle: { width: 2 },
       areaStyle: s.key === "users" ? { opacity: 0.10 } : undefined,

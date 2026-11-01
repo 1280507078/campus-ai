@@ -37,7 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BACKEND = ROOT / "backend"
 
 # ★ 先改数据库指向再 import backend 模块（config 在导入时就实例化 settings）。
-#   这个测试其实用不到数据库，但 study_agent -> config 这条链会建库文件；
+#   该测试本身不使用数据库，但 study_agent -> config 链路会创建库文件；
 #   让 backend/campus_ai.db 冒出来是部署事故（会被原样推上线上覆盖真实数据）。
 _TMP_DB = Path(tempfile.gettempdir()) / "campus_ai_rag_test.db"
 if _TMP_DB.exists():

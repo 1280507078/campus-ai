@@ -101,7 +101,7 @@ check("plan 页三条等待语已改",
   && js[JS_PLAN].includes('"正在翻你这几天的时间表，看看哪些时段是空的。"')
   && js[JS_PLAN].includes('"先把你的时间表和你说的目标对一遍，马上开始排。"'));
 
-console.log("\n--- ⑤ 负向守卫：旧文案一个字都不许回来 ---");
+console.log("\n--- ⑤ 负向守卫：旧文案不得复现 ---");
 const OLD = [
   ["planner-core", JS_CORE, '"已从账号读取你的课表"'],
   ["planner-core", JS_CORE, '"已读取本地课表（未连接后端）"'],
@@ -127,7 +127,7 @@ for (const [label, file, lit] of OLD) {
   check(`旧文案已消失：${label} · ${lit}`, n === 0, `实际 ${n} 次`);
 }
 
-console.log("\n--- ⑥ 反向守卫：代码里的名字一个都不许动 ---");
+console.log("\n--- ⑥ 反向守卫：代码中的名称不得修改 ---");
 check("★ localStorage key 仍是 timetable_local",
   js[JS_CORE].includes('const LOCAL_KEY = "timetable_local"'));
 check("★ 函数名 loadTimetable / saveTimetable 未改",

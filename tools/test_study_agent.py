@@ -7,7 +7,7 @@
 
 Agent 和普通接口不一样：它**会自己决定调哪个工具、传什么参数**。这意味着
 "接口返回 200"根本不能说明它对 —— 模型可能拿错参数、拿错日期、甚至调用一个
-不存在的工具，然后一本正经地输出一份看起来很正常、其实完全错的计划。
+不存在的工具，然后输出一份形式上正常、实际完全错误的计划。
 此处开发过程中就真的遇到了这个（见下面「锚点日期」那条），所以这里逐个钉死。
 
 ## 测试里的两个注意点，写的时候必须绕开
@@ -91,7 +91,7 @@ unknown_res, _ = run("no_such_tool", {})
 check("★ 未知工具返回错误而不是抛异常（Agent 循环不能因为工具名错了就崩）",
       "error" in unknown_res, str(unknown_res))
 
-# RAG 工具（查学生手册）的三条契约 —— 换句说，这是「不许编」在工具层的落点
+# RAG 工具（查学生手册）的三条契约 —— 换言之，这是「禁止编造」在工具层的落点
 _docs_tool = next((t["function"] for t in A.TOOLS
                    if t["function"]["name"] == "search_campus_docs"), None)
 check("★ 有 search_campus_docs 工具（学校规定不许靠模型印象答）", _docs_tool is not None)

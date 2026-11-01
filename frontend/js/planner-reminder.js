@@ -197,7 +197,7 @@ let notifiedKeys = null;   // Set，记录已提醒过的「课程+时间」，�
  */
 let notifyEnabled = false;
 
-/** 记住开关状态，刷新/换页回来还是上次的选择（按账号隔离）。 */
+/** 持久化开关状态，刷新或换页后仍为上次选择（按账号隔离）。 */
 function notifyPrefKey() {
   const u = (typeof getUser === "function" && getUser()) || null;
   return "notify_on_" + ((u && u.id) || "guest");
