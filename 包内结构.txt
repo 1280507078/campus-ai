@@ -1,15 +1,30 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 182 个文件，合计 5,963,594 字节
-本包构建号：2026-10-25-a
+共 186 个文件，合计 7,411,021 字节
+本包构建号：2026-11-01-a
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
       双击 start-windows.bat 即可（首次会自动装 Python 依赖）。
       详见 如何启动.md。
 
-本次更新（构建 2026-10-25-a）：
-  ── 本版（build 2026-10-25-a，情绪对话落库：后台统计不再恒为 0）────
+本次更新（构建 2026-11-01-a）：
+  ── 本版（build 2026-11-01-a，参赛材料包：技术文档 / README / 评审账号）────
+  ① ★★★【技术文档】新增 20 页 PDF（附在提交包里）：项目概述、需求分析、
+     系统架构设计、AI 技术方案、核心功能实现、测试与部署、总结与展望、
+     创新点说明。AI 部分写清选型理由、集成方式与 9 条优化策略，均附实测数据。
+  ② ★★★【README】按大赛要求重写：项目介绍、功能一览、技术架构与选型理由、
+     安装运行（一键 / Docker / 手动）、环境配置表、测试说明、开发过程、团队信息。
+  ③ ★★★【评审账号】启动时自动创建演示账号 demo（含 7 条示例课程，周一到周五、
+     每周都上，任何一天打开都有课）。此前只有管理员账号，评审注册的新账号
+     课表是空的，「今天有课吗」「排一份计划」这些演示无从谈起。
+     与管理员一样幂等：已存在就跳过，不重置密码、不覆盖改过的课表。
+  ④ 【提交包】-ss 包不再删 README，改为放齐大赛要求的材料：
+     README.md + 技术文档.pdf + 使用说明.pdf + 提交材料清单.md；
+     只去掉包内结构.txt（10 万字节的逐文件清单，评审不需要）。
+  ⑤ 【构建号】升到 2026-11-01-a：14 个页面的 ?v= 与登录页页脚同步。
+
+  ── 上一版（build 2026-10-25-b，情绪对话落库：后台统计不再恒为 0）────
   ① 【新增】情绪对话每轮写一条 chat_sessions（一问一答一行）。此前后端从不写
      这张表，于是管理后台的「情绪对话」永远是 0、7 日活跃也不把聊天算进去 ——
      演示时刚聊完十句，大屏还是 0，和「已保存的会话」这个标签直接矛盾。
@@ -17,7 +32,7 @@ Campus AI Assistant —— 包内结构
      而卡片写的是「会话」。写入失败回滚并记日志，不影响本次回复。
   ③ 【范围】只动后端一个接口；对话内容仍只在本页保留（未加历史接口），
      前端与其余功能不变，上一版（2026-10-24-c）的注释整理全部包含在内。
-  ── 上一版（build 2026-10-24-c，维护版：注释与文档表述整理）────
+  ── 更早（build 2026-10-24-c，维护版：注释与文档表述整理）────
   ① 源码注释统一改为中性表述：删去日期戳、第一人称叙述与逐轮改动记录，
      易错点改写成「约束 + 反例」的形式。只动注释与 docstring，代码零差异
      （以 AST 逐节点比对确认）。
@@ -449,9 +464,9 @@ Campus AI Assistant —— 包内结构
 
 【backend/】 （60 个）
     backend/.env                                             3,667 字节
-    backend/.env.example                                     3,323 字节
+    backend/.env.example                                     3,999 字节
     backend/build.txt                                           14 字节
-    backend/config.py                                        3,852 字节
+    backend/config.py                                        4,425 字节
     backend/data/campus_docs/1.学分认定、置换与奖励成绩流程指南.md           2,042 字节
     backend/data/campus_docs/11.学生多媒体教室申请办理流程.md               790 字节
     backend/data/campus_docs/12.辅修报名流程.md                      448 字节
@@ -481,7 +496,7 @@ Campus AI Assistant —— 包内结构
     backend/data/campus_docs/校园网准入系统密码找回方法.md                1,896 字节
     backend/data/campus_docs/阳光学院2026-2027学年校历.md            4,503 字节
     backend/data/campus_docs/阳光学院图书馆管理办法.md                  5,707 字节
-    backend/database.py                                     13,087 字节
+    backend/database.py                                     13,313 字节
     backend/errors.py                                        6,554 字节
     backend/eval/agent_cases.json                           16,132 字节
     backend/eval/agent_cases_holdout.json                    4,406 字节
@@ -496,7 +511,7 @@ Campus AI Assistant —— 包内结构
     backend/routers/map_weather.py                           4,828 字节
     backend/routers/planner.py                             154,702 字节
     backend/schema.sql                                       7,648 字节
-    backend/seed.py                                          7,930 字节
+    backend/seed.py                                         11,254 字节
     backend/services/amap.py                                 6,587 字节
     backend/services/data_export.py                         11,664 字节
     backend/services/glm.py                                 14,657 字节
@@ -509,8 +524,12 @@ Campus AI Assistant —— 包内结构
     backend/services/usage.py                                3,915 字节
     backend/services/vision.py                              28,365 字节
 
-【docs/】 （1 个）
+【docs/】 （5 个）
     docs/agent-eval.md                                      18,811 字节
+    docs/img/arch.png                                      248,522 字节
+    docs/img/flow.png                                      111,830 字节
+    docs/技术文档.md                                            38,807 字节
+    docs/技术文档.pdf                                        1,062,651 字节
 
 【frontend/】 （47 个）
     frontend/account.html                                    6,117 字节
@@ -595,7 +614,7 @@ Campus AI Assistant —— 包内结构
     tools/check_encoding.py                                  5,372 字节
     tools/crop_png.py                                        4,554 字节
     tools/eval_agent.py                                     12,879 字节
-    tools/gen_structure.py                                  59,154 字节
+    tools/gen_structure.py                                  60,811 字节
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
@@ -638,7 +657,7 @@ Campus AI Assistant —— 包内结构
     check-windows.bat                                        3,382 字节
     Dockerfile                                               1,913 字节
     jsconfig.json                                              398 字节
-    README.md                                               37,567 字节
+    README.md                                               16,728 字节
     start-windows.bat                                       27,055 字节
     如何启动.md                                                132,586 字节
 

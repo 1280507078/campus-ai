@@ -49,7 +49,7 @@ def init_db():
     was_empty = _is_fresh_sqlite()   # 建表前判断：是不是一个全新的空库
     _ensure_columns()          # 老库补新列（SQLite 没有自动迁移）
     Base.metadata.create_all(bind=get_engine())
-    from seed import seed_time_slots, migrate_course_dates, polish_slot_labels, seed_admin
+    from seed import seed_time_slots, migrate_course_dates, polish_slot_labels, seed_admin, seed_demo
     db = get_session_factory()()
     try:
         seed_time_slots(db)
@@ -59,6 +59,9 @@ def init_db():
         # ★ 放在最后：它依赖 users 表已建好，且不该影响任何参考数据的写入。
         # ★ 它是**幂等**的：每次启动都跑，已存在就什么都不做（不重置密码）。
         seed_admin(db)
+        # 评审演示账号（含 7 条示例课程），同样幂等：已存在就跳过，
+        # 不覆盖评审改过的课表。仅供演示，配空 DEMO_USERNAME 即不创建。
+        seed_demo(db)
     finally:
         db.close()
     _write_package_marker()

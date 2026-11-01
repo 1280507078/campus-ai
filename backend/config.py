@@ -55,6 +55,16 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "zrc666"
 
+    # ---- 评审演示账号（seed.py 的 seed_demo 在启动时建号 + 写一份示例课表）----
+    # 为什么单独建一个学生账号：评审现场注册的新账号课表是空的，
+    # 「今天有课吗」「排一份复习计划」「导航去教学楼」这些演示就无从谈起。
+    # 配空任意一个 = 不建演示账号（不留空口令账号）。
+    # 在 .env 里可以改成自己的：
+    #       DEMO_USERNAME=demo
+    #       DEMO_PASSWORD=换成你自己的
+    DEMO_USERNAME: str = "demo"
+    DEMO_PASSWORD: str = "demo123456"
+
     class Config:
         env_file = str(BASE_DIR / ".env")
         extra = "ignore"

@@ -153,3 +153,74 @@ def seed_admin(db):
                 nickname="管理员", is_admin=True))
     db.commit()
     return 1
+
+
+# ============================================================
+# 评审演示账号：一份能立刻演示的课表
+# ============================================================
+# 为什么要预置课表，而不是只建一个空账号：
+#   空账号登录后课表页是空的，「今天有课吗」「排一份复习计划」
+#   「导航去教学楼」全都演示不了 —— 评审第一眼看到的就是空白。
+# 楼名只取 campus.js 里真实存在的 10 栋教学楼（导航才能解析成坐标）；
+# 周次留空 = 每周都上，所以**任何一天**打开都有课。
+# day：0=周一 … 4=周五；第二个字段是 time_slots 的 order_no。
+DEMO_COURSES = [
+    (0, 5,  "高等数学",       "陈老师", "博文楼", "301"),
+    (0, 9,  "大学英语",       "林老师", "正德楼", "204"),
+    (1, 3,  "数据结构",       "黄老师", "知行楼", "402"),
+    (2, 5,  "计算机网络",     "吴老师", "商德楼", "301"),
+    (3, 9,  "操作系统",       "郑老师", "载德楼", "208"),
+    (4, 3,  "体育（羽毛球）", "李老师", "",       ""),
+    (4, 11, "人工智能导论",   "王老师", "平远楼", "101"),
+]
+
+
+def seed_demo(db):
+    """幂等地创建「评审演示账号」，**只在首次创建时**写一份示例课表。
+
+    规则与 seed_admin 一致：已存在就什么都不做 —— 不重置密码、不覆盖课表。
+    演示账号的课表可能已被评审改过，每次启动都重写等于白改。
+
+    @returns {int} 1 = 新建（含课表）；0 = 已存在 / 配置为空
+    """
+    from config import settings
+    from datetime import date as ddate, timedelta
+    from models.orm import User, Course
+    from routers.auth import hash_pwd      # 懒导入：避免 seed 与 routers 循环引用
+
+    name = (getattr(settings, "DEMO_USERNAME", "") or "").strip()
+    pwd = (getattr(settings, "DEMO_PASSWORD", "") or "").strip()
+    if not name or not pwd:
+        return 0                            # 配空 = 不建演示账号
+
+    if db.query(User).filter(User.username == name).first():
+        return 0
+
+    u = User(username=name, hashed_password=hash_pwd(pwd), nickname="演示同学")
+    db.add(u)
+    db.flush()                              # 先拿到 u.id，课程要挂上去
+
+    # 课程按「本周那一天的日期 + 周次串」存；weeks 留空表示每周都上，
+    # 所以评审哪天打开都能看到课，而不是「这周的课刚好没填」。
+    today = ddate.today()
+    monday = today - timedelta(days=today.weekday())
+    slot_time = {s[0]: (s[2], s[3]) for s in DEFAULT_TIME_SLOTS}   # order_no -> (start, end)
+
+    for day, order_no, cname, teacher, building, room in DEMO_COURSES:
+        st, en = slot_time.get(order_no, ("", ""))
+        db.add(Course(
+            user_id=u.id,
+            date=(monday + timedelta(days=day)).isoformat(),
+            type="course",
+            slot_order=order_no,
+            start_time=st,
+            end_time=en,
+            name=cname,
+            teacher=teacher,
+            building=building,
+            location=(f"{building}-{room}" if building and room else ""),
+            weeks="",
+        ))
+    db.commit()
+    print(f"[seed] 已创建评审演示账号 {name}（含 {len(DEMO_COURSES)} 条示例课程）", flush=True)
+    return 1
