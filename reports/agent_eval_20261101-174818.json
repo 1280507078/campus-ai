@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-10-21 23:51:54",
+  "generated_at": "2026-11-01 17:48:18",
   "cases_file": "C:\\Users\\z1280\\WorkBuddy\\2026-10-11-22-26-47\\campus-ai-h\\backend\\eval\\agent_cases.json",
   "route": {
     "accuracy": 1.0,
-    "passed": 68,
-    "total": 68,
+    "passed": 78,
+    "total": 78,
     "by_category": {
       "D": {
         "passed": 21,
         "total": 21
       },
       "E": {
-        "passed": 11,
-        "total": 11
+        "passed": 13,
+        "total": 13
       },
       "L": {
-        "passed": 9,
-        "total": 9
+        "passed": 14,
+        "total": 14
       },
       "P": {
         "passed": 8,
@@ -31,8 +31,8 @@
         "total": 4
       },
       "X": {
-        "passed": 7,
-        "total": 7
+        "passed": 10,
+        "total": 10
       }
     },
     "failures": []

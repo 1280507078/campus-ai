@@ -146,7 +146,7 @@ def bump(tag: str) -> int:
     # 提示人工仍需同步的地方（脚本不擅自改：这些是叙述性文本）
     print()
     print("    还需人工确认（脚本不自动改，避免改坏文案）：")
-    print("      - README.md / 如何启动.md 里举例用到的构建号")
+    print("      - README.md / docs 里的文档举例用到的构建号")
     print()
     print("    然后用 tools/gen_structure.py 重新生成包内结构.txt。")
     return 0

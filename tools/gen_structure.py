@@ -48,7 +48,7 @@ EXCLUDE_NAMES = {".DS_Store", "Thumbs.db", "包内结构.txt", "campus-ai.zip"}
 #    反而可能让新机器首次启动就误判「换过包」而清掉用户数据。
 #
 # ⚠️ backend/.env **要**打包（2026-10-13 起）。
-#    README 与「如何启动.md」一直承诺「压缩包里 backend/.env 已经填好全部 Key、
+#    README 与「docs/使用说明.pdf」一直承诺「压缩包里 backend/.env 已经填好全部 Key、
 #    开箱即用」，所以它必须真的在包里 —— 此前这里把它排除了，文档与包对不上，
 #    用户解压后就撞上「27 个接口全在、天气和 AI 却全是占位文案」。
 #    ⚠️ 代价：交付包带着真实 Key，**不要转发给别人、不要上传到公开仓库**。
@@ -132,7 +132,7 @@ def main() -> int:
     L.append("")
     L.append("说明：本包零依赖即用，不需要 Node.js / npm / 构建。")
     L.append("      双击 start-windows.bat 即可（首次会自动装 Python 依赖）。")
-    L.append("      详见 如何启动.md。")
+    L.append("      详见 docs/使用说明.pdf。")
     L.append("")
     L.append(f"本次更新（构建 {tag}）：")
     L.append(f"  ── 本版（build {tag}，参赛材料包：技术文档 / README / 评审账号）────")
@@ -545,7 +545,7 @@ def main() -> int:
     L.append("     教室），改为带出教学楼后主动重算一次 —— 被复用的课常在别的节次，")
     L.append("     把它的时间套过来就会跟格子对不上。")
     L.append("  7) ★ 打包规则修正：backend/.env 现在**真的在包里**了。README 与")
-    L.append("     「如何启动.md」一直写着「压缩包里 backend/.env 已经填好全部 Key、开箱")
+    L.append("     「docs/使用说明.pdf」一直写着「压缩包里 backend/.env 已经填好全部 Key、开箱")
     L.append("     即用」，但打包排除规则却把 .env 挡在包外 —— 文档与包对不上，用户解压")
     L.append("     后就撞上「27 个接口全在、天气和 AI 却全是占位文案」。现在按文档说的来：")
     L.append("     解压即用，不用自己配 Key。")

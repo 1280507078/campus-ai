@@ -3,8 +3,8 @@
 > 被测对象：AI 伴学 Agent（`backend/services/study_agent.py` + `backend/routers/planner.py`）
 > 评测脚本：`tools/eval_agent.py`　评测集：`backend/eval/agent_cases.json`（78 条）
 > + `agent_cases_holdout.json`（21 条）
-> 最近一次运行：2026-10-22 22:10（构建号 `2026-10-22-c`）
-> 原始报告：`reports/agent_eval_20261022-220636.json`
+> 最近一次运行：2026-11-01 17:48（构建号 `2026-11-01-a`）
+> 原始报告：`reports/agent_eval_20261101-174818.json`
 
 ---
 
