@@ -13,7 +13,7 @@
 | 在线演示 | https://campus-ai-assistant-61569.app.workbuddy.host/ |
 | 评审账号（学生） | `demo` / `demo123456`（已预置 7 条示例课程，登录即可演示） |
 | 评审账号（管理员） | `admin` / `zrc666` |
-| 构建号 | `2026-11-01-a`（唯一来源 `backend/build.txt`） |
+| 构建号 | `2026-11-01-b`（唯一来源 `backend/build.txt`） |
 | 运行形态 | 单端口 Web 应用；Windows 双击即用，也可 Docker |
 
 ---
