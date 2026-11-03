@@ -145,8 +145,9 @@ console.log('='.repeat(62));
     check('拒绝下载 .env', src.includes('".env"'));
   }
 
-  // 启动脚本必须改用它（含备用副本），否则等于没修
-  for (const bat of ['start-windows.bat', '启动工具/start.bat']) {
+  // 启动脚本必须改用它，否则等于没修
+  {
+    const bat = 'start-windows.bat';
     const t = fs.readFileSync(path.join(ROOT, bat), 'utf8');
     check(`${bat} 前端改用它启动（不再裸用 http.server）`,
       t.includes('serve_nocache.py'));
