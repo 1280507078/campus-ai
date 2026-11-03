@@ -3,7 +3,8 @@
 > 面向在校大学生的校园智能助手：**学习规划 · 学校事务问答 · 情绪陪伴 · 天气地图导航**，一个浏览器页面收齐；另附一套给学校管理员用的数据看板与反馈处理。
 
 <p>
-  <img alt="build" src="https://img.shields.io/badge/build-2026--11--01--a-2563EB">
+  <img alt="CI" src="https://github.com/1280507078/campus-ai/actions/workflows/ci.yml/badge.svg?branch=main">
+  <img alt="build" src="https://img.shields.io/badge/build-2026--11--01--b-2563EB">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-3776AB">
   <img alt="frontend" src="https://img.shields.io/badge/frontend-zero--build-0EA5A4">
 </p>
