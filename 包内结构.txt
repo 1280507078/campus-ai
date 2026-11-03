@@ -1,7 +1,7 @@
 Campus AI Assistant —— 包内结构
 ========================================================
 
-共 161 个文件，合计 8,811,737 字节
+共 161 个文件，合计 8,801,400 字节
 本包构建号：2026-11-01-b
 
 说明：本包零依赖即用，不需要 Node.js / npm / 构建。
@@ -18,6 +18,8 @@ Campus AI Assistant —— 包内结构
   ④ 【提交包】-ss 包顶层仅保留 README.md 与技术文档.pdf 两份说明；
      操作手册位于 docs/使用说明.pdf，逐文件清单与重复的启动说明不进入该包。
   ⑤ 【构建号】2026-11-01-b：14 个页面的 ?v= 与登录页页脚同步。
+  ⑥ 【精简】去掉与根目录逐字节重复的「启动工具/」副本及其同步脚本，
+     以及可重跑的体检报告（Lighthouse 页面、覆盖率快照）；操作手册同步更新。
 
 版本沿革：
   2026-11-01-b  文档复核：路由分派、首屏结构、行数与配置项按代码与实拍修正
@@ -103,7 +105,7 @@ Campus AI Assistant —— 包内结构
     docs/img/shot-agent.jpg                                169,919 字节
     docs/img/shot-home.jpg                                 149,645 字节
     docs/img/shot-nav.jpg                                  335,724 字节
-    docs/使用说明.pdf                                          750,713 字节
+    docs/使用说明.pdf                                          740,631 字节
     docs/技术文档.md                                            46,771 字节
     docs/技术文档.pdf                                        2,287,885 字节
 
@@ -165,7 +167,7 @@ Campus AI Assistant —— 包内结构
     tools/check_encoding.py                                  5,381 字节
     tools/crop_png.py                                        4,554 字节
     tools/eval_agent.py                                     12,879 字节
-    tools/gen_structure.py                                  14,218 字节
+    tools/gen_structure.py                                  14,458 字节
     tools/lookup_buildings.py                               10,684 字节
     tools/make_hero.py                                       2,370 字节
     tools/qa_campus_graph.png                              489,018 字节
@@ -173,19 +175,19 @@ Campus AI Assistant —— 包内结构
     tools/refdata/campus_shot.json                             274 字节
     tools/refdata/campus_shot.png                          565,707 字节
     tools/shrink_png.py                                      6,898 字节
-    tools/test_api_base.mjs                                 13,665 字节
+    tools/test_api_base.mjs                                 13,614 字节
     tools/test_auth_token.mjs                                9,367 字节
     tools/test_campus_graph.mjs                             16,632 字节
     tools/test_campus_places.mjs                             8,099 字节
     tools/test_data_export.py                               10,593 字节
     tools/test_lan_ip.py                                    14,355 字节
-    tools/test_launcher_url.py                               6,852 字节
+    tools/test_launcher_url.py                               6,530 字节
     tools/test_map_labels.mjs                               16,673 字节
     tools/test_mobile_login.mjs                              5,723 字节
     tools/test_plan_chat.mjs                                12,348 字节
     tools/test_rag_docs.py                                  23,947 字节
     tools/test_scan_flow.mjs                                10,938 字节
-    tools/test_scan_login_contract.py                        6,740 字节
+    tools/test_scan_login_contract.py                        6,618 字节
     tools/test_site_smoke.mjs                                4,019 字节
     tools/test_study_agent.py                               21,255 字节
     tools/test_term_timetable.mjs                           10,447 字节
