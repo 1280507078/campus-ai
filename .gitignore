@@ -67,3 +67,7 @@ node_modules
 reports/agent_eval_*.json
 reports/coverage.txt
 reports/*.report.html
+
+# 逐文件清单：由 tools/gen_structure.py 扫描目录生成，只服务于完整交付包，
+# 不是源码。改任何文件都会让它过期，留在仓库里只会每次都要重生成一遍。
+包内结构.txt
