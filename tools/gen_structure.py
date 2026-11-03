@@ -48,7 +48,7 @@ EXCLUDE_NAMES = {".DS_Store", "Thumbs.db", "包内结构.txt", "campus-ai.zip"}
 #    反而可能让新机器首次启动就误判「换过包」而清掉用户数据。
 #
 # ⚠️ backend/.env **要**打包（2026-10-13 起）。
-#    README 与「docs/使用说明.pdf」一直承诺「压缩包里 backend/.env 已经填好全部 Key、
+#    README 的「快速开始」一直承诺「压缩包里 backend/.env 已经填好全部 Key、
 #    开箱即用」，所以它必须真的在包里 —— 此前这里把它排除了，文档与包对不上，
 #    用户解压后就撞上「27 个接口全在、天气和 AI 却全是占位文案」。
 #    ⚠️ 代价：交付包带着真实 Key，**不要转发给别人、不要上传到公开仓库**。
@@ -132,7 +132,7 @@ def main() -> int:
     L.append("")
     L.append("说明：本包零依赖即用，不需要 Node.js / npm / 构建。")
     L.append("      双击 start-windows.bat 即可（首次会自动装 Python 依赖）。")
-    L.append("      详见 docs/使用说明.pdf。")
+    L.append("      详见 README.md 第四节「快速开始」。")
     L.append("")
     L.append(f"本版变更（构建 {tag}）：")
     L.append("  ① 【技术文档】24 页 PDF，八章：项目概述、需求分析、系统架构、AI 技术方案、")
@@ -142,10 +142,10 @@ def main() -> int:
     L.append("  ③ 【评审账号】启动时自动创建演示账号 demo（预置 7 条示例课程）与管理员账号；")
     L.append("     两者均为幂等创建，已存在则跳过，不重置密码、不覆盖已修改的课表。")
     L.append("  ④ 【提交包】-ss 包顶层仅保留 README.md 与技术文档.pdf 两份说明；")
-    L.append("     操作手册位于 docs/使用说明.pdf，逐文件清单与重复的启动说明不进入该包。")
+    L.append("     逐文件清单与重复的启动说明不进入该包。")
     L.append(f"  ⑤ 【构建号】{tag}：14 个页面的 ?v= 与登录页页脚同步。")
     L.append("  ⑥ 【精简】去掉与根目录逐字节重复的「启动工具/」副本及其同步脚本，")
-    L.append("     以及可重跑的体检报告（Lighthouse 页面、覆盖率快照）；操作手册同步更新。")
+    L.append("     以及可重跑的体检报告（Lighthouse 页面、覆盖率快照）。")
     L.append("")
     L.append("版本沿革：")
     L.append("  2026-11-01-b  文档复核：路由分派、首屏结构、行数与配置项按代码与实拍修正")
