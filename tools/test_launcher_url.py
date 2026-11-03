@@ -32,8 +32,7 @@
 2. 开浏览器**不能**再用 `!LANIP!`（选到虚拟网卡时首屏就白页）；
 3. 横幅必须保留手机用的局域网地址（`http://!LANIP!:!APIPORT!/app/login.html`）；
 4. login.js 必须存在「局域网 IP 兜底」逻辑（`/system/lan-ip` + 回环判断）；
-5. 两份启动脚本（根目录 + 启动工具/）在这段逻辑上必须一致；
-6. 括号必须配对（早期同步漏掉半个 if 块，cmd 直接跑挂）。
+5. 括号必须配对（早期改脚本漏掉半个 if 块，cmd 直接跑挂）。
 """
 import pathlib
 import re
@@ -41,7 +40,6 @@ import sys
 
 BASE = pathlib.Path(__file__).resolve().parent.parent
 MAIN = BASE / "start-windows.bat"
-ALT = BASE / "启动工具" / "start.bat"
 LOGIN_JS = BASE / "frontend" / "js" / "login.js"
 
 results: list[tuple[str, bool, str]] = []
@@ -74,15 +72,11 @@ print("  启动脚本 · 开浏览器地址 回归测试")
 print("=" * 62)
 
 main_txt = read_ascii(MAIN)
-alt_txt = read_ascii(ALT)
-
 main_blk = browser_block(main_txt)
-alt_blk = browser_block(alt_txt)
 
-check("主脚本里找得到「开浏览器」区块", bool(main_blk), f"{len(main_blk)} 字符")
-check("启动工具脚本里找得到同样的区块", bool(alt_blk), f"{len(alt_blk)} 字符")
+check("启动脚本里找得到「开浏览器」区块", bool(main_blk), f"{len(main_blk)} 字符")
 
-if not main_blk or not alt_blk:
+if not main_blk:
     print("\n  [!!] 区块缺失，后面的断言无法进行")
     sys.exit(1)
 
@@ -128,9 +122,6 @@ check(
     "isLoopbackHost" in login_js and "127.0.0.1" in login_js and "localhost" in login_js,
 )
 
-# ── 5. 两份脚本这段必须一致 ─────────────────────────────────────
-check("两份启动脚本的该区块一致", main_blk.strip() == alt_blk.strip())
-
 # ── 6. 括号配对（早期同步漏半块 -> cmd 跑挂）──────────────────────
 def paren_balanced(text: str) -> tuple[bool, int]:
     """只看命令行的括号；rem 注释里的括号不算（注释里有 ^( 之类）。"""
@@ -148,9 +139,8 @@ def paren_balanced(text: str) -> tuple[bool, int]:
     return depth == 0, depth
 
 
-for label, txt in (("主脚本", main_txt), ("启动工具脚本", alt_txt)):
-    ok, d = paren_balanced(txt)
-    check(f"{label} 括号配对", ok, f"结束时深度={d}")
+ok, d = paren_balanced(main_txt)
+check("启动脚本括号配对", ok, f"结束时深度={d}")
 
 print()
 print("=" * 62)

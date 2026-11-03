@@ -63,5 +63,7 @@ screenshots/
 # 本地测试依赖的软链（指向 /tmp/node_modules，不该进仓库）
 node_modules
 
-# 评测中间产物：内容是逐条用例结果，含本机绝对路径
+# 评测与体检产物：都是生成物，数值会随代码变，进仓库只会过期
 reports/agent_eval_*.json
+reports/coverage.txt
+reports/*.report.html

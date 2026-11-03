@@ -195,7 +195,6 @@ def main() -> int:
     L.append("  backend/services/data_export.py       数据导出：删除前将库与向量库数据打印并写入 JSON（换包取全量，注销取个人）")
     L.append("  start-windows.bat                     启动脚本（含向上找目录的告警 + 手机连通性排查）")
     L.append("  tools/bump_build.py                   单点修改构建号，全项目同步")
-    L.append("  tools/sync_launcher.py                两份启动脚本整文件同步（不一致即报错）")
     L.append("  tools/check_bat.py                    启动脚本自检（含依赖清单一致性）")
     L.append("  frontend/js/campus-graph.js           校园路网（折线几何 + Dijkstra + 文字指引）")
     L.append("  frontend/js/nav.js                    导航交互（吸附、文字指引、起点兜底）")

@@ -5,7 +5,7 @@
 
 （一）扫码登录这条链是**四个文件一起**成立的，任何一个被改回旧写法都会悄悄退化：
 
-    start-windows.bat / 启动工具/start.bat   电脑浏览器开 127.0.0.1
+    start-windows.bat                        电脑浏览器开 127.0.0.1
             ↓
     backend/main.py 的 /api/system/lan-ip    告诉前端本机局域网 IP
             ↓
@@ -39,7 +39,6 @@ GRAPH_JS = BASE / "frontend" / "js" / "campus-graph.js"
 COMMON_JS = BASE / "frontend" / "js" / "common.js"
 STYLE_CSS = BASE / "frontend" / "css" / "style.css"
 START_BAT = BASE / "start-windows.bat"
-ALT_BAT = BASE / "启动工具" / "start.bat"
 
 results: list[tuple[str, bool, str]] = []
 
@@ -136,10 +135,6 @@ check(
 check(
     "nav.html 不再引入 locate.js",
     "locate.js" not in nav_html,
-)
-check(
-    "两份启动脚本逐字节一致（含这次删掉的 https 分支）",
-    read(START_BAT) == read(ALT_BAT),
 )
 
 print()

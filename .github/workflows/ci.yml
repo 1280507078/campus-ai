@@ -93,6 +93,7 @@ jobs:
 
       - name: 覆盖率报告
         run: |
+          mkdir -p reports
           python -m coverage report --omit="backend/data/*" | tee reports/coverage.txt
 
       - uses: actions/upload-artifact@v4
