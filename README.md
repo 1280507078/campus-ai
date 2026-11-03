@@ -4,6 +4,8 @@
 
 <p>
   <img alt="CI" src="https://github.com/1280507078/campus-ai/actions/workflows/ci.yml/badge.svg?branch=main">
+  <img alt="tests" src="https://img.shields.io/badge/tests-461_passing-2EA043">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-2EA043">
   <img alt="build" src="https://img.shields.io/badge/build-2026--11--01--b-2563EB">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-3776AB">
   <img alt="frontend" src="https://img.shields.io/badge/frontend-zero--build-0EA5A4">
@@ -319,6 +321,6 @@ python -m services.rag_docs             # 写入 Qdrant 的 campus_docs 集合
 
 ## 十、说明
 
-- 本项目为竞赛参赛作品，代码与文档仅用于评审与学习交流；
+- 本项目以 **MIT 许可证**开源，详见 [`LICENSE`](LICENSE)：可自由使用、修改与再分发，保留版权声明即可；
 - 校内点位坐标、路网几何来自公开地图数据的标定；文档语料来自学校教务处公开页面（每篇标注原文链接与抓取日期）；
 - 情绪测评是筛查工具，不构成医学诊断。
