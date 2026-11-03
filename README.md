@@ -4,7 +4,7 @@
 
 <p>
   <img alt="CI" src="https://github.com/1280507078/campus-ai/actions/workflows/ci.yml/badge.svg?branch=main">
-  <img alt="tests" src="https://img.shields.io/badge/tests-461_passing-2EA043">
+  <img alt="tests" src="https://img.shields.io/badge/tests-461%20passing-2EA043">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-2EA043">
   <img alt="build" src="https://img.shields.io/badge/build-2026--11--01--b-2563EB">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-3776AB">
