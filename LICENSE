@@ -1,21 +1,29 @@
-MIT License
+著作权所有声明与使用条款
+Copyright (c) 2026 阳光学院 铁人队. All rights reserved.
 
-Copyright (c) 2026 阳光学院 铁人队
+本作品（含源代码、界面、文档、图片与知识库语料）的著作权归作者所有。
+未经许可，不得使用，但下列情形除外。
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+一、允许的使用
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+  1. 大赛评审：评委为评审目的阅读、运行、复制与引用本作品。
+  2. 学习与教学：个人学习或教学场景下阅读源码、运行程序、在作业、课程报告
+     或论文中引用其中的思路与代码片段，须注明来源。
+  3. 校内演示：在阳光学院范围内用于课程展示与交流。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+二、禁止的使用
+
+  1. 商业使用，包括但不限于出售、出租、提供收费服务、嵌入商业产品。
+  2. 再分发：将本作品或其修改版以任何形式公开发布，或提供给第三方。
+  3. 修改后发布：基于本作品创作衍生作品并对外发布。
+  4. 用于训练商业模型，或构建用于商业目的的数据集。
+
+三、其他
+
+  上述允许范围之外的使用，须事先取得著作权人的书面许可。
+  本作品按「现状」提供，作者不对使用后果承担任何责任。
+
+四、第三方内容
+
+  校内点位坐标与路网几何来自公开地图数据的标定；办事指南语料来自学校各部门
+  公开页面，每篇标注原文链接与抓取日期，其著作权归原发布方所有。
