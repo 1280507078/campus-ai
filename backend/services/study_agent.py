@@ -958,35 +958,91 @@ DOCS_PROMPT = (
 )
 
 
-async def ask_docs(goal: str) -> str:
+# 「手册没写」类回答的识别与出口补齐。
+# 为什么要在**代码里**兜，而不是写在提示词里：模型说得对「没写」，但常常说到这儿
+# 就结束 —— 学生拿着「没写」两个字，下一步还是不知道找谁。提示词里要求过
+# 「再说该去问谁」，实测十次有三四次漏。拒答之后必须留一个可执行的出口，
+# 这是产品口径，不是措辞偏好。
+# ⚠️ 别只写「没有写」：模型的措辞是「没有明确规定」「未提及」，中间常夹一个副词。
+#    漏掉这类说法，出口就补不上 —— 而它们恰恰是最需要出口的回答（说了等于没说）。
+_HEDGE_RE = re.compile(r"没(?:有)?(?:明确)?(?:写|规定|说明|提到)|"
+                       r"未(?:明确)?(?:收录|提及|规定)|没有收录|查不到")
+_CONTACT_RE = re.compile(r"教务处|辅导员|0591|反馈")
+
+
+def _with_way_out(text: str) -> str:
+    """拒答之后补一个能走下去的出口（已有联系方式就不重复加）。"""
+    body = (text or "").strip()
+    if not body or not _HEDGE_RE.search(body) or _CONTACT_RE.search(body):
+        return body
+    return body + ("\n\n可以这样办：教务处 0591-83969194；"
+                   "也可以在「反馈」页留言，我们核实后补进手册。")
+
+
+async def ask_docs(goal: str, carry: str = "") -> str:
+    """查学校文档并作答（只要文字）。需要调用记录时用 `ask_docs_with_trace`。"""
+    text, _ = await ask_docs_with_trace(goal, carry)
+    return text
+
+
+async def ask_docs_with_trace(goal: str, carry: str = "") -> tuple[str, list]:
     """查学校文档并作答。**查不到就不调模型**，直接给固定口径。
 
     ★ 这一点是故意的：检索为空时让模型自由发挥，它一定会编出一套流程，
       而且编得像模像样 —— RAG 最典型的出错方式。既然手上没有依据，
       索性连模型都不调，从机制上保证「不知道就说不知道」。
       顺带还省一次 token。
+
+    ## carry 是干什么的
+
+    对话里的第二句常常是「那要多久」「还要带什么」—— 短到没有任何检索价值。
+    单独拿它去向量库查，召回的是**别的**文档（或者干脆空），于是答非所问。
+    `carry` 是用户上一句原话，只在「这句很短 / 明显指代」时才拼进**检索语句**
+    （不拼进给模型的问题），让它落在同一篇手册上。
+
+    ⚠️ 长句不拼。用户已经把问题说完整了，再叠一句上文只会稀释语义，
+      反而把正确的文档挤掉。
+
+    ## 为什么还要带 trace
+
+    文档路和其它路不一样：它是服务端直接检索，**没有 function calling**。
+    于是 `trace` 一直是空的，对话页那一屏显示"0 步" —— 答得再准，看着也像是
+    凭空生成的。把"查了手册、命中几篇"补进 trace，依据才对外可见。
     """
     from services import qdrant as qd
 
     question = (goal or "").strip()
     if not question:
-        return ""
+        return "", []
+
+    # 短句或开头就是指代词 —— 这两种情况必须借上文才能定位到同一篇文档
+    _follow = bool(re.match(r"^(那|这|它|还|再|另外|具体|然后)", question)) \
+        or len(question) <= 12
+    query = (carry.strip() + " " + question).strip() if (carry and _follow) else question
+    _args = {"query": query[:40]}
 
     try:
-        hits = await qd.search_docs(question, top_k=4)
+        hits = await qd.search_docs(query, top_k=4)
     except Exception as e:                      # noqa: BLE001
         logger.warning("文档检索失败：%s: %s", type(e).__name__, e)
         hits = []
 
     if not hits:
-        return ("学校公开的手册里没有写这一条，我不替你编流程。\n"
-                "建议直接问教务处（0591-83969194）或辅导员，他们能给准确答复。")
+        return _with_way_out(
+            "学校公开的手册里没有写这一条，我不替你编流程。\n"
+            "建议直接问教务处（0591-83969194）或辅导员，他们能给准确答复。"), \
+            [{"tool": "search_campus_docs", "args": _args, "ok": True,
+              "summary": "手册里没有相关条目"}]
 
     snippets = []
     for i, h in enumerate(hits, 1):
         snippets.append(f"[片段{i}]《{h['source']}》·{h['section']}\n{h['text']}")
     user = ("学生的问题：" + question + "\n\n"
             "检索到的学校文档片段：\n\n" + "\n\n".join(snippets))
+    if carry and _follow:
+        # 告诉模型「他在接着说上一件事」，否则它会把「那要多久」当成新问题
+        user = ("（这是连续对话，用户上一句是："
+                + carry.strip()[:120] + "）\n\n" + user)
 
     # ★ 问句里的动作在片段里压根没有 —— 这时最危险：模型会拿同主题的另一件事顶替。
     _miss = _missing_actions(question, hits)
@@ -1008,6 +1064,9 @@ async def ask_docs(goal: str) -> str:
                  "⚠️ 也**不要自己提一个办事窗口的名字**（例如「校园卡服务中心」"
                  "「一卡通服务点」这类片段里没有的说法）—— 只建议去问教务处或辅导员。")
 
+    _tr = [{"tool": "search_campus_docs", "args": _args, "ok": True,
+            "summary": f"手册命中 {len(hits)} 篇"}]
+
     try:
         answer = (await glm_chat(
             [{"role": "system", "content": DOCS_PROMPT},
@@ -1015,14 +1074,14 @@ async def ask_docs(goal: str) -> str:
             temperature=0.2, max_tokens=700,
         )).strip()
         if answer:
-            return answer
+            return _with_way_out(answer), _tr
     except Exception as e:                      # noqa: BLE001
         logger.warning("文档问答调用模型失败，降级为原文摘录：%s: %s", type(e).__name__, e)
 
     # 模型不可用：直接把最相关的一段原文摆出来，**不加工**，也不假装是答案
     top = hits[0]
     return (f"（AI 暂时不可用，先给你最相关的一段原文）\n\n{top['text']}\n\n"
-            f"来源：《{top['source']}》")
+            f"来源：《{top['source']}》"), _tr
 
 
 def quick_answer(kind: str, res: dict, goal: str = "") -> str:

@@ -339,6 +339,23 @@ for text, want_b, want_r, want_v in cases:
 check("★ 对不上任何楼的文本不会被当成教学楼（_norm_building 的兜底会原样返回 + uncertain）",
       run("get_building_info", {"text": "东区宿舍"})[0].get("building") is None)
 
+# ---------------------------------------------------------------------------
+# ⑦ 拒答之后必须留出口 ——「不知道」不能是终点
+# ---------------------------------------------------------------------------
+print("\n--- ⑦ 拒答出口 ---")
+from services.study_agent import _with_way_out  # noqa: E402
+
+_hedge = "学校手册里没有写这一条。"
+_out = _with_way_out(_hedge)
+check("★ 「没写」之后自动补上教务处 / 反馈入口",
+      "0591-83969194" in _out and "反馈" in _out, _out)
+
+_already = "手册里没有写，建议问教务处（0591-83969194）。"
+check("★ 已经给了联系方式的不重复补", _with_way_out(_already) == _already)
+
+_normal = "休学需要准备：① 申请表 ② 家长签字。"
+check("★ 正常回答不会被加尾巴", _with_way_out(_normal) == _normal)
+
 db.close()
 
 print("\n" + "=" * 60)

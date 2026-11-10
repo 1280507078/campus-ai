@@ -195,6 +195,27 @@ check("★ history 在 push 用户消息之前取（否则同一句话会发两�
   iHistory > 0 && iPush > 0 && iHistory < iPush,
   `history@${iHistory} push@${iPush}`);
 
+// ★ 多轮追问的指代：模型看得见用户说过什么，却看不见**自己上一轮查到了什么**，
+//   于是「那怎么走」「那要多久」只能重查或反问。steps 就是把结论压成一行带过去。
+check("★ 上下文里带上上一轮的工具结论（steps），否则追问会丢指代对象",
+  /steps:\s*\(Array\.isArray\(m\.trace\)/.test(JS) && /TOOL_LABELS\[t\.tool\]/.test(JS));
+
+// ★ 等待文案按问句类型分三套：问「校园卡怎么补」时屏幕上写「在算你的空档」，
+//   用户会以为系统把问题理解错了（其实路由是对的，只是话说错了）。
+check("★ 等待文案按问句类型分套（plan / docs / quick）",
+  /WAIT_LINES\s*=\s*\{/.test(JS) && /docs:\s*\[/.test(JS) && /quick:\s*\[/.test(JS));
+check("★ 按钮也不许一律写「正在排」",
+  /askKind === "plan" \? "正在排" : "正在查"/.test(JS));
+
+// ★ 空对话给示例问题，点一下只填进输入框 —— 直接发送会让人来不及改字
+const FILL_BLOCK = JS.slice(JS.indexOf("function fillPlanChip"), JS.indexOf("function emptyChips"));
+check("★ 空对话给示例问题（有课表 / 无课表两套）",
+  /chipsHtml\(emptyChips\(\)\)/.test(JS) && /function emptyChips/.test(JS));
+check("★ 点示例只填输入框、不直接发送",
+  FILL_BLOCK.length > 0 && !/sendPlan\(/.test(FILL_BLOCK));
+check("★ 回答后的追问建议按这一轮实际用的工具给",
+  /function followupChips/.test(JS) && /search_campus_docs/.test(JS));
+
 // 等待体验：这三条是用户 2026-10-14 定的口径，AI伴学页照搬
 const WAIT_BLOCK = JS.slice(JS.indexOf("const WAIT_LINES"), JS.indexOf("function pickOne"));
 check("★ 等待文案**不含省略号**（用户明确否掉的写法）",
@@ -212,6 +233,10 @@ check("★ 对话容器显式写回 white-space: normal（否则模板里的换�
 check("★ AI 气泡比普通气泡宽（计划很长，挤在 78% 里会拖得过分）",
   /\.msg\.ai \.stack \{[^}]*max-width: 92%/.test(CSS));
 check("调用记录进气泡后不再要下外边距", /\.at-inline \{ margin: 0; \}/.test(CSS));
+check("★ 示例问题胶囊有样式、且带焦点环（不是裸按钮）",
+  /\.plan-chip \{/.test(CSS) && /\.plan-chip:focus-visible/.test(CSS));
+check("★ reduced-motion 下胶囊不做位移",
+  /prefers-reduced-motion: reduce\) \{\s*\.plan-chip/.test(CSS));
 
 console.log("\n" + "=".repeat(60));
 console.log(`  结论: ${pass} 通过 / ${fail} 失败`);

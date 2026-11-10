@@ -4,9 +4,9 @@
 
 <p>
   <img alt="CI" src="https://github.com/1280507078/campus-ai/actions/workflows/ci.yml/badge.svg?branch=main">
-  <img alt="tests" src="https://img.shields.io/badge/tests-461%20passing-2EA043">
+  <img alt="tests" src="https://img.shields.io/badge/tests-472%20passing-2EA043">
   <img alt="license" src="https://img.shields.io/badge/license-All%20Rights%20Reserved-6E7781">
-  <img alt="build" src="https://img.shields.io/badge/build-2026--11--01--b-2563EB">
+  <img alt="build" src="https://img.shields.io/badge/build-2026--11--10--a-2563EB">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-3776AB">
   <img alt="frontend" src="https://img.shields.io/badge/frontend-zero--build-0EA5A4">
 </p>
@@ -16,7 +16,7 @@
 | 在线演示 | https://campus-ai-assistant-61569.app.workbuddy.host/ |
 | 评审账号（学生） | `demo` / `demo123456`（已预置 7 条示例课程，登录即可演示） |
 | 评审账号（管理员） | `admin` / `zrc666` |
-| 构建号 | `2026-11-01-b`（唯一来源 `backend/build.txt`） |
+| 构建号 | `2026-11-10-a`（唯一来源 `backend/build.txt`） |
 | 运行形态 | 单端口 Web 应用；Windows 双击即用，也可 Docker |
 
 ---

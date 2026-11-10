@@ -115,6 +115,7 @@ const TOOL_LABELS = {
   find_free_slots: "计算空闲时段",
   get_building_info: "识别上课地点",
   get_weather: "查询天气",
+  search_campus_docs: "查学校手册",
   // 往时间表里写一条固定安排（不是排计划）
   add_schedule: "写入我的时间表",
 };
@@ -177,20 +178,83 @@ function planTextHtml(text) {
     .replace(/\n*来源：([^\n]+)/g, '<span class="doc-src">来源：$1</span>');
 }
 
+/* ===========================================================================
+   示例问题（胶囊）
+   ---------------------------------------------------------------------------
+   两个地方用到：
+     ① 空对话时 —— 对着输入框不知道能问什么，用户只能自己先想一句；
+     ② 一条回答之后 —— 给「接下来还能问什么」，多轮才接得下去。
+
+   两处都只**填进输入框**、不自动发送：点一下就发，来不及改字，
+   演示时也容易连点出一串回答。
+   =========================================================================== */
+
+/** @param {string[]} items */
+function chipsHtml(items) {
+  if (!items || !items.length) return "";
+  return `<div class="plan-chips">`
+    + items.map(t => `<button type="button" class="plan-chip"`
+      + ` onclick="fillPlanChip(this)">${escapeHtml(t)}</button>`).join("")
+    + `</div>`;
+}
+
+/** 点胶囊 -> 填进输入框，光标落到末尾。 */
+function fillPlanChip(btn) {
+  const input = onEl("plan-msg");
+  if (!input || !btn) return;
+  input.value = (btn.textContent || "").trim();
+  autoGrowPlanInput(input);
+  input.focus();
+  try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) { /* 忽略 */ }
+}
+
+/** 空对话时问什么：有课表就围绕课表问，没有就先给三句不依赖课表的。 */
+function emptyChips() {
+  const n = (typeof courses !== "undefined" ? courses : []).filter(c => c.name).length;
+  return n
+    ? ["我今天下午有课吗", "帮我排这周的复习计划", "休学需要准备什么材料"]
+    : ["帮我排这周的复习计划", "博文楼在哪", "学校手册里怎么办理休学"];
+}
+
+/**
+ * 一条回答之后还能问什么 —— 看这一轮**实际用了哪个工具**决定。
+ * 不用固定三句：问完手册却让人接着问「这周哪天空」，等于没读上下文。
+ */
+function followupChips(m) {
+  const tools = (Array.isArray(m && m.trace) ? m.trace : []).map(t => t && t.tool);
+  if (tools.indexOf("search_campus_docs") >= 0) {
+    return ["这个流程要跑几个部门", "还要带什么材料"];
+  }
+  if (tools.indexOf("get_building_info") >= 0 || tools.indexOf("get_weather") >= 0) {
+    return ["走过去要多久", "这周哪天空"];
+  }
+  if (tools.indexOf("get_timetable") >= 0
+      || tools.indexOf("get_class_schedule") >= 0
+      || tools.indexOf("find_free_slots") >= 0) {
+    return ["明天有几节课", "这周哪天空"];
+  }
+  return ["改成 3 天", "再细一点"];
+}
+
 /**
  * 一条消息 -> HTML。
  *
  * ⚠️ 注意这里**不写跨行的模板字符串**：外层 `.chat-box` 上有 `white-space: pre-wrap`
  *    （那是给"计划正文"用的），模板里的换行和缩进会被原样渲染成空行，
  *    消息之间就会莫名其妙多出一片空白。所以一律用单行拼接。
+ *
+ * @param {{role:string, content:string, trace?:Array}} m
+ * @param {boolean} [isLast] 最后一条才挂「接下来还能问什么」
  */
-function planMsgHtml(m) {
+function planMsgHtml(m, isLast) {
   if (m.role === "user") {
     return `<div class="msg me"><div class="bubble">${escapeHtml(m.content)}</div></div>`;
   }
   // AI 这条：调用记录在上、正文在下，一起包在 .stack 里（宽度比普通气泡宽）
   return `<div class="msg ai"><div class="stack">${traceHtml(m.trace)}`
-    + `<div class="bubble plan-text">${planTextHtml(m.content)}</div></div></div>`;
+    + `<div class="bubble plan-text">${planTextHtml(m.content)}</div>`
+    + (isLast ? chipsHtml(followupChips(m)) : "")
+    + `</div></div>`;
 }
 
 /** 整屏重绘。开场白**永远在最上面**，清空对话也留着 —— 它是这页的说明书。 */
@@ -199,9 +263,11 @@ function renderPlanChat() {
   if (!box) return;
   // 开场白额外挂一个 `greeting` 类：它和"AI 的回答"长得一样（都是 .bubble.plan-text），
   // 验收脚本要靠这个类把两者区分开（数"AI 回了几条"时不能把开场白算进去）。
+  // 空对话时才给示例问题：已经聊过还挂着，看着像没生效。
   box.innerHTML = `<div class="msg ai"><div class="stack">`
     + `<div class="bubble plan-text greeting">${escapeHtml(PLAN_GREETING)}</div></div></div>`
-    + planMessages.map(planMsgHtml).join("");
+    + (planMessages.length ? "" : chipsHtml(emptyChips()))
+    + planMessages.map((m, i) => planMsgHtml(m, i === planMessages.length - 1)).join("");
   box.scrollTop = box.scrollHeight;
 }
 
@@ -246,42 +312,100 @@ function updatePlanTip() {
    =========================================================================== */
 
 const ETA_KEY = "plan_reply_ms";
-const ETA_DEFAULT = 60000;
+const ETA_DEFAULT = 60000;        // 排计划：要跑几轮工具 + 写一整天安排
+const ETA_DEFAULT_SHORT = 15000;  // 查手册 / 查数据：一次检索或一次接口
 /** 低于这个耗时就不记 —— 一次极快的回复会把预估拉得很低，下次真慢下来用户会觉得被骗。 */
 const ETA_MIN_RECORD = 8000;
 const ETA_MAX_RECORD = 300000;
 
-const WAIT_LINES = [
-  "我在查你的时间表和空闲时段，先看清楚再动笔。",
-  "正在翻你这几天的时间表，看看哪些时段是空的。",
-  "先把你的时间表和你说的目标对一遍，马上开始排。",
-  "在算未来几天的空档，算完就给你排每天的安排。",
-];
+/** 三类请求分开记：拿排计划的 60 秒去给"查一条流程"报时，等于骗人。 */
+function etaKey(kind) { return ETA_KEY + "_" + (kind || "plan"); }
+
+/* 等待文案**按问句类型分三套**。
+   以前只有「查时间表 / 算空档」一套 —— 问「校园卡怎么补」时，屏幕上写着
+   "我在算你的空档"，答非所问；用户会以为系统把问题理解错了（其实路由是对的）。
+
+   ⚠️ 这里的分组只用于**选文案**，不参与路由：真正的路由是后端的 route_of()，
+      前端猜错顶多文案不贴切，不会改变回答走哪条路。所以判据可以粗。 */
+const ASK_KIND = {
+  plan: /排|计划|规划|安排|作息|复习|冲刺|备考/,
+  docs: /手册|流程|办理|材料|规定|手续|申请|补办|补卡|学分|休学|转学|退学|复学|校历|图书馆|报修|一卡通|报销/,
+};
+
+/** 猜这句话属于哪类（只影响等待文案与按钮字）。 */
+function guessAskKind(text) {
+  const s = String(text || "");
+  if (ASK_KIND.plan.test(s)) return "plan";
+  if (ASK_KIND.docs.test(s)) return "docs";
+  // 短追问沿用上一轮的类别：「那要多久」本身没有关键词，但它接的是上一件事。
+  // 同理，上一轮查的是手册，这一轮八成还在同一篇里。
+  if (s.length <= 10) {
+    const last = planMessages.slice().reverse()
+      .find(m => m && m.role === "assistant" && Array.isArray(m.trace) && m.trace.length);
+    if (last) {
+      const tools = last.trace.map(t => t && t.tool);
+      if (tools.indexOf("search_campus_docs") >= 0) return "docs";
+      if (tools.indexOf("find_free_slots") >= 0) return "plan";
+    }
+  }
+  return "quick";
+}
+
+const WAIT_LINES = {
+  plan: [
+    "我在查你的时间表和空闲时段，先看清楚再动笔。",
+    "正在翻你这几天的时间表，看看哪些时段是空的。",
+    "先把你的时间表和你说的目标对一遍，马上开始排。",
+    "在算未来几天的空档，算完就给你排每天的安排。",
+  ],
+  docs: [
+    "我在翻学校公开的手册，找到原文再回答。",
+    "手册按部门分篇，我找对应那一篇，别急。",
+    "先核对原文，再决定怎么答 —— 这类问题我不想凭印象说。",
+  ],
+  quick: [
+    "我查一下，这条不用推理，取到数据就告诉你。",
+    "稍等，我去查一下这一条。",
+    "这个查一下就知道，马上好。",
+  ],
+};
 
 /** 超出预估之后的话：**不报负数秒数**，换成安抚。 */
-const OVERRUN_LINES = [
-  "计划要写得细一点，还在写，再等我一会儿。",
-  "正在把每天的时间段一条条排出来，马上就好。",
-  "就快好了，我想把每个时段都写具体些，别急。",
-];
+const OVERRUN_LINES = {
+  plan: [
+    "计划要写得细一点，还在写，再等我一会儿。",
+    "正在把每天的时间段一条条排出来，马上就好。",
+    "就快好了，我想把每个时段都写具体些，别急。",
+  ],
+  docs: [
+    "手册那篇有点长，我在核对原文，别急。",
+    "再看一眼原文，免得说错一个字。",
+  ],
+  quick: [
+    "数据还没回来，再等一下。",
+    "就快好了，在等接口返回。",
+  ],
+};
 
 /** @param {string[]} arr */
 function pickOne(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** 预估此处耗时（毫秒）。 */
-function estimatedMs() {
-  const v = Number(localStorage.getItem(ETA_KEY) || "");
-  return (v >= ETA_MIN_RECORD && v <= ETA_MAX_RECORD) ? v : ETA_DEFAULT;
+/** 预估此处耗时（毫秒）。按问句类型分开取，互不污染。 */
+function estimatedMs(kind) {
+  const v = Number(localStorage.getItem(etaKey(kind)) || "");
+  const fallback = kind === "plan" ? ETA_DEFAULT : ETA_DEFAULT_SHORT;
+  return (v >= ETA_MIN_RECORD && v <= ETA_MAX_RECORD) ? v : fallback;
 }
 
 /** 记下此处真实耗时，做指数平滑（新值占 4 成）。 */
-function rememberMs(ms) {
+function rememberMs(ms, kind) {
   if (!(ms >= ETA_MIN_RECORD && ms <= ETA_MAX_RECORD)) return;
-  const prev = Number(localStorage.getItem(ETA_KEY) || "");
+  const k = etaKey(kind);
+  const prev = Number(localStorage.getItem(k) || "");
   const next = prev >= ETA_MIN_RECORD ? Math.round(prev * 0.6 + ms * 0.4) : Math.round(ms);
-  try { localStorage.setItem(ETA_KEY, String(next)); } catch (e) { /* 存不下就算了 */ }
+  try { localStorage.setItem(k, String(next)); } catch (e) { /* 存不下就算了 */ }
 }
 
 /**
@@ -291,11 +415,14 @@ function rememberMs(ms) {
  * 它只是 DOM 上的临时节点，回复到了就摘掉。
  *
  * @param {number} estMs 预估耗时
+ * @param {"plan"|"docs"|"quick"} [kind] 问句类型，只决定说哪套话
  * @returns {{stop: () => void}}
  */
-function showPlanWaiting(estMs) {
+function showPlanWaiting(estMs, kind) {
   const box = onEl("plan-chat");
   if (!box) return { stop() {} };
+  const heads = WAIT_LINES[kind] || WAIT_LINES.plan;
+  const overs = OVERRUN_LINES[kind] || OVERRUN_LINES.plan;
 
   const wrap = document.createElement("div");
   wrap.className = "msg ai";
@@ -308,13 +435,13 @@ function showPlanWaiting(estMs) {
   box.appendChild(wrap);
   box.scrollTop = box.scrollHeight;
 
-  const head = pickOne(WAIT_LINES);
+  const head = pickOne(heads);
   const t0 = Date.now();
 
   const paint = () => {
     const left = Math.ceil((estMs - (Date.now() - t0)) / 1000);
     // 还有 1 秒以上就报数；否则换成安抚语 —— 报「还要 -3 秒」比不报更伤信任
-    const tail = left > 1 ? `大概还要 ${left} 秒。` : pickOne(OVERRUN_LINES);
+    const tail = left > 1 ? `大概还要 ${left} 秒。` : pickOne(overs);
     bubble.innerHTML = `${escapeHtml(head)}`
       + `<span class="wait-eta">${escapeHtml(tail)}</span>`;
     box.scrollTop = box.scrollHeight;
@@ -388,9 +515,22 @@ async function sendPlan() {
   planDays = detectDays(text, planDays);
   try { localStorage.setItem(PLAN_DAYS_KEY, String(planDays)); } catch (e) { /* 忽略 */ }
 
+  // 只用来选等待文案 / 按钮字，不参与路由（真路由在后端 route_of）
+  const askKind = guessAskKind(text);
+
   // ⚠️ 上下文要取「**这一条之前**」的消息。取完再 push 当前这条，
   //    否则同一句话会既出现在 history 里、又作为 goal 发一次。
-  const history = planMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
+  // ★ assistant 那条额外带 `steps`：把上一轮的工具与结论压成一行。
+  //   不回灌正文（计划两三千字，既贵又没用），后端只需要知道"上一轮查到了什么"，
+  //   否则「那怎么走」这类追问会丢指代对象。
+  const history = planMessages.slice(-8).map(m => ({
+    role: m.role,
+    content: m.content,
+    steps: (Array.isArray(m.trace) ? m.trace : [])
+      .filter(t => t && t.tool)
+      .map(t => (TOOL_LABELS[t.tool] || t.tool) + "：" + (t.summary || ""))
+      .join("；"),
+  }));
 
   input.value = "";
   autoGrowPlanInput(input);      // 清空后把高度收回一行，不然会留着一块空白
@@ -399,9 +539,10 @@ async function sendPlan() {
   // 发送期间禁止重复点击，避免连点产生多轮请求
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.textContent = "正在排";              // ★ 不带省略号
+  // 问流程却写「正在排」，等于告诉用户"我以为你要排计划"
+  btn.textContent = askKind === "plan" ? "正在排" : "正在查";   // ★ 不带省略号
 
-  const wait = showPlanWaiting(estimatedMs());
+  const wait = showPlanWaiting(estimatedMs(askKind), askKind);
   const t0 = Date.now();
   let plan = "";
   let trace = [];
@@ -430,7 +571,7 @@ async function sendPlan() {
     plan = "生成失败：" + (e && e.message ? e.message
       : "请确认后端已启动，且 backend/.env 里填了 GLM_API_KEY");
   } finally {
-    rememberMs(Date.now() - t0);
+    rememberMs(Date.now() - t0, askKind);
     wait.stop();
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -455,7 +596,9 @@ function clearPlanChat() {
   try {
     localStorage.removeItem(PLAN_CHAT_KEY);
     localStorage.removeItem(PLAN_DAYS_KEY);
+    // 三类估算全清（含旧版的单一键）
     localStorage.removeItem(ETA_KEY);
+    ["plan", "docs", "quick"].forEach(k => localStorage.removeItem(etaKey(k)));
   } catch (e) { /* 忽略 */ }
   renderPlanChat();
   toast("对话已清空", "ok");
@@ -475,5 +618,7 @@ function clearPlanChat() {
   renderPlanChat();
 
   // bootPlanner 里会先注入顶栏、再读课表；读完课表后那句提示才知道"能看到几门课"
-  await bootPlanner("plan", ["updatePlanTip"]);
+  // ★ renderPlanChat 也要等课表读完再跑一次：空态示例问题是按"有没有课表"选的，
+  //   在课表到达之前画，永远是"没有课表"那一套。
+  await bootPlanner("plan", ["updatePlanTip", "renderPlanChat"]);
 })();

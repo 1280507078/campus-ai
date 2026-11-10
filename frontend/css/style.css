@@ -2949,3 +2949,30 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
 .fb-kind, .fb-reply-head { color: var(--brand-text); }
 .fb-state { color: var(--warn-ink); }
 .fb-state.is-replied { color: var(--ok-ink); }
+
+/* ============================================================
+   AI伴学：示例问题胶囊
+   ------------------------------------------------------------
+   空对话时出现一次、每次回答之后再出现一次，回答"还能问什么"。
+   点一下只**填进输入框**，不自动发送 —— 发不发由用户决定。
+
+   ⚠️ 不给胶囊画边框：这一页的口径是"卡片不画边框"，靠底色和间距分组。
+   焦点沿用其它按钮的 --ring 双环；reduced-motion 下关掉位移与过渡。
+   ============================================================ */
+.plan-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 2px; }
+.plan-chip {
+  font: inherit; font-size: 13px; line-height: 1.5; text-align: left;
+  padding: 6px 12px; border: 0; border-radius: 999px;
+  background: var(--brand-soft); color: var(--brand-text);
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+.plan-chip:hover { background: var(--brand-soft-3); }
+.plan-chip:active { transform: scale(.97); }
+.plan-chip:focus-visible { outline: none; box-shadow: var(--ring); }
+/* 手机上按 13px 字号算，6px 纵向内边距只有 31px 高，手指容易点偏 */
+@media (max-width: 620px) { .plan-chip { padding: 8px 13px; } }
+@media (prefers-reduced-motion: reduce) {
+  .plan-chip { transition: none; }
+  .plan-chip:active { transform: none; }
+}

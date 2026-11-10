@@ -23,7 +23,8 @@ from models.schemas import (TimetableUpdate, InheritRequest, PlanRequest,
                             ImportImageIn, ImportImageOut, ImportedCourse,
                             ImportSheetIn, ImportSheetOut)
 from routers.auth import get_current_user
-from services.study_agent import (run_study_agent, ask_coach, local_coach, ask_docs,
+from services.study_agent import (run_study_agent, ask_coach, local_coach,
+                                  ask_docs, ask_docs_with_trace,
                                   _is_explain, _is_docs_question, _course_on_date,
                                   parse_date_range, parse_time_recipe,
                                   parse_schedule_add, schedule_add_dates,
@@ -822,12 +823,30 @@ async def generate_plan(req: PlanRequest, user: User = Depends(get_current_user)
             for m in (req.history or [])
             if isinstance(m, dict) and m.get("role") == "user"]
     prev = [p[:200] for p in prev if p and p != goal][-3:]
+
+    # ★ 只看用户原话还不够：模型不知道**自己上一轮查到了什么**，
+    #   于是「那怎么走」「那要多久」这类追问，它只能把工具重跑一遍，或者反问
+    #   「从哪到哪」—— 前者慢，后者等于没记住。
+    #   前端把每次回答的工具名 + 结论压成一行随 history 带上来（`steps` 字段），
+    #   这里取最近两条拼进上下文。只给结论，不回灌两千字的计划正文。
+    prev_steps = [str((m or {}).get("steps") or "").strip()
+                  for m in (req.history or [])
+                  if isinstance(m, dict) and m.get("role") == "assistant"]
+    prev_steps = [s[:300] for s in prev_steps if s][-2:]
+
     ctx_line = ""
     if prev:
         ctx_line = ("这是连续对话。在这条之前，用户还说过："
                     + "；".join(f"「{p}」" for p in prev)
                     + "。请结合前后语境理解这一次的要求"
                       "（例如「改成两周」是在改天数，「再细一点」是在改详略）。")
+    if prev_steps:
+        # ⚠️ 必须限定用途：课表/空档是**会变**的（今天读到的是这周，明天就不是了），
+        #    让模型把它当既定事实直接背出来，比不知道更危险。
+        ctx_line += ("上一轮你已经查到的结论："
+                     + "；".join(f"「{s}」" for s in prev_steps)
+                     + "。这些只用来理解这次的指代（「那个楼」「那门课」「那条流程」），"
+                       "涉及时间、期限、金额的必须重新查证，不要照抄。")
 
     # ---- 交给 Agent（function calling）去查、去排 ----
     #
@@ -862,7 +881,15 @@ async def generate_plan(req: PlanRequest, user: User = Depends(get_current_user)
                             usage=_usage.summary(_usage.take()))
 
     # ★ 判定抽成 `route_of()`，**路由与评测脚本共用同一份判据**。
-    _route = route_of(goal, courses, ddate.today())
+    # ⚠️ 短追问要**带着上一句一起判**：「那要多久」「还要带什么」这类句子本身
+    #    没有任何可路由的成分，单看它只能落到 plan（于是给一份作息表）。
+    #    这里只把"路由用的探针"拼上上文，`goal` 本身不动 —— 回答内容仍按原句生成。
+    _route_probe = goal
+    if prev:
+        _last = prev[-1]
+        if len(goal) <= 8 or re.match(r"^(那|这|它|还|再|另外|具体|然后)", goal):
+            _route_probe = _last + " " + goal
+    _route = route_of(_route_probe, courses, ddate.today())
 
     # ★★★ 寒暄/道谢/应声：一句话直接回，**不进 Agent**。
     #   放在所有分支最前面 —— 「你好」既不查课表、也不查文档、更不排计划。
@@ -907,9 +934,13 @@ async def generate_plan(req: PlanRequest, user: User = Depends(get_current_user)
     #   但只有文档能给出「走哪个系统、找谁」这一步 —— 教练人格只会讲方法。
     #   也必须排在排计划之前：「休学需要准备什么材料」会返回一张作息表。
     if _route == "docs":
-        _doc = await ask_docs(goal)
+        # ★ 追问要带上上一句用户原话：「那要多久」「还要带什么」单独拿去检索，
+        #   向量库里召回不到任何东西（句子太短，既没有实体也没有动作）。
+        # ★ 文档路也要给 trace：它没有 function calling，空着的话对话页显示"0 步"，
+        #   答得再准也像凭空生成的。
+        _doc, _dtr = await ask_docs_with_trace(goal, carry=prev[-1] if prev else "")
         if _doc:
-            return _resp(_doc)
+            return _resp(_doc, _dtr)
 
     # ★★★ 求方法 / 求讲解 -> 学习教练（不调工具、不排表）。
     #   改之前「高数怎么复习」会被当成 plan，问的是"怎么学"，收到一张时间表。
